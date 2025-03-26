@@ -1,0 +1,68 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E6B6707D-264C-4EF0-955C-3ED65D1B7DAF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{5E8FAF25-0880-43F8-9F17-76677846E1EE}"
+	ProjectSection(SolutionItems) = preProject
+		build.cmd = build.cmd
+		build.sh = build.sh
+		global.json = global.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{4DC61AC1-80CB-4E41-A531-67BE3E4AE82A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".ci", ".ci", "{4455AE8E-2096-4254-8F58-C52E361704BA}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\build-and-test.yml = .github\workflows\build-and-test.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "project", "project", "{2C8CE0BD-C46B-4D28-B33B-28B9514CE076}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		LICENSE = LICENSE
+		README.md = README.md
+		RELEASE_NOTES.md = RELEASE_NOTES.md
+	EndProjectSection
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "build", "build\build.fsproj", "{4621DD69-489F-4E75-8F25-950689BEC3A6}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsMath", "src\FsMath\FsMath.fsproj", "{FDA3A9A3-9947-4B2F-ABE3-11393DAD985F}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsMath.Tests", "tests\FsMath.Tests\FsMath.Tests.fsproj", "{D32F5DDE-8981-4536-95A4-88A1CB63417C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{A233BC3E-5F09-487D-A0F1-71B7FECD00F2}"
+	ProjectSection(SolutionItems) = preProject
+		docs\index.fsx = docs\index.fsx
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4621DD69-489F-4E75-8F25-950689BEC3A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4621DD69-489F-4E75-8F25-950689BEC3A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4621DD69-489F-4E75-8F25-950689BEC3A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4621DD69-489F-4E75-8F25-950689BEC3A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDA3A9A3-9947-4B2F-ABE3-11393DAD985F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDA3A9A3-9947-4B2F-ABE3-11393DAD985F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDA3A9A3-9947-4B2F-ABE3-11393DAD985F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDA3A9A3-9947-4B2F-ABE3-11393DAD985F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D32F5DDE-8981-4536-95A4-88A1CB63417C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D32F5DDE-8981-4536-95A4-88A1CB63417C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D32F5DDE-8981-4536-95A4-88A1CB63417C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D32F5DDE-8981-4536-95A4-88A1CB63417C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4621DD69-489F-4E75-8F25-950689BEC3A6} = {5E8FAF25-0880-43F8-9F17-76677846E1EE}
+		{FDA3A9A3-9947-4B2F-ABE3-11393DAD985F} = {E6B6707D-264C-4EF0-955C-3ED65D1B7DAF}
+		{D32F5DDE-8981-4536-95A4-88A1CB63417C} = {4DC61AC1-80CB-4E41-A531-67BE3E4AE82A}
+	EndGlobalSection
+EndGlobal
