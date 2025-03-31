@@ -6,7 +6,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Library.fs" />
+    <Compile Include="GenericMath.fs" />
+
+    <Compile Include="SIMDUtils.fs" />
+    <Compile Include="SIMDMath.fs" />
+  
+    <Compile Include="Vector.fs" /> 
+    <Compile Include="VectorOps.fs" />    
+    <Compile Include="Matrix.fs" />
+
+    <Compile Include="LinearAlgebra.fs" />
+    
   </ItemGroup>
 
 </Project>
