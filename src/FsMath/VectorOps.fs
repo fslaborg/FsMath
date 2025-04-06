@@ -2,86 +2,37 @@ namespace FsMath
 
 open System
 
+// Fallback implementation container (Type class)
+type VectorOps =
 
-module Operators =
-    
-    let inline (.+) (v1: Vector<'T>) ( v2: Vector<'T>) = Vector.add v1 v2
-    //let inline (.+) (scalar: 'T) ( v: Vector<'T>) = SIMDVector.addScalar v scalar
 
-    let inline (+.) (v: Vector<'T>) (scalar: 'T) = Vector.addScalar v scalar
+    static member inline Plus (a: Vector<'T>, b: Vector<'T>) = Vector.add a b
+    static member inline Plus (a: Vector<'T>, b: 'T) = Vector.addScalar a b
+    static member inline Plus (a: 'T, b: Vector<'T>) = Vector.addScalar b a
 
-    // type AddScalar =
-    //     static member inline (+.) (v: Vector<'T>, scalar: 'T) = SIMDVector.addScalar v scalar
+    static member inline Minus (a: Vector<'T>, b: Vector<'T>) = Vector.subtract a b
+    static member inline Minus (a: Vector<'T>, b: 'T) = Vector.subtractScalar a b
+ 
 
-    // type Sub =
-    //     static member inline (-) (v1: Vector<'T>, v2: Vector<'T>) = SIMDVector.subtract v1 v2
+    static member inline Multiply (a: Vector<'T>, b: Vector<'T>) = Vector.multiply a b
+    static member inline Multiply (a: Vector<'T>, b: 'T) = Vector.multiplyScalar a b
+    static member inline Multiply (a: 'T, b: Vector<'T>) = Vector.multiplyScalar b a
 
-    // type SubScalar =
-    //     static member inline (-.) (v: Vector<'T>, scalar: 'T) = SIMDVector.subtractScalar v scalar
-
-    // type Mul =
-    //     static member inline ( * ) (v1: Vector<'T>, v2: Vector<'T>) = SIMDVector.multiply v1 v2
-
-    // type MulScalar =
-    //     static member inline ( *. ) (v: Vector<'T>, scalar: 'T) = SIMDVector.multiplyScalar v scalar
-
-    // type Div =
-    //     static member inline (/) (v1: Vector<'T>, v2: Vector<'T>) = SIMDVector.divide v1 v2
-
-    // type DivScalar =
-    //     static member inline (/.) (v: Vector<'T>, scalar: 'T) = SIMDVector.divideScalar v scalar
-
-    // type Dot =
-    //     static member inline ( .. ) (v1: Vector<'T>, v2: Vector<'T>) = SIMDVector.dotProduct v1 v2
+    static member inline Divide (a: Vector<'T>, b: Vector<'T>) = Vector.divide a b
+    static member inline Divide (a: Vector<'T>, b: 'T) = Vector.divideScalar a b
 
 
 
-// static member inline (+) (v1: Vector<'T>, v2: Vector<'T>) = SIMDVector.add v1 v2
-// static member inline (+.) (v: Vector<'T>, scalar: ^T) = SIMDVector.addScalar v scalar
-// static member inline (-) (v1: Vector<'T>, v2: Vector<'T>) = SIMDVector.subtract v1 v2
+// Dispatcher types (Instance resolution)
+type Plus = static member inline Invoke (a: ^A, b: ^B) = ((^A or ^B or VectorOps) : (static member Plus : ^A * ^B -> _)(a, b))
+type Minus = static member inline Invoke (a: ^A, b: ^B) = ((^A or ^B or VectorOps) : (static member Minus : ^A * ^B -> _)(a, b))
+type Multiply = static member inline Invoke (a: ^A, b: ^B) = ((^A or ^B or VectorOps) : (static member Multiply : ^A * ^B -> _)(a, b))
+type Divide = static member inline Invoke (a: ^A, b: ^B) = ((^A or ^B or VectorOps) : (static member Divide : ^A * ^B -> _)(a, b))
 
-// static member inline (-.) (v: Vector<'T>, scalar: ^T) = SIMDVector.subtractScalar v scalar
-
-
-// static member inline ( * ) (v1: Vector<'T>, v2: Vector<'T>) = SIMDVector.multiply v1 v2
-// static member inline ( *. ) (v: Vector<'T>, scalar: ^T) = SIMDVector.multiplyScalar v scalar
-// static member inline (/) (v1: Vector<'T>, v2: Vector<'T>) = SIMDVector.divide v1 v2
-// static member inline (/.) (v: Vector<'T>, scalar: ^T) = SIMDVector.divideScalar v scalar
-
-// static member inline ( .. ) (v1: Vector<'T>, v2: Vector<'T>) = SIMDVector.dotProduct v1 v2
-
-// static member inline (^.) (v: Vector<'T>, scalar: ^T) = SIMDMath.powAuto v scalar
-
-
-
-// /// Element-wise vector addition
-// static member inline add v1 v2 = SIMDVector.add v1 v2
-
-// /// Add scalar to each element
-// static member inline addScalar v scalar = SIMDVector.addScalar v scalar
-
-// /// Element-wise vector subtraction
-// static member inline subtract v1 v2 = SIMDVector.subtract v1 v2
-
-// /// Subtract scalar from each element
-// static member inline subtractScalar v scalar = SIMDVector.subtractScalar v scalar
-
-// /// Element-wise vector multiplication
-// static member inline multiply v1 v2 = SIMDVector.multiply v1 v2
-
-// /// Multiply each element by scalar
-// static member inline multiplyScalar v scalar = SIMDVector.multiplyScalar v scalar
-
-// /// Element-wise vector division
-// static member inline divide v1 v2 = SIMDVector.divide v1 v2
-
-// /// Divide each element by scalar
-// static member inline divideScalar v scalar = SIMDVector.divideScalar v scalar
-
-// /// Dot product of two vectors
-// static member inline dotProduct v1 v2 = SIMDVector.dotProduct v1 v2
-
-// /// Raise each element to the power of a scalar
-// //static member inline powScalar v scalar = SIMDMath.powAuto v scalar
-
-
+// Operators
+[<AutoOpen>]
+module VectorOpsSymbols =
+    let inline (.+) a b = Plus.Invoke(a, b)
+    let inline (.-) a b = Minus.Invoke(a, b)
+    let inline (.*) a b = Multiply.Invoke(a, b)
+    let inline (./) a b = Divide.Invoke(a, b)

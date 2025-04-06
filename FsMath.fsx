@@ -1,16 +1,28 @@
 #r "./src/FsMath/bin/Release/net8.0/FsMath.dll"
 
+open System
 open FsMath
-open FsMath.Acceleration
-open Vector.Operators
-
-let a = vector [| 1.0; 2.0; 3.0 |]
-let b = vector [| 4.0; 5.0; 6.0 |]
-
-//SIMDVector.add a b 
-// VectorOps.(+) a b 
 
 
+// 🧪 Example usage
+let v1: Vector<int> = [| 1; 2; 3 |]
+let v2: Vector<int> = [| 4; 5; 6 |]
+let scalar = 10
+
+let r1 = v1 .+ v2    // [|5; 7; 9|]
+let r2 = v1 .+ scalar // [|11; 12; 13|]
+let r3 = scalar .+ v1 // [|11; 12; 13|]
+
+
+printfn "v1 .+ v2    = %A" r1
+printfn "v1 .+ 10    = %A" r2
+printfn "10 .+ v1    = %A" r3
+
+
+let a : Vector<float> =  [| 1.0; 2.0; 3.0 |]
+let b : Vector<float> =  [| 4.0; 5.0; 6.0 |]
+
+a .+ b
 
 //
 
