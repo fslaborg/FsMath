@@ -5,21 +5,60 @@ open System.Runtime.InteropServices
 
 module GenericMath =
 
-    // let inline zero<'T when 'T :> Numerics.INumber<'T>> = LanguagePrimitives.GenericZero<'T>
-    // let inline one<'T when 'T :> Numerics.INumber<'T>> = LanguagePrimitives.GenericOne<'T>
+    /// Generic Zero
+    let inline zero<'T when 'T :> Numerics.INumber<'T>> = 
+        'T.Zero
 
-    let inline abs<'T when 'T :> Numerics.INumber<'T>> (x: 'T) =
-        'T.Abs(x)
+    /// Generic One
+    let inline one<'T when 'T :> Numerics.INumber<'T>> = 
+        'T.One
+    
+    /// Generic float conversion
+    let inline T<'T when 'T :> Numerics.INumber<'T>> (x: float) : 'T =
+        'T.CreateChecked x
 
-    let inline sqrt<'T when 'T :> Numerics.IRootFunctions<'T>> (x: 'T) =
+    /// Generic square root
+    let inline sqrt<'T when 'T :> Numerics.IRootFunctions<'T>> (x: 'T) : 'T =
         'T.Sqrt(x)
 
-    let inline exp<'T when 'T :> Numerics.IExponentialFunctions<'T>> (x: 'T) =
+    /// Generic exponentiation (e^x)
+    let inline exp<'T when 'T :> Numerics.IExponentialFunctions<'T>> (x: 'T) : 'T =
         'T.Exp(x)
 
-    // let inline pow<'T when 'T :> Numerics.INumber<'T>> (x: 'T) (y: 'T) =
-    //     //'T.Pow(x,y)
-    //     ('T : (static member Pow : 'T * 'T -> 'T) (x, y))
+    /// Generic power function (x^y)
+    let inline pow<'T when 'T :> Numerics.IPowerFunctions<'T>> (x: 'T) (y: 'T) : 'T =
+        'T.Pow(x, y)
+
+    /// Generic natural logarithm
+    let inline log<'T when 'T :> Numerics.ILogarithmicFunctions<'T>> (x: 'T) : 'T =
+        'T.Log(x)
+
+    /// Generic absolute value
+    let inline abs<'T when 'T :> Numerics.INumber<'T>> (x: 'T) : 'T =
+        'T.Abs(x)
+
+    /// Generic sine
+    let inline sin<'T when 'T :> Numerics.ITrigonometricFunctions<'T>> (x: 'T) : 'T =
+        'T.Sin(x)
+
+    /// Generic cosine
+    let inline cos<'T when 'T :> Numerics.ITrigonometricFunctions<'T>> (x: 'T) : 'T =
+        'T.Cos(x)
+
+    // /// Generic pi constant
+    // let inline pi<'T when 'T :> Numerics.IFloatingPointConstants<'T> and 'T :> Numerics.INumber<'T>> () : 'T =
+    //     pi<'T>()
+
+    /// Generic e constant (Euler's number)
+    let inline e<'T when 'T :> Numerics.IFloatingPointConstants<'T>> () : 'T =
+        'T.E
+
+    // /// Generic tau constant (2 * pi)
+    // let inline tau<'T when 'T :> Numerics.IFloatingPointConstants<'T> and 'T :> Numerics.INumber<'T>> () : 'T =
+    //     T<'T> 2.0 * pi<'T>()
+
+
+
 
     // let inline min x y = if x < y then x else y
     // let inline max x y = if x > y then x else y

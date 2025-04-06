@@ -16,6 +16,8 @@
     <Compile Include="Matrix.fs" />
 
     <Compile Include="LinearAlgebra.fs" />
+
+    <Compile Include="SpecialFunctions/Gamma.fs" />
     
   </ItemGroup>
 

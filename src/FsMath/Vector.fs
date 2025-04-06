@@ -141,7 +141,7 @@ type Vector() =
                 (v:Vector<'T>) : 'T =
         
         let sumSquares  = Vector.dotProduct v v
-        GenericMath.sqrt sumSquares 
+        'T.Sqrt sumSquares 
 
     // static member inline min<'T when 'T :> Numerics.INumber<'T>
     //             and 'T : (new: unit -> 'T)
