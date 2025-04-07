@@ -77,17 +77,28 @@ type Gamma =
                 T -0.000005395239384953
             |]
 
+        let pi = 'T.Pi
         let x = z - one
         let g = T 5.0
         let half = T 0.5
         let xg = x + g + half
 
+        // let sum =
+        //     coeffs
+        //     |> Vector.foldi (fun i acc c -> 
+        //         acc + c / (x + T (float (i + 1)))) (T 1.000000000190015)
+        
+        // //(x + half) * log xg - xg + log (sqrt ('T.Pi * T<'T> 2.0) * sum)
+        // (x + half) * log xg - xg + T 0.5 * log (T (2.0 * System.Math.PI)) + log sum
         let sum =
             coeffs
-            |> Vector.foldi (fun i acc c -> 
-                acc + c / (x + T (float (i + 1)))) (T 1.000000000190015)
+            |> Vector.foldi (fun i acc c -> acc + c / (z + T (float i))) (T 1.000000000190015)
 
-        (x + half) * log xg - xg + log (sqrt ('T.Pi * T<'T> 2.0) * sum)
+        (x + half) * log xg
+        - xg
+        + half * log (T 2.0 * pi)
+        + log sum
+
 
     ///<summary>
     /// Computes an approximation of the real value of the gamma function using the Lanczos Coefficients described in Numerical Recipes (Press et al) 

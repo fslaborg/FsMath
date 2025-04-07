@@ -4,7 +4,9 @@ open System
 open FsMath
 
 SpecialFunctions.Gamma._gamma 0.5
+let ea =SpecialFunctions.Gamma._gammaLn 420.
 
+printf "%f" ea
 
 // 🧪 Example usage
 let v1: Vector<int> = [| 1; 2; 3 |]

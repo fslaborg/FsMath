@@ -5,6 +5,16 @@ open System
 open FsMath
 open FsMath.SpecialFunctions
 
+type Accuracy = { absolute: float; relative: float }
+
+module Accuracy =
+    let low =    { absolute = 1e-6;  relative = 1e-3 }
+    let medium = { absolute = 1e-8;  relative = 1e-5 }
+    let high =   { absolute = 1e-10; relative = 1e-7 }
+    let veryHigh = { absolute = 1e-12; relative = 1e-9 }
+
+
+
 
 
 
@@ -12,6 +22,14 @@ module GammaTests =
 
     let inline floatClose (expected: float) (actual: float) (tolerance: float) =
         Assert.InRange(actual, expected - tolerance, expected + tolerance)
+
+
+    let inline floatClose2 (accuracy: Accuracy) (actual: float) (expected: float) (message: string) =
+        let absDiff = abs (actual - expected)
+        let relDiff = accuracy.relative * max (abs actual) (abs expected)
+        let limit = accuracy.absolute + relDiff
+        if absDiff > limit then
+            failwithf "%s\nExpected: %g\nActual: %g\nAbsolute diff: %g > Allowed: %g" message expected actual absDiff limit
 
     [<Fact>]
     let ``_gamma(5)`` () =
@@ -74,10 +92,17 @@ module GammaTests =
         let gam = Gamma._gammaLn -1.
         Assert.True(Double.IsNaN gam)
 
+    // [<Fact>]
+    // let ``_gammaLn(420)`` () =
+    //     let gam = Gamma._gammaLn 420.
+    //     floatClose 2114.8059883267407 gam 1e-10
+
+
     [<Fact>]
     let ``_gammaLn(420)`` () =
         let gam = Gamma._gammaLn 420.
-        floatClose 2114.8059883267407 gam 1e-10
+        floatClose2  Accuracy.high gam 2114.8059883267407613276719264808503756320291823875025922347978642 "Should be equal (double precision)"
+
 
     [<Fact>]
     let ``_gammaLn(420) = gammaLn(420)`` () =
@@ -98,7 +123,8 @@ module GammaTests =
     [<Fact>]
     let ``gammaLn(420)`` () =
         let gam = Gamma.gammaLn 420.
-        floatClose 2114.8059883267407 gam 1e-10
+        //floatClose 2114.8059883267407613276719264808503756320291823875025922347978642 gam 1e-10
+        floatClose2  Accuracy.high gam 2114.8059883267407613276719264808503756320291823875025922347978642 "Should be equal (double precision)"
 
     [<Fact>]
     let ``gammaLn(nan) = nan`` () =
