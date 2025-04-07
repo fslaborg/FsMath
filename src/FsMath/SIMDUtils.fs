@@ -7,7 +7,6 @@ open System.Runtime.InteropServices
 
 type SIMDUtils() =
 
-
     /// Safe element-wise unary operation (e.g. abs, negate)
     static member inline map<'T when 'T :> Numerics.INumber<'T>
                 and 'T : (new: unit -> 'T)                              
