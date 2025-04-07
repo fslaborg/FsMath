@@ -143,13 +143,13 @@ type Vector() =
         let sumSquares  = Vector.dotProduct v v
         'T.Sqrt sumSquares 
 
-    // static member inline min<'T when 'T :> Numerics.INumber<'T>
-    //             and 'T : (new: unit -> 'T)
-    //             and 'T : struct
-    //             and 'T :> ValueType> 
-    //             (v:Vector<'T>) : 'T =
-    //     if v.Length = 0 then invalidArg "v" "Cannot compute min of empty vector."
-    //     SIMDUtils.fold (Vector.Min) min v.[0] v
+     //static member inline min<'T when 'T :> Numerics.INumber<'T>
+     //            and 'T : (new: unit -> 'T)
+     //            and 'T : struct
+     //            and 'T :> ValueType> 
+     //            (v:Vector<'T>) : 'T =
+     //   if v.Length = 0 then invalidArg "v" "Cannot compute min of empty vector."
+     //   SIMDUtils.fold (Vector.Min) min v.[0] v
 
     // static member inline powScalar (v: float32[]) (scalar:float32) : float32[] =
     //     SIMDMath.powF32 v scalar
