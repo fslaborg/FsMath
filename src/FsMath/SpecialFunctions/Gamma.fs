@@ -1,6 +1,8 @@
 namespace FsMath.SpecialFunctions
 
+
 open System
+open FsMath
 open FsMath.GenericMath
 
 /// Approximations for the gamma function and related functions.
@@ -23,11 +25,12 @@ type Gamma =
     /// The caller is responsible to handle edge cases such as nan, infinity, and -infinity in the input
     ///</remarks> 
     /// <param name="z">The function input for approximating Γ(z)</param>    
-    static member inline _gamma<'T when 'T :> Numerics.IFloatingPoint<'T>
+    static member inline _gamma<'T when 'T :> Numerics.INumber<'T>
+        and Numerics.IFloatingPoint<'T>
         and Numerics.IExponentialFunctions<'T>
         and Numerics.IRootFunctions<'T>
         and Numerics.IPowerFunctions<'T> > (z: 'T) : 'T =
-        let coeffs =
+        let coeffs : Vector<'T> =
             [|
                 T 76.18009172947146
                 T -86.50532032941677
@@ -44,8 +47,8 @@ type Gamma =
 
         let sum =
             coeffs
-            |> Array.mapi (fun i h -> h / T (float (i + 1)))
-            |> Array.fold (fun acc x -> acc + x) (T 1.000000000190015)
+            |> Vector.foldi (fun i acc c -> 
+                acc + c / (x + T (float (i + 1)))) (T 1.000000000190015)
 
         pow xg (x + half)
         * exp (-xg)
@@ -81,8 +84,8 @@ type Gamma =
 
         let sum =
             coeffs
-            |> Array.mapi (fun i h -> h / T (float (i + 1)))
-            |> Array.fold (fun acc x -> acc + x) (T 1.000000000190015)
+            |> Vector.foldi (fun i acc c -> 
+                acc + c / (x + T (float (i + 1)))) (T 1.000000000190015)
 
         (x + half) * log xg - xg + log (sqrt ('T.Pi * T<'T> 2.0) * sum)
 
