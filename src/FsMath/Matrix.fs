@@ -16,7 +16,7 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
                 and 'T : (new: unit -> 'T)
                 and 'T : struct
                 and 'T :> ValueType> 
-                (rows: int, cols: int, data: 'T[]) =
+                (rows: int, cols: int, data: Vector<'T>) =
 
     /// Exposes the raw underlying data array (row-major flattened).
     member _.Data = data

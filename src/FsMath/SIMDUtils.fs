@@ -2,6 +2,7 @@ namespace FsMath
 
 open System
 open System.Runtime.InteropServices
+open System.Runtime.CompilerServices
 
 
 /// <summary>
@@ -152,6 +153,101 @@ type SIMDUtils() =
             results.[i] <- f v1.[i] scalar
 
         results
+    
+    /// In-place transformation of v[startIndex..(startIndex + count - 1)]
+    /// using a SIMD operation (fv) for chunked parts and a scalar function (f) for leftovers.
+    static member inline mapRangeInPlace<'T when 'T :> Numerics.INumber<'T> 
+                and 'T : (new: unit -> 'T)
+                and 'T : struct 
+                and 'T :> ValueType>
+        (fv : Numerics.Vector<'T> -> Numerics.Vector<'T>)
+        (f  : 'T -> 'T)
+        (startIndex : int)
+        (count : int)
+        (v : 'T[]) : unit =
+        
+        // 1) Validate parameters
+        if startIndex < 0 || count < 0 || (startIndex + count) > v.Length then
+            invalidArg (nameof count) "Invalid start index or count."
+
+        // 2) Early exit if there's nothing to do
+        if count = 0 then
+            // nothing to do
+            ()
+
+        else
+            // 3) Compute how many full Vector<'T>.Count chunks we can process
+            let simdSize = Numerics.Vector<'T>.Count
+            let simdCount = count / simdSize
+            let tailStart = simdCount * simdSize
+
+            // 4) Slice the relevant portion of v
+            let span = v.AsSpan(startIndex, count)
+            // 5) Interpret that span as a span of Vector<'T>
+            let vecSpan = MemoryMarshal.Cast<'T, Numerics.Vector<'T>>(span)
+
+            // 6) Apply fv to each SIMD chunk
+            for i in 0 .. simdCount - 1 do
+                vecSpan.[i] <- fv vecSpan.[i]
+
+            // 7) Handle leftover elements with f
+            for i in tailStart .. count - 1 do
+                let idx = startIndex + i
+                v.[idx] <- f v.[idx]
+
+
+
+    /// In-place combination of two arrays (dst, src) over 'count' elements,
+    /// starting from 'dstStartIndex' and 'srcStartIndex' respectively.
+    /// Uses 'fv' for chunked SIMD processing and 'f' for leftover scalar elements.
+    static member inline map2RangeInPlace<'T when 'T :> Numerics.INumber<'T>
+                and 'T : (new: unit -> 'T)
+                and  'T : struct
+                and  'T :> ValueType>
+        (fv  : Numerics.Vector<'T> -> Numerics.Vector<'T> -> Numerics.Vector<'T>) 
+        (f   : 'T -> 'T -> 'T)
+        (dstStartIndex : int)
+        (srcStartIndex : int)
+        (count         : int)
+        (dst : 'T[])
+        (src : 'T[]) : unit =
+        
+        // 1) Validate parameters
+        if dstStartIndex < 0 || srcStartIndex < 0 || count < 0 then
+            invalidArg (nameof count) "Start indices and count must be non-negative."
+        if dstStartIndex + count > dst.Length then
+            invalidArg (nameof dstStartIndex) "Destination range out of bounds."
+        if srcStartIndex + count > src.Length then
+            invalidArg (nameof srcStartIndex) "Source range out of bounds."
+
+        // 2) Early exit if there's nothing to do
+        if count = 0 then
+            ()
+        else
+            // 3) How many full 'Vector<'T>' chunks fit into 'count'?
+            let simdSize  = Numerics.Vector<'T>.Count
+            let simdCount = count / simdSize
+            let tailStart = simdCount * simdSize
+            
+            // 4) Create Spans for the subranges
+            let dstSpan = dst.AsSpan(dstStartIndex, count)
+            let srcSpan = src.AsSpan(srcStartIndex, count)
+
+            // 5) Cast to Span<Vector<'T>> for chunked SIMD ops
+            let dstVecSpan = MemoryMarshal.Cast<'T, Numerics.Vector<'T>>(dstSpan)
+            let srcVecSpan = MemoryMarshal.Cast<'T, Numerics.Vector<'T>>(srcSpan)
+
+            // 6) Apply 'fv' to each pair of SIMD chunks
+            for i = 0 to simdCount - 1 do
+                dstVecSpan.[i] <- fv dstVecSpan.[i] srcVecSpan.[i]
+
+            // 7) Handle leftover scalar elements
+            for i = tailStart to count - 1 do
+                let dstIdx = dstStartIndex + i
+                let srcIdx = srcStartIndex + i
+                dst.[dstIdx] <- f dst.[dstIdx] src.[srcIdx]
+
+
 
 
 // type SIMDMatrixUtils() =

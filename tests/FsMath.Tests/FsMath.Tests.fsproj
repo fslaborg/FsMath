@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Compile Include="ExpectoStyle.fs" />
+    <Compile Include="LinearAlgebra.fs" />
     <Compile Include="SpecialFunctions.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
@@ -28,5 +29,4 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\FsMath\FsMath.fsproj" />
   </ItemGroup>
-
 </Project>

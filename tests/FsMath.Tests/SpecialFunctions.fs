@@ -9,7 +9,6 @@ open FsMath.Tests.ExpectoStyle
 
 
 
-
 module GammaTests =
 
     [<Fact>] 

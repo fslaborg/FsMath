@@ -21,5 +21,4 @@
     <Compile Include="SpecialFunctions/Gamma.fs" />
     
   </ItemGroup>
-
 </Project>
