@@ -296,7 +296,7 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
         if a.NumRows <> b.NumRows || a.NumCols <> b.NumCols then
             invalidArg "b" $"Matrix dimensions must match. A is {a.NumRows}x{a.NumCols}, B is {b.NumRows}x{b.NumCols}"
 
-
+    /// Element-wise addition
     static member inline add<'T when 'T :> Numerics.INumber<'T>
                 and 'T : (new: unit -> 'T)
                 and 'T : struct
@@ -305,8 +305,9 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
         (b: Matrix<'T>) : Matrix<'T> =
 
         Matrix.checkSameShape a b
-        Matrix.map2Unchecked (+) (+) a b
-        
+        let data = 
+            SIMDUtils.map2Unchecked (+) (+) a.Data b.Data
+        Matrix(a.NumRows, a.NumCols, data)  
 
     static member inline subtract<'T when 'T :> Numerics.INumber<'T>
                 and 'T : (new: unit -> 'T)
