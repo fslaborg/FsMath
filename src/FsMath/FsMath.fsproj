@@ -9,7 +9,6 @@
     <Compile Include="GenericMath.fs" />
 
     <Compile Include="SIMDUtils.fs" />
-    <Compile Include="SIMDMath.fs" />
   
     <Compile Include="Vector.fs" /> 
     <Compile Include="VectorExt.fs" /> 
