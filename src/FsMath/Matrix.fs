@@ -1,7 +1,6 @@
 namespace FsMath
 
 open System
-
 open System.Runtime.InteropServices
 
 // let blockSize =
@@ -15,6 +14,7 @@ open System.Runtime.InteropServices
 type Matrix<'T when 'T :> Numerics.INumber<'T>
                 and 'T : (new: unit -> 'T)
                 and 'T : struct
+                and 'T : equality
                 and 'T :> ValueType> 
                 (rows: int, cols: int, data: Vector<'T>) =
 
@@ -37,78 +37,111 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
             if i < 0 || i >= rows || j < 0 || j >= cols then
                 invalidArg "index" $"Index out of range: ({i}, {j})"
             data.[i * cols + j] <- value
+    
+    // Implement IEquatable<T> so that F# structural equality can use it
+    interface IEquatable<Matrix<'T>> with
+        member this.Equals(other: Matrix<'T>) =
 
+            // 1) Check dimension
+            if rows <> other.NumRows || cols <> other.NumCols then
+                false
+            else
+                // 2) Compare all elements
+                let otherData = other.Data
+                let mutable i = 0
+                let mutable eq = true
+                while eq && i < data.Length do
+                    if data[i] <> otherData[i] then
+                        eq <- false
+                    i <- i + 1
+                eq
 
-    static member inline map2Unchecked<'T when 'T :> Numerics.INumber<'T>
-                and 'T : (new: unit -> 'T)
-                and 'T : struct
-                and 'T :> ValueType> 
-                (fVec: Numerics.Vector<'T> -> Numerics.Vector<'T> -> Numerics.Vector<'T>)
-                (fScalar: 'T -> 'T -> 'T)
-                (a: Matrix<'T>)
-                (b: Matrix<'T>)
-                : Matrix<'T> =
+    // Override Object.Equals
+    override this.Equals(obj: obj) =
+        match obj with
+        | :? Matrix<'T> as other ->
+            (this :> IEquatable<Matrix<'T>>).Equals(other)
+        | _ -> false
 
-        // if a.Rows <> b.Rows || a.Cols <> b.Cols then
-        //     invalidArg "b" "Matrix dimensions must match"
+    // Override Object.GetHashCode
+    override this.GetHashCode() =
+        // We'll combine the row/col count plus some portion of the data to avoid huge cost.
+        // There's no perfect hashing for big arrays, but here's a simple example:
 
-        let len = a.Data.Length
-        let result = Array.zeroCreate<'T> len
+        let mutable hash = HashCode()
+        hash.Add(rows)
+        hash.Add(cols)
+        // Optionally: incorporate some or all elements
+        // For big arrays, consider sampling or a rolling hash approach.
+        for i in 0 .. data.Length - 1 do
+            hash.Add(data[i])
+        hash.ToHashCode()
 
-        let simdSize = Numerics.Vector<'T>.Count
-        let simdCount = len / simdSize
-        let tailStart = simdCount * simdSize
+    /// <summary>
+    /// Returns a new Matrix<'T> that is the slice of rows [rowStart..rowEnd] 
+    /// and columns [colStart..colEnd]. If any of these bounds is omitted, 
+    /// it defaults to the full range in that dimension.
+    /// </summary>
+    /// <param name="rowStart">Optional start row (inclusive)</param>
+    /// <param name="rowEnd">Optional end row (inclusive)</param>
+    /// <param name="colStart">Optional start column (inclusive)</param>
+    /// <param name="colEnd">Optional end column (inclusive)</param>
+    /// <returns>A new submatrix copy.</returns>
+    member this.GetSlice
+        (rowStart: int option, rowEnd: int option,
+         colStart: int option, colEnd: int option) : Matrix<'T> =
 
-        // Cast arrays to Vector<'T> spans
-        let aVec = MemoryMarshal.Cast<'T, Numerics.Vector<'T>>(a.Data.AsSpan())
-        let bVec = MemoryMarshal.Cast<'T, Numerics.Vector<'T>>(b.Data.AsSpan())
-        let rVec = MemoryMarshal.Cast<'T, Numerics.Vector<'T>>(result.AsSpan())
+        // 1) Determine actual start/end indices
+        let r1 = defaultArg rowStart 0
+        let r2 = defaultArg rowEnd (rows - 1)
+        let c1 = defaultArg colStart 0
+        let c2 = defaultArg colEnd (cols - 1)
 
-        for i = 0 to simdCount - 1 do
-            rVec.[i] <- fVec aVec.[i] bVec.[i]
+        // 2) Validate them
+        if r1 < 0 || r2 < r1 || r2 >= rows then
+            invalidArg "row range" $"Invalid row slice range: {r1}..{r2}"
+        if c1 < 0 || c2 < c1 || c2 >= cols then
+            invalidArg "col range" $"Invalid column slice range: {c1}..{c2}"
 
-        for i = tailStart to len - 1 do
-            result.[i] <- fScalar a.Data.[i] b.Data.[i]
+        let subRows = r2 - r1 + 1
+        let subCols = c2 - c1 + 1
 
-        Matrix(a.NumRows, a.NumCols, result)
+        // 3) Allocate new array for the submatrix
+        let subData = Array.zeroCreate<'T> (subRows * subCols)
 
+        // 4) Copy row by row
+        for rr in 0 .. subRows - 1 do
+            let srcIndex = (r1 + rr) * cols + c1
+            let dstIndex = rr * subCols
+            // Copy from data[srcIndex..(srcIndex+subCols-1)] 
+            //   to subData[dstIndex..(dstIndex+subCols-1)]
+            Array.blit data srcIndex subData dstIndex subCols
 
-    static member inline mapScalar<'T when 'T :> Numerics.INumber<'T>
-                and 'T : (new: unit -> 'T)
-                and 'T : struct
-                and 'T :> ValueType> 
-                (fv: Numerics.Vector<'T> -> Numerics.Vector<'T> -> Numerics.Vector<'T>)
-                (f: 'T -> 'T -> 'T)
-                (matrix: Matrix<'T>)
-                (scalar: 'T)
-                : Matrix<'T> =
+        // 5) Return a new Matrix with the submatrix data
+        Matrix<'T>(subRows, subCols, subData)
 
-        let length = matrix.Data.Length
-        let result = Array.zeroCreate<'T> length
+    /// <summary>
+    /// Convenience "slice indexer" for F# syntax: mat.[r1..r2, c1..c2].
+    /// Internally calls GetSlice(...).
+    /// </summary>
+    member this.GetSlice
+        (rowRange: Range, colRange: Range) : Matrix<'T> =
+        
+        // Convert the F# Range type into int option pairs
+        let rowStart, rowEnd =
+            (if rowRange.Start = System.Index.Start then None else Some rowRange.Start.Value),
+            (if rowRange.End = System.Index.End then None else Some rowRange.End.Value)
 
-        let slotSize = Numerics.Vector<'T>.Count
-        let slotCount = length / slotSize
-        let ceiling = slotCount * slotSize
+        let colStart, colEnd =
+            (if colRange.Start = System.Index.Start then None else Some colRange.Start.Value),
+            (if colRange.End = System.Index.End then None else Some colRange.End.Value)
 
-        let scalarVec = Numerics.Vector<'T>(scalar)
-
-        let mSpan = MemoryMarshal.Cast<'T, Numerics.Vector<'T>>(matrix.Data.AsSpan())
-        let rSpan = MemoryMarshal.Cast<'T, Numerics.Vector<'T>>(result.AsSpan())
-
-        // SIMD chunk-wise operation
-        for i = 0 to slotCount - 1 do
-            rSpan.[i] <- fv mSpan.[i] scalarVec
-
-        // Scalar fallback for remainder
-        for i = ceiling to length - 1 do
-            result.[i] <- f matrix.Data.[i] scalar
-
-        Matrix(matrix.NumRows, matrix.NumCols, result)
-
+        // Use the primary GetSlice overload
+        this.GetSlice(rowStart, rowEnd, colStart, colEnd)
 
 
      /// Creates a new matrix by initializing each element with a function `f(row, col)`.
-    static member inline transpose<'T when 'T :> Numerics.INumber<'T>
+    static member inline private transposeByBlock<'T when 'T :> Numerics.INumber<'T>
                 and 'T : (new: unit -> 'T)
                 and 'T : struct
                 and 'T :> ValueType>
@@ -139,11 +172,14 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
 
         dst
 
+    static member inline transpose (m:Matrix<'T>) : Matrix<'T> =
+        m.Transpose()
+
      member this.Transpose() =
         let blocksize = 16
-        Matrix(this.NumCols, this.NumRows, Matrix.transpose this.NumRows this.NumCols this.Data blocksize)
+        Matrix(this.NumCols, this.NumRows, Matrix.transposeByBlock this.NumRows this.NumCols this.Data blocksize)
      
-    static member Init<'T when 'T :> Numerics.INumber<'T>
+    static member init<'T when 'T :> Numerics.INumber<'T>
                 and 'T : (new: unit -> 'T)
                 and 'T : struct
                 and 'T :> ValueType>
@@ -153,7 +189,7 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
         let data = Array.init (rows * cols) (fun idx -> f (idx / cols) (idx % cols))
         Matrix(rows, cols, data)
 
-    static member Create<'T when 'T :> Numerics.INumber<'T>
+    static member create<'T when 'T :> Numerics.INumber<'T>
                 and 'T : (new: unit -> 'T)
                 and 'T : struct
                 and 'T :> ValueType>
@@ -165,7 +201,7 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
 
 
     /// Constructs a matrix from a 2D array.
-    static member From2DArray<'T when 'T :> Numerics.INumber<'T>
+    static member ofArray2D<'T when 'T :> Numerics.INumber<'T>
                 and 'T : (new: unit -> 'T)
                 and 'T : struct
                 and 'T :> ValueType>
@@ -181,7 +217,7 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
         Matrix(rows, cols, flat)
 
     /// Converts this matrix into a 2D array.
-    member this.To2DArray() =
+    member this.toArray2D() =
         let arr2D = Array2D.zeroCreate<'T> this.NumRows this.NumCols
         let targetSpan = MemoryMarshal.CreateSpan(&arr2D.[0, 0], this.NumRows * this.NumCols)
         this.Data.AsSpan().CopyTo(targetSpan)
@@ -189,7 +225,7 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
 
     
     /// Constructs a matrix from a jagged array (`'T[][]`), assuming a rectangular structure.
-    static member FromJaggedArray<'T when 'T :> Numerics.INumber<'T>
+    static member ofJaggedArray<'T when 'T :> Numerics.INumber<'T>
                 and 'T : (new: unit -> 'T)
                 and 'T : struct
                 and 'T :> ValueType>
@@ -212,7 +248,7 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
         Matrix(rows, cols, flat)
 
     /// Converts this matrix into a jagged array (`'T[][]`).
-    member this.ToJaggedArray() =
+    member this.toJaggedArray() =
         let result = Array.zeroCreate<'T[]> this.NumRows
         let dataSpan = this.Data.AsSpan()
 
@@ -226,7 +262,7 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
 
     /// Pretty string representation with formatting and truncation, using StringBuilder.
     /// Supports optional scientific notation for floating point types.
-    member this.ToFormattedString(?maxRows: int, ?maxCols: int, ?floatFormat: string, ?useScientific: bool) =
+    member this.toFormattedString(?maxRows: int, ?maxCols: int, ?floatFormat: string, ?useScientific: bool) =
         let maxRows = defaultArg maxRows 10
         let maxCols = defaultArg maxCols 10
         let useScientific = defaultArg useScientific false
@@ -286,8 +322,12 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
 
 
     /// Default string representation (truncated, human-readable)
-    override this.ToString() = this.ToFormattedString()
+    override this.ToString() = this.toFormattedString()
 
+// ################################################################
+// Static methods for matrix operations
+
+    /// Checks if two matrices have the same shape (dimensions).
     static member inline checkSameShape<'T when 'T :> Numerics.INumber<'T>
                 and 'T : (new: unit -> 'T)
                 and 'T : struct
@@ -305,10 +345,14 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
         (b: Matrix<'T>) : Matrix<'T> =
 
         Matrix.checkSameShape a b
-        let data = 
-            SIMDUtils.map2Unchecked (+) (+) a.Data b.Data
-        Matrix(a.NumRows, a.NumCols, data)  
+        let result = Array.zeroCreate<'T>(a.Data.Length)
+        let dst = Span<'T>(result)
+        SpanINumberPrimitives.map2IntoUnchecked<'T>
+            ( (+), (+), a.Data, b.Data,result)
+        Matrix(a.NumRows, a.NumCols, result)  
 
+    
+    /// Element-wise subtraction
     static member inline subtract<'T when 'T :> Numerics.INumber<'T>
                 and 'T : (new: unit -> 'T)
                 and 'T : struct
@@ -317,10 +361,14 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
         (b: Matrix<'T>) : Matrix<'T> =
 
         Matrix.checkSameShape a b
-        Matrix.map2Unchecked (-) (-) a b
+        let result = Array.zeroCreate<'T>(a.Data.Length)
+        let dst = Span<'T>(result)
+        SpanINumberPrimitives.map2IntoUnchecked<'T>
+            ( (-), (-), a.Data, b.Data,result)
+        Matrix(a.NumRows, a.NumCols, result)  
 
 
-
+    /// Element-wise multiplication Hadamard product) 
     static member inline multiply<'T 
         when 'T :> Numerics.INumber<'T>
         and 'T : (new: unit -> 'T)
@@ -330,9 +378,14 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
         (b: Matrix<'T>) : Matrix<'T> =
 
         Matrix.checkSameShape a b
-        Matrix.map2Unchecked (*) (*) a b
+        let result = Array.zeroCreate<'T>(a.Data.Length)
+        let dst = Span<'T>(result)
+        SpanINumberPrimitives.map2IntoUnchecked<'T>
+            ( ( * ), ( * ), a.Data, b.Data,result)
+        Matrix(a.NumRows, a.NumCols, result)  
 
 
+    /// Element-wise division
     static member inline divide<'T 
         when 'T :> Numerics.INumber<'T>
         and 'T : (new: unit -> 'T)
@@ -342,19 +395,28 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
         (b: Matrix<'T>) : Matrix<'T> =
 
         Matrix.checkSameShape a b
-        Matrix.map2Unchecked (/) (/) a b
+        let result = Array.zeroCreate<'T>(a.Data.Length)
+        let dst = Span<'T>(result)
+        SpanINumberPrimitives.map2IntoUnchecked<'T>
+            ( ( / ), ( / ), a.Data, b.Data,result)
+        Matrix(a.NumRows, a.NumCols, result)  
 
 
+    /// Adds a scalar to each element of the matrix.
     static member inline addScalar<'T when 'T :> Numerics.INumber<'T>
                 and 'T : (new: unit -> 'T)
                 and 'T : struct
                 and 'T :> ValueType> 
                 (m: Matrix<'T>) (scalar: 'T) : Matrix<'T> =
-        
-        Matrix.mapScalar (+) (+) m scalar
+  
+        let result = Array.zeroCreate<'T>(m.Data.Length)
+        let dst = Span<'T>(result)
+        SpanINumberPrimitives.mapScalarIntoUnchecked<'T>
+            ( ( + ), ( + ), m.Data, result, scalar)
+        Matrix(m.NumRows, m.NumCols, result)  
 
 
-
+    /// Subtracts a scalar from each element of the matrix.
     static member inline subtractScalar<'T 
         when 'T :> Numerics.INumber<'T> 
         and 'T : (new: unit -> 'T) 
@@ -363,9 +425,14 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
         (m: Matrix<'T>) 
         (scalar: 'T) : Matrix<'T> =
 
-        Matrix.mapScalar (-) (-) m scalar
+        let result = Array.zeroCreate<'T>(m.Data.Length)
+        let dst = Span<'T>(result)
+        SpanINumberPrimitives.mapScalarIntoUnchecked<'T>
+            ( ( - ), ( - ), m.Data, result, scalar)
+        Matrix(m.NumRows, m.NumCols, result)  
 
 
+    /// Multiplies each element of the matrix by a scalar.
     static member inline multiplyScalar<'T 
         when 'T :> Numerics.INumber<'T> 
         and 'T : (new: unit -> 'T) 
@@ -373,10 +440,14 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
         and 'T :> ValueType>
         (m: Matrix<'T>) 
         (scalar: 'T) : Matrix<'T> =
+        let result = Array.zeroCreate<'T>(m.Data.Length)
+        let dst = Span<'T>(result)
+        SpanINumberPrimitives.mapScalarIntoUnchecked<'T>
+            ( ( * ), ( * ), m.Data, result, scalar)
+        Matrix(m.NumRows, m.NumCols, result) 
 
-        Matrix.mapScalar (*) (*) m scalar
 
-
+    /// Divides each element of the matrix by a scalar.
     static member inline divideScalar<'T 
         when 'T :> Numerics.INumber<'T> 
         and 'T : (new: unit -> 'T) 
@@ -385,7 +456,11 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
         (m: Matrix<'T>) 
         (scalar: 'T) : Matrix<'T> =
 
-        Matrix.mapScalar (/) (/) m scalar
+        let result = Array.zeroCreate<'T>(m.Data.Length)
+        let dst = Span<'T>(result)
+        SpanINumberPrimitives.mapScalarIntoUnchecked<'T>
+            ( ( / ), ( / ), m.Data, result, scalar)
+        Matrix(m.NumRows, m.NumCols, result) 
 
 
     /// Standard matrix-vector product
@@ -501,14 +576,107 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
 
         Matrix(m.NumRows, cols, resultData)
 
+
+    /// <summary>
+    /// Computes row-vector v (length = mat.NumRows) times matrix mat (size = [NumRows × NumCols]),
+    /// returning a new vector of length mat.NumCols. Uses chunk-based SIMD with manual gather.
+    /// </summary>
+    static member inline multiplyRowVector<'T
+            when 'T :> Numerics.INumber<'T>
+            and 'T : struct
+            and 'T : (new : unit -> 'T)
+            and 'T :> ValueType>
+            (v: Vector<'T>)
+            (mat: Matrix<'T>) : Vector<'T> =
+        
+        // 1) Dimension checks
+        let n = mat.NumRows
+        let m = mat.NumCols
+        if v.Length <> n then
+            invalidArg (nameof v) "Vector length must match mat.NumRows."
+
+        let result = Vector.zeroCreate<'T> m
+        let data = mat.Data  // row-major: element (i,j) is data.[i*m + j]
+
+        // O(n*m) nested loops (not SIMD seems to be faster in the row-layout matrix)
+        for j = 0 to m - 1 do
+            let mutable sum = 'T.Zero
+            for i = 0 to n - 1 do
+                sum <- sum + (v.[i] * data.[i*m + j])
+            result.[j] <- sum
+
+        result
+
+
+    /// <summary>
+    /// Standard matrix multiplication (A x B).
+    /// A is (M x K), B is (K x N) => result is (M x N).
+    /// Then each (row of A) .dot. (row of B^T) is done with Vector<'T> chunks.
+    /// </summary>
+    static member matmul
+            (A: Matrix<'T>) (B: Matrix<'T>) : Matrix<'T> =
+        
+        // 1) Dimension checks
+        if A.NumCols <> B.NumRows then
+            invalidArg (nameof B)
+                $"Inner dimensions mismatch. A is {A.NumRows}x{A.NumCols}, B is {B.NumRows}x{B.NumCols}"
+
+        let M = A.NumRows
+        let K = A.NumCols
+        let N = B.NumCols
+
+        // 2) Transpose B to get B^T => shape [N x K], row j of B^T is col j of B
+        let Btrans = B.Transpose()
+        let bTData = Btrans.Data // Now each "row" in bTData is length=K, contiguous
+
+        // 3) We'll allocate result
+        let resultData = Array.zeroCreate<'T> (M * N)
+        let aData = A.Data
+
+        // 4) For each row i in A, row j in B^T => element in [i*N + j]
+        //    The row i in A is contiguous of length K => offset i*K in aData
+        //    The row j in B^T is contiguous of length K => offset j*K in bTData
+        for i in 0 .. M - 1 do
+            let aRowOffset = i * K
+            let aRowSpan = aData.AsSpan(aRowOffset, K)
+            // Convert A's row to a "Vector<'T>" span
+            let aVecSpan = MemoryMarshal.Cast<'T, Numerics.Vector<'T>>(aRowSpan)
+
+            for j in 0 .. N - 1 do
+                let bTRowOffset = j * K
+                let bTRowSpan = bTData.AsSpan(bTRowOffset, K)
+                // Convert B^T's row j to a "Vector<'T>" span
+                let bTVecSpan = MemoryMarshal.Cast<'T, Numerics.Vector<'T>>(bTRowSpan)
+
+                // 4.a) Do the chunkwise vector multiply-add
+                let mutable accum = Numerics.Vector<'T>.Zero
+                for chunk in 0 .. aVecSpan.Length - 1 do
+                    accum <- accum + (aVecSpan.[chunk] * bTVecSpan.[chunk])
+
+                // 4.b) Sum up the vector lanes to a single scalar
+                let mutable sum = Numerics.Vector.Sum(accum)
+
+                // 4.c) Handle remainder elements if K not multiple of Vector<'T>.Count
+                let remainderStart = aVecSpan.Length * Numerics.Vector<'T>.Count
+                for r in remainderStart .. K - 1 do
+                    sum <- sum + aRowSpan.[r] * bTRowSpan.[r]
+
+                // 4.d) Place result into the final matrix
+                resultData.[i*N + j] <- sum
+
+        Matrix(M, N, resultData)
+
+
     // Matrix - matrix operations
-    static member inline ( + ) (a: Matrix<'T>, b: Matrix<'T>) = Matrix.add a b
-    static member inline ( - ) (a: Matrix<'T>, b: Matrix<'T>) = Matrix.subtract a b
-    static member inline ( * ) (a: Matrix<'T>, b: Matrix<'T>) = Matrix.multiply a b
-    static member inline ( / ) (a: Matrix<'T>, b: Matrix<'T>) = Matrix.divide a b
+    static member inline ( + ) (a: Matrix<'T>, b: Matrix<'T>)  = Matrix.add a b
+    static member inline ( - ) (a: Matrix<'T>, b: Matrix<'T>)  = Matrix.subtract a b
+    static member inline ( .* ) (a: Matrix<'T>, b: Matrix<'T>) = Matrix.multiply a b
+    static member inline ( * ) (a: Matrix<'T>, b: Matrix<'T>)  = Matrix.matmul a b
+    static member inline ( / ) (a: Matrix<'T>, b: Matrix<'T>)  = Matrix.divide a b
 
     // Matrix - vector operations
     static member inline ( * ) (m: Matrix<'T>, v: Vector<'T>) = Matrix.muliplyVector m v
+    static member inline ( * ) (v: Vector<'T>, m: Matrix<'T>) = Matrix.multiplyRowVector v m
     // static member inline ( + ) (m: Matrix<'T>, colVector: Vector<'T>) = Matrix.addColVector m colVector
     // static member inline ( +| ) (m: Matrix<'T>, rowVector: Vector<'T>) = Matrix.addRowVector m rowVector
 
@@ -526,12 +694,8 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
     static member inline (/) (s: 'T, m: Matrix<'T>) = Matrix.divideScalar m s
 
 
-
-    static member inline diagonal<'T
-        when 'T :> Numerics.INumber<'T>
-        and 'T : struct
-        and 'T : (new : unit -> 'T)
-        and 'T :> ValueType>
+    /// Creates a diagonal matrix with the given vector as the diagonal elements.
+    static member inline diagonal
         (diag: Vector<'T>) : Matrix<'T> =
 
         let n = diag.Length
@@ -541,6 +705,20 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
         Matrix(n, n, data)
 
 
+    /// <summary>
+    /// Returns the diagonal elements of this matrix as an array of length = min(NumRows, NumCols).
+    /// </summary>
+    static member inline getDiagonal
+        (m:Matrix<'T>) : Vector<'T> =
+        let n = min m.NumRows m.NumCols
+        let diag = Array.zeroCreate<'T> n
+        for i = 0 to n - 1 do
+            // The diagonal element at row i, col i is stored at offset i * cols + i
+            diag.[i] <- m.Data.[i * m.NumCols + i]
+        diag
+
+
+    /// Creates an identity matrix of size n x n.
     static member inline identity<'T
         when 'T :> Numerics.INumber<'T>
         and 'T : struct
@@ -553,7 +731,8 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
             data.[i * n + i] <- 'T.One
         Matrix(n, n, data)
 
-    static member inline zero<'T 
+    /// Creates a zero matrix of size rows x cols.
+    static member inline zeroCreate<'T 
         when 'T :> Numerics.INumber<'T>
         and 'T : struct
         and 'T : (new : unit -> 'T)
@@ -564,6 +743,7 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
         let data = Array.zeroCreate<'T> (rows * cols)
         Matrix(rows, cols, data)
 
+    /// Creates a zero matrix of size rows x cols.
     static member inline ones<'T
         when 'T :> Numerics.INumber<'T>
         and 'T : struct
@@ -588,13 +768,15 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
 
         Matrix(rows, cols, data)
 
+
+    /// Gets a specific row of the matrix as a vector.
     static member inline getRow<'T 
         when 'T :> Numerics.INumber<'T>
         and 'T : struct 
         and 'T : (new : unit -> 'T)
         and 'T :> ValueType>
-        (m: Matrix<'T>) 
-        (i: int) : Vector<'T> =
+        (i: int)
+        (m: Matrix<'T>) : Vector<'T> =
 
         if i < 0 || i >= m.NumRows then
             invalidArg "i" $"Row index out of bounds: {i}"
@@ -604,17 +786,19 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
         rowSpan.CopyTo(result.AsSpan())
         result
 
+    /// Gets all rows of the matrix as an array of vectors.
     static member inline getRows (m: Matrix<'T>) : Vector<'T>[] =
-        Array.init m.NumRows (fun i -> Matrix.getRow m i)
+        Array.init m.NumRows (fun i -> Matrix.getRow i m)
 
 
+    /// Gets a specific column of the matrix as a vector.
     static member inline getCol<'T 
         when 'T :> Numerics.INumber<'T>
         and 'T : struct 
         and 'T : (new : unit -> 'T)
         and 'T :> ValueType>
-        (m: Matrix<'T>) 
-        (j: int) : Vector<'T> =
+        (j: int)
+        (m: Matrix<'T>) : Vector<'T> =
 
         if j < 0 || j >= m.NumCols then
             invalidArg "j" $"Column index out of bounds: {j}"
@@ -627,6 +811,7 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
 
         result
 
+    /// Gets all columns of the matrix as an array of vectors.
     static member inline getCols<'T 
         when 'T :> Numerics.INumber<'T>
         and 'T : struct 
@@ -642,6 +827,28 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
                 offset <- offset + m.NumCols
             col
         )
+
+
+    /// Sets row <paramref name="i"/> of this matrix to the contents of <paramref name="rowData"/>.
+    /// The length of <paramref name="rowData"/> must match the number of columns in this matrix.
+    member this.SetRow(i: int, rowData: 'T[]) =
+        if i < 0 || i >= rows then
+            invalidArg (nameof i) "Row index out of range."
+        if rowData.Length <> cols then
+            invalidArg (nameof rowData) $"rowData must have length = {cols}."
+
+        let offset = i * cols
+        Array.blit rowData 0 data offset cols
+
+
+    /// Sets column <paramref name="j"/> of this matrix to the contents of <paramref name="colData"/>.
+    member this.SetCol(j: int, colData: 'T[]) =
+        if j < 0 || j >= cols then
+            invalidArg (nameof j) "Column index out of range."
+        if colData.Length <> rows then
+            invalidArg (nameof colData) $"colData must have length = {rows}."
+        for i = 0 to rows - 1 do
+            data.[i * cols + j] <- colData.[i]
 
 
 

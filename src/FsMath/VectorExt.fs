@@ -126,3 +126,74 @@ module Vector =
         else
             [| for i in 0 .. v.Length - windowSize ->
                 Array.sub v i windowSize |]
+
+
+    /// <summary>
+    /// Splits the vector `v` into two parts based on `indices`.
+    /// The elements at positions in `indices` end up in `nvi`,
+    /// all others go into `nv`.
+    /// </summary>
+    /// <param name="indices">Zero-based positions to extract from `v`.</param>
+    /// <param name="v">The full vector to split.</param>
+    /// <returns>(nvi, nv): nvi contains the elements at `indices`, nv contains the rest.</returns>
+    let splitVector (indices: int[]) (v: Vector<'T>) =
+        
+        Array.sortInPlace indices
+
+        let n = v.Length
+        let k = indices.Length
+
+        let nvi = Vector.zeroCreate<'T> k
+        let nv  = Vector.zeroCreate<'T> (n - k)
+
+        let mutable iInd = 0
+        let mutable iNvi = 0
+        let mutable iNv  = 0
+
+        for i = 0 to n - 1 do
+            // If we've not exhausted the `indices` array AND the current i matches indices.[iInd]
+            if iInd < k && i = indices.[iInd] then
+                nvi.[iNvi] <- v.[i]
+                iNvi <- iNvi + 1
+                iInd <- iInd + 1
+            else
+                nv.[iNv] <- v.[i]
+                iNv <- iNv + 1
+
+        nvi, nv
+
+    /// <summary>
+    /// Creates a new vector that is the result of applying the permutation <paramref name="P"/>
+    /// to the vector <paramref name="b"/>. The element <c>result.[i]</c> becomes <c>b.[P(i)]</c>.
+    /// </summary>
+    /// <param name="P">A permutation function of type <c>int -&gt; int</c>, 
+    /// <param name="b">The original vector to be permuted. Must have length n.</param>
+    /// typically created by <c>Permutation.ofArray</c> or <c>Permutation.ofFreshArray</c>.</param>
+    /// <returns>
+    /// A new vector of the same length n, reordered according to <paramref name="P"/>.
+    /// </returns>
+    let permuteBy (P: Permutation) (b: Vector<'T>) : Vector<'T> =
+        let n = b.Length
+        let result = Array.zeroCreate<'T> n
+        for i = 0 to n - 1 do
+            result.[i] <- b.[P i]
+        result
+
+    /// Converts a sequence to a vector.
+    let inline ofSeq (s:seq<'T>) : Vector<'T> =
+        s |> Array.ofSeq
+
+
+    /// Returns a vector each element raised to the specified power.
+    let inline pow (power: 'T) (v:Vector<'T>) : Vector<'T> =
+        v |> Array.map (fun x -> GenericMath.pow x power)
+
+
+    /// Returns a subvector from offset i to the end of the vector.
+    let inline sub (i: int) (v: Vector<'T>) : Vector<'T> =
+        if i < 0 || i > v.Length then
+            invalidArg (nameof i) "Index out of bounds."
+        let len = v.Length - i
+        let res = Array.zeroCreate<'T> len
+        Array.blit v i res 0 len
+        res
