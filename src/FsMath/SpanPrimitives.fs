@@ -509,7 +509,7 @@ type SpanINumberPrimitives =
 
             // Reduce SIMD vector to scalar state
             let mutable acc = init
-            for i = 0 to Numerics.Vector<'State>.Count - 1 do
+            for i = 0 to Numerics.Vector<'T>.Count - 1 do
                 acc <- f acc accVec.[i]
 
             // Tail

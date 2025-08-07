@@ -28,6 +28,10 @@
     <Compile Include="Algebra\MatrixExt.fs" />
 
     <Compile Include="SpecialFunctions/Gamma.fs" />
+
+    <None Include="Playground.fsx" />
     
   </ItemGroup>
+
+  <ItemGroup />
 </Project>

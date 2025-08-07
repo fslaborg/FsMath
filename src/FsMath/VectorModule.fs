@@ -56,9 +56,10 @@ module Vector =
         else
             Array.init length (fun i -> if i < v.Length then v.[i] else value)
 
-    /// Zip two vectors into (index, left, right)
-    let inline zip<'T when 'T :> Numerics.INumber<'T>> (v1: Vector<'T>) (v2: Vector<'T>) : (int * 'T * 'T)[] =
-        Array.init (min v1.Length v2.Length) (fun i -> i, v1.[i], v2.[i])
+    /// Zip two vectors into (left, right)
+    let inline zip<'T when 'T :> Numerics.INumber<'T>> (v1: Vector<'T>) (v2: Vector<'T>) : ('T * 'T)[] =
+        Array.zip v1 v2
+
 
 
 

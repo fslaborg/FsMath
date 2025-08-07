@@ -268,7 +268,7 @@ type SpanMath =
                 and 'T :> ValueType> 
                 (v:ReadOnlySpan<'T>) : 'T =
         let one =  LanguagePrimitives.GenericOne<'T>
-        SpanINumberPrimitives.fold ( (+) , (+) , v , one )
+        SpanINumberPrimitives.fold ( (*) , (*) , v , one )
 
         
 
@@ -317,4 +317,37 @@ type SpanMath =
         SpanINumberPrimitives.fold ((fun a b -> Numerics.Vector.Max(a, b)), max, v, v.[0])
 
 
+// outer product #######
+    
+    /// Computes the outer product of two spans.
+    static member inline outerProduct<'T
+        when 'T :> Numerics.INumber<'T>
+         and 'T : struct
+         and 'T : (new: unit -> 'T)
+         and 'T : comparison
+         and 'T :> ValueType>
+        (
+            u: ReadOnlySpan<'T>,  // column vector
+            v: ReadOnlySpan<'T>   // row vector
+        ) : int*int*'T[] =
 
+        let rows = u.Length
+        let cols = v.Length
+        let data = Array.zeroCreate<'T> (rows * cols)
+
+        for i = 0 to rows - 1 do
+            let ui = u[i]
+            for j = 0 to cols - 1 do
+                let vSpan = v
+                let simdCols = Numerics.Vector<'T>.Count
+                let simdCount = cols / simdCols
+                let ceiling = simdCount * simdCols
+
+                let vVec = MemoryMarshal.Cast<'T, Numerics.Vector<'T>>(v)
+
+                for k = 0 to simdCount - 1 do
+                    let vi = Numerics.Vector<'T>(ui)
+                    let res = vi * vVec[k]
+                    res.CopyTo(MemoryMarshal.CreateSpan(&data.[i * cols + k * simdCols], simdCols))
+
+        (rows, cols, data)

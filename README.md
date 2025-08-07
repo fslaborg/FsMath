@@ -1,6 +1,6 @@
 ## FsMath - Fast & Friendly Numerical Foundation for F\#
 
-**FsMath** is a lightweight maths & statistics kernel designed for modern F# workflows.
+**FsMath** is a lightweight maths library designed for modern F# workflows.
 It focuses on **zero-friction interop** with existing array-centric libraries ( *FSharp.Stats*, *Math.NET Numerics*, *libtorch* via TorchSharp, etc.) while giving you the performance head-room of **SIMD-accelerated** kernels and a clean, idiomatic F# API.
 
 ---

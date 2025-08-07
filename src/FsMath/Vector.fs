@@ -81,7 +81,7 @@ type Vector =
     /// <param name="scalar">The scalar value to divide by.</param>
     /// <returns>A new vector with each element divided by the scalar.</returns>
     static member inline divideScalar (scalar:'T) (v:Vector<'T>) : Vector<'T> =
-         SpanMath.multiplyScalar(ReadOnlySpan<'T>(v), scalar)
+         SpanMath.divideScalar(ReadOnlySpan<'T>(v), scalar)
 
     /// Computes the sum of all elements in the vector.
     /// <param name="v">The vector.</param>

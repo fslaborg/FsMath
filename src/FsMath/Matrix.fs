@@ -667,6 +667,12 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
 
         Matrix(M, N, resultData)
 
+    /// Computes the outer product of a column vector and a row vector.
+    static member outerProduct
+            (colvector: Vector<'T>) (rowVector: Vector<'T>) : Matrix<'T> =
+        SpanMath.outerProduct(ReadOnlySpan<'T>(colvector), ReadOnlySpan<'T>(rowVector))
+        |> Matrix
+
 
     // Matrix - matrix operations
     static member inline ( + ) (a: Matrix<'T>, b: Matrix<'T>)  = Matrix.add a b
@@ -678,8 +684,8 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
     // Matrix - vector operations
     static member inline ( * ) (m: Matrix<'T>, v: Vector<'T>) = Matrix.muliplyVector m v
     static member inline ( * ) (v: Vector<'T>, m: Matrix<'T>) = Matrix.multiplyRowVector v m
-    // static member inline ( + ) (m: Matrix<'T>, colVector: Vector<'T>) = Matrix.addColVector m colVector
-    // static member inline ( +| ) (m: Matrix<'T>, rowVector: Vector<'T>) = Matrix.addRowVector m rowVector
+    // static member inline ( +| ) (m: Matrix<'T>, colVector: Vector<'T>) = Matrix.addColVector m colVector
+    // static member inline ( + ) (m: Matrix<'T>, rowVector: Vector<'T>) = Matrix.addRowVector m rowVector
 
     // Matrix - scalar operations
     static member inline (+) (m: Matrix<'T>, s: 'T) = Matrix.addScalar m s

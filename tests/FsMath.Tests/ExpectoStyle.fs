@@ -1,6 +1,7 @@
 ﻿namespace FsMath.Tests
 
 open System
+open FsMath
 
 /// <summary>
 /// Provides Expecto-style assertion helpers for use with xUnit tests.
@@ -117,3 +118,10 @@ module ExpectoStyle =
             failwithf "%s\nExpected exception of type %s, but got: %s"
                 message typeof<'ex>.Name (ex.GetType().Name)
 
+
+    let floatMatrixClose accuracy (A: Matrix<float>) (B: Matrix<float>) message =
+        equal A.NumCols B.NumCols "Column count mismatch"
+        equal A.NumRows B.NumRows "Row count mismatch"
+        for i = 0 to A.NumRows - 1 do
+            for j = 0 to A.NumCols - 1 do
+                floatClose accuracy A.[i, j] B.[i, j] $"{message} at ({i},{j})"
