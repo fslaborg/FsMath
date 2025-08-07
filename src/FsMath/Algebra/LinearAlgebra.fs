@@ -47,7 +47,7 @@ type LinearAlgebra =
     static member inline qrModifiedGramSchmidt<'T when 'T :> Numerics.INumber<'T>
                 and 'T : (new: unit -> 'T)
                 and 'T : struct
-                and 'T : equality
+                and 'T : comparison
                 and 'T :> ValueType
                 and 'T :> Numerics.IRootFunctions<'T>>
         (A: Matrix<'T>) : Matrix<'T> * Matrix<'T> =
@@ -89,7 +89,7 @@ type LinearAlgebra =
     static member inline backSubstitute<'T when 'T :> Numerics.INumber<'T>
                 and 'T : (new: unit -> 'T)
                 and 'T : struct
-                and 'T : equality
+                and 'T : comparison
                 and 'T :> ValueType>
         (r: Matrix<'T>) 
         (y: Vector<'T>) : Vector<'T> =
@@ -119,7 +119,7 @@ type LinearAlgebra =
     static member inline solveLinearQR<'T when 'T :> Numerics.INumber<'T>
                 and 'T : (new: unit -> 'T)
                 and 'T : struct
-                and 'T : equality
+                and 'T : comparison
                 and 'T :> ValueType
                 and 'T :> Numerics.IRootFunctions<'T>>
         (A: Matrix<'T>) 
