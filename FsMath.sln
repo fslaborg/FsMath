@@ -40,6 +40,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{A233BC3E-5
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsMath.Benchmarks", "benchmarks\FsMath.Benchmarks\FsMath.Benchmarks.fsproj", "{DC212C83-E30F-43B3-9F47-3CA012676FEC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MathArrayExtension", "src\MathArrayExtension\MathArrayExtension.csproj", "{48C3CEF9-7462-49BF-B106-9A8EDE618C80}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -62,6 +64,10 @@ Global
 		{DC212C83-E30F-43B3-9F47-3CA012676FEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC212C83-E30F-43B3-9F47-3CA012676FEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC212C83-E30F-43B3-9F47-3CA012676FEC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48C3CEF9-7462-49BF-B106-9A8EDE618C80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48C3CEF9-7462-49BF-B106-9A8EDE618C80}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48C3CEF9-7462-49BF-B106-9A8EDE618C80}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48C3CEF9-7462-49BF-B106-9A8EDE618C80}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

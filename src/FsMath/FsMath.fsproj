@@ -16,15 +16,16 @@
     <Compile Include="Vector.fs" />
   
     <Compile Include="Matrix.fs" /> 
-    <Compile Include="VectorExt.fs" /> 
+    <Compile Include="VectorModule.fs" /> 
     <Compile Include="VectorOps.fs" /> 
-    <Compile Include="MatrixExt.fs" /> 
+    <Compile Include="MatrixModule.fs" /> 
     <Compile Include="AlgTypesTopLevelOps.fs" /> 
     <Compile Include="Algebra\Householder.fs" />
 
     <Compile Include="Algebra\EVD.fs" />
     <Compile Include="Algebra\LinearAlgebra.fs" />
     <Compile Include="Algebra\SVD.fs" />
+    <Compile Include="Algebra\MatrixExt.fs" />
 
     <Compile Include="SpecialFunctions/Gamma.fs" />
     

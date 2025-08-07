@@ -72,7 +72,7 @@ type Householder() =
     static member inline applyLeft<'T when 'T :> Numerics.INumber<'T>
         and 'T : (new: unit -> 'T)
         and 'T : struct
-        and 'T : equality
+        and 'T : comparison
         and 'T :> ValueType>
         (h: Householder<'T>, A: Matrix<'T>, rowOffset: int) =
 
@@ -106,7 +106,7 @@ type Householder() =
     static member inline applyRight<'T when 'T :> Numerics.INumber<'T>
         and 'T : (new: unit -> 'T)
         and 'T : struct
-        and 'T : equality
+        and 'T : comparison
         and 'T :> ValueType>
         (h: Householder<'T>, A: Matrix<'T>, colOffset: int) =
 
