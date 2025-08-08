@@ -10,28 +10,36 @@
     <Compile Include="GenericMath.fs" />
     <Compile Include="SpanPrimitives.fs" />
     <Compile Include="SpanMath.fs" />
-
     <Compile Include="SIMDUtils.fs" />
-  
     <Compile Include="Vector.fs" />
-  
     <Compile Include="Matrix.fs" /> 
     <Compile Include="VectorModule.fs" /> 
     <Compile Include="VectorOps.fs" /> 
     <Compile Include="MatrixModule.fs" /> 
     <Compile Include="AlgTypesTopLevelOps.fs" /> 
     <Compile Include="Algebra\Householder.fs" />
-
     <Compile Include="Algebra\EVD.fs" />
     <Compile Include="Algebra\LinearAlgebra.fs" />
     <Compile Include="Algebra\SVD.fs" />
     <Compile Include="Algebra\MatrixExt.fs" />
-
     <Compile Include="SpecialFunctions/Gamma.fs" />
-
     <None Include="Playground.fsx" />
-    
+    <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+    <None Include="..\..\docs\img\logo.png" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
-  <ItemGroup />
+  <PropertyGroup>
+    <Authors>Timo Mühlhaus, FsLab open source contributors</Authors>
+    <Description>FsMath is a lightweight maths library designed for modern F# workflows. It focuses on zero-friction interop with existing array-centric libraries ( FSharp.Stats, Math.NET Numerics, libtorch via TorchSharp, etc.) while giving you the performance head-room of SIMD-accelerated kernels and a clean, idiomatic F# API.</Description>
+    <Summary>Fast &amp; Friendly Numerical Foundation for F#</Summary>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://fslab.org/FsMath</PackageProjectUrl>
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageTags>algebra, math, matrix, vector, SIMD, F#, fsharp</PackageTags>
+    <RepositoryUrl>https://github.com/fslaborg/FsMath/</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <FsDocsLicenseLink>https://github.com/fslaborg/FsMath/blob/main/LICENSE</FsDocsLicenseLink>
+    <FsDocsReleaseNotesLink>https://github.com/fslaborg/FsMath/blob/main/RELEASE_NOTES.md</FsDocsReleaseNotesLink>
+  </PropertyGroup>
 </Project>
