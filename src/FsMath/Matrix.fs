@@ -79,7 +79,7 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
         hash.ToHashCode()
 
     /// <summary>
-    /// Returns a new Matrix<'T> that is the slice of rows [rowStart..rowEnd] 
+    /// Returns a new Matrix&lt;'T&gt; that is the slice of rows [rowStart..rowEnd] 
     /// and columns [colStart..colEnd]. If any of these bounds is omitted, 
     /// it defaults to the full range in that dimension.
     /// </summary>
@@ -612,7 +612,7 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
     /// <summary>
     /// Standard matrix multiplication (A x B).
     /// A is (M x K), B is (K x N) => result is (M x N).
-    /// Then each (row of A) .dot. (row of B^T) is done with Vector<'T> chunks.
+    /// Then each (row of A) .dot. (row of B^T) is done with Vector&lt;'T&gt; chunks.
     /// </summary>
     static member matmul
             (A: Matrix<'T>) (B: Matrix<'T>) : Matrix<'T> =
