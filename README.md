@@ -51,7 +51,6 @@ let result = v1 .* v2
 | Topic                                  | Where                               |
 | -------------------------------------- | ----------------------------------- |
 | API reference                          | `docs/` folder & generated markdown |
-| SIMD design notes                      | `docs/simd.md`                      |
 | Benchmarks                             | `benchmarks/`                       |
 | Contributing guide                     | `CONTRIBUTING.md`                   |
 
