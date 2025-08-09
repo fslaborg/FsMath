@@ -7,12 +7,26 @@ open System.Runtime.InteropServices
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Vector =
 
+    /// Initialize vector by index-based generator 
+    let inline init<'T when 'T :> Numerics.INumber<'T>> (n: int) (f: int -> 'T) : Vector<'T> =
+        Array.init n f
+
+
+    /// Fold over a vector
+    let inline fold<'T when 'T :> Numerics.INumber<'T>> f (state: 'T) (v: Vector<'T>) : 'T =
+        Array.fold f state v    
+
+
     /// Indexed fold over a vector
     let inline foldi<'T when 'T :> Numerics.INumber<'T>> f (state: 'T) (v: Vector<'T>) : 'T =
         let mutable acc = state
         for i = 0 to v.Length - 1 do
             acc <- f i acc v.[i]
         acc
+
+    /// Map over a vector
+    let inline map<'T when 'T :> Numerics.INumber<'T>> (f: 'T -> 'T) (v: Vector<'T>) : Vector<'T> =
+        Array.map f v
 
     /// Indexed map over a vector
     let inline mapi<'T when 'T :> Numerics.INumber<'T>> (f: int -> 'T -> 'T) (v: Vector<'T>) : Vector<'T> =
@@ -22,9 +36,7 @@ module Vector =
     let inline filter<'T when 'T :> Numerics.INumber<'T>> (predicate: 'T -> bool) (v: Vector<'T>) : Vector<'T> =
         Array.filter predicate v
 
-    /// Initialize vector by index-based generator 
-    let inline init<'T when 'T :> Numerics.INumber<'T>> (n: int) (f: int -> 'T) : Vector<'T> =
-        Array.init n f
+
 
     /// Extract a slice from a vector
     let inline slice<'T when 'T :> Numerics.INumber<'T>> (start: int) (length: int) (v: Vector<'T>) : Vector<'T> =

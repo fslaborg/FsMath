@@ -118,10 +118,19 @@ module ExpectoStyle =
             failwithf "%s\nExpected exception of type %s, but got: %s"
                 message typeof<'ex>.Name (ex.GetType().Name)
 
-
-    let floatMatrixClose accuracy (A: Matrix<float>) (B: Matrix<float>) message =
+    /// <summary>
+    /// Asserts that two float arrays are approximately equal within the specified accuracy.
+    /// </summary>
+    let floatMatrixClose (accuracy: Accuracy) (A: Matrix<float>) (B: Matrix<float>) message =
         equal A.NumCols B.NumCols "Column count mismatch"
         equal A.NumRows B.NumRows "Row count mismatch"
         for i = 0 to A.NumRows - 1 do
             for j = 0 to A.NumCols - 1 do
                 floatClose accuracy A.[i, j] B.[i, j] $"{message} at ({i},{j})"
+
+
+    let floatVectorClose (accuracy: Accuracy) (expected: Vector<float>) (actual: Vector<float>) message =
+        if expected.Length <> actual.Length then
+            failwithf "Vector length mismatch: expected %d, got %d" expected.Length actual.Length
+        for i in 0 .. expected.Length - 1 do
+            floatClose accuracy actual.[i] expected.[i] $"Element at index {i} mismatch. {message}"

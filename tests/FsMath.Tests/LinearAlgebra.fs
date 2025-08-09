@@ -394,4 +394,3 @@ module LeastSquaresCholeskyTests =
         let expected = [| 1.0; 3.0 |]
         for i in 0..1 do
             floatEqual expected.[i] beta.[i] 1e-10
-
