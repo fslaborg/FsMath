@@ -6,7 +6,9 @@
 open FsMath
 open FsMath.Algebra
 
+1. + 1.0
 
+[|1.|] + [|2.|]
 
 let A = Matrix(3, 2, [| 1.0; 0.0;
                         1.0; 1.0;

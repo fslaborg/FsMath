@@ -224,6 +224,10 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
         this.Data.AsSpan().CopyTo(targetSpan)
         arr2D
 
+    /// Converts this matrix into a 2D array.
+    static member toArray2D (m:Matrix<_>) =
+            m.toArray2D()
+
     
     /// Constructs a matrix from a jagged array (`'T[][]`), assuming a rectangular structure.
     static member ofJaggedArray<'T when 'T :> Numerics.INumber<'T>
@@ -260,6 +264,9 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
 
         result
 
+    /// Converts this matrix into a jagged array (`'T[][]`).
+    static member toJaggedArray (m:Matrix<_>) =
+            m.toJaggedArray()
 
     /// Pretty string representation with formatting and truncation, using StringBuilder.
     /// Supports optional scientific notation for floating point types.
