@@ -1,0 +1,78 @@
+name: 'Test Coverage Steps'
+description: 'Builds project, runs tests with coverage, and uploads coverage report'
+runs:
+  using: "composite"
+  steps:
+    # Step 1: Restore NuGet dependencies
+    - name: Restore dependencies
+      shell: bash
+      run: |
+        echo "=== Restoring dependencies ===" | tee -a coverage-steps.log
+        dotnet restore 2>&1 | tee -a coverage-steps.log
+
+    # Step 2: Build the solution
+    - name: Build solution
+      shell: bash
+      run: |
+        echo "=== Building solution ===" | tee -a coverage-steps.log
+        dotnet build --no-restore 2>&1 | tee -a coverage-steps.log
+
+    # Step 3: Run tests with coverage collection
+    # Coverage report will be generated in ./coverage directory
+    # Uses coverlet.collector which is already configured in the test project
+    - name: Run tests with coverage
+      shell: bash
+      run: |
+        echo "=== Running tests with coverage collection ===" | tee -a coverage-steps.log
+        dotnet test tests/FsMath.Tests/FsMath.Tests.fsproj \
+          --no-build \
+          --collect:"XPlat Code Coverage" \
+          --results-directory ./coverage \
+          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura 2>&1 | tee -a coverage-steps.log
+
+    # Step 4: Find and copy coverage file to a consistent location
+    # The coverage file is generated with a GUID in the path, so we need to find it
+    - name: Locate coverage report
+      shell: bash
+      run: |
+        echo "=== Locating coverage report ===" | tee -a coverage-steps.log
+        COVERAGE_FILE=$(find ./coverage -name "coverage.cobertura.xml" | head -n 1)
+        if [ -n "$COVERAGE_FILE" ]; then
+          echo "Found coverage file at: $COVERAGE_FILE" | tee -a coverage-steps.log
+          cp "$COVERAGE_FILE" ./coverage/coverage.cobertura.xml
+          echo "Copied to: ./coverage/coverage.cobertura.xml" | tee -a coverage-steps.log
+        else
+          echo "ERROR: Coverage file not found!" | tee -a coverage-steps.log
+          exit 1
+        fi
+
+    # Step 5: Display coverage summary
+    - name: Display coverage summary
+      shell: bash
+      run: |
+        echo "=== Coverage Summary ===" | tee -a coverage-steps.log
+        if [ -f "./coverage/coverage.cobertura.xml" ]; then
+          # Extract high-level coverage metrics from the XML
+          LINE_RATE=$(grep -oP 'line-rate="\K[^"]*' ./coverage/coverage.cobertura.xml | head -n 1)
+          BRANCH_RATE=$(grep -oP 'branch-rate="\K[^"]*' ./coverage/coverage.cobertura.xml | head -n 1)
+          LINES_COVERED=$(grep -oP 'lines-covered="\K[^"]*' ./coverage/coverage.cobertura.xml | head -n 1)
+          LINES_VALID=$(grep -oP 'lines-valid="\K[^"]*' ./coverage/coverage.cobertura.xml | head -n 1)
+
+          LINE_PERCENT=$(awk "BEGIN {printf \"%.2f\", $LINE_RATE * 100}")
+          BRANCH_PERCENT=$(awk "BEGIN {printf \"%.2f\", $BRANCH_RATE * 100}")
+
+          echo "Line Coverage: $LINE_PERCENT% ($LINES_COVERED/$LINES_VALID lines)" | tee -a coverage-steps.log
+          echo "Branch Coverage: $BRANCH_PERCENT%" | tee -a coverage-steps.log
+        else
+          echo "ERROR: Coverage report not found at expected location!" | tee -a coverage-steps.log
+          exit 1
+        fi
+
+    # Step 6: Upload coverage report as artifact
+    # The coverage report can be downloaded from the workflow run
+    - name: Upload coverage artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage
+        path: ./coverage/coverage.cobertura.xml
+        retention-days: 30
