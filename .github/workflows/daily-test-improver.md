@@ -6,6 +6,7 @@ on:
   workflow_dispatch: null
 permissions: read-all
 network: defaults
+engine: claude
 safe-outputs:
   add-comment:
     target: "*"
