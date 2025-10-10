@@ -9,6 +9,8 @@
   <ItemGroup>
     <Compile Include="ExpectoStyle.fs" />
     <Compile Include="AssertHelpers.fs" />
+    <Compile Include="GenericMathTests.fs" />
+    <Compile Include="VectorModuleTests.fs" />
     <Compile Include="VectorFloatTests.fs" />
     <Compile Include="VectorIntTests.fs" />
     <Compile Include="VectorManipulationTests.fs" />
