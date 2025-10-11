@@ -3,7 +3,7 @@
 #   gh aw compile
 # For more information: https://github.com/githubnext/gh-aw/blob/main/.github/instructions/github-agentic-workflows.instructions.md
 #
-# Source: githubnext/agentics/workflows/daily-perf-improver.md@eb489a0b6cb3bd7c7f94d5d3362237641c22cd31
+# Source: githubnext/agentics/workflows/daily-perf-improver.md@ebedab5169a6ed038d5382fd8b329b7bd0042fc0
 #
 # Effective stop-time: 2025-10-13 19:06:42
 
@@ -3307,8 +3307,8 @@ jobs:
         env:
           GITHUB_AW_AGENT_OUTPUT: ${{ needs.agent.outputs.output }}
           GITHUB_AW_WORKFLOW_NAME: "Daily Perf Improver"
-          GITHUB_AW_WORKFLOW_SOURCE: "githubnext/agentics/workflows/daily-perf-improver.md@eb489a0b6cb3bd7c7f94d5d3362237641c22cd31"
-          GITHUB_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/githubnext/agentics/tree/eb489a0b6cb3bd7c7f94d5d3362237641c22cd31/workflows/daily-perf-improver.md"
+          GITHUB_AW_WORKFLOW_SOURCE: "githubnext/agentics/workflows/daily-perf-improver.md@ebedab5169a6ed038d5382fd8b329b7bd0042fc0"
+          GITHUB_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/githubnext/agentics/tree/ebedab5169a6ed038d5382fd8b329b7bd0042fc0/workflows/daily-perf-improver.md"
           GITHUB_AW_COMMENT_TARGET: "*"
         with:
           script: |
