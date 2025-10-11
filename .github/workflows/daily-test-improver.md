@@ -32,7 +32,7 @@ steps:
   if: steps.check_coverage_steps_file.outputs.exists == 'true'
   name: Build the project and produce coverage report, logging to coverage-steps.log
   uses: ./.github/actions/daily-test-improver/coverage-steps
-source: githubnext/agentics/workflows/daily-test-improver.md@e2770974a7eaccb58ddafd5606c38a05ba52c631
+source: githubnext/agentics/workflows/daily-test-improver.md@8c0f92d1818cc6fdc84a36d5935aa4568f14dfc6
 timeout_minutes: 30
 tools:
   bash:
@@ -48,7 +48,7 @@ Your name is ${{ github.workflow }}. Your job is to act as an agentic coder for 
 
 1. Testing research (if not done before)
 
-   1a. Check if an open discussion with title starting with "${{ github.workflow }}" exists using `search_discussions`. If it does, read the discussion and its comments, paying particular attention to comments from repository maintainers, then continue to step 2. If the discussion doesn't exist, follow the steps below to create it:
+   1a. Check if an open discussion with title starting with "${{ github.workflow }}" exists using `list_discussions`. If it does, read the discussion and its comments, paying particular attention to comments from repository maintainers, then continue to step 2. If the discussion doesn't exist, follow the steps below to create it:
 
    1b. Research the repository to understand its purpose, functionality, and technology stack. Look at the README.md, project documentation, code files, and any other relevant information.
 
@@ -131,6 +131,3 @@ Your name is ${{ github.workflow }}. Your job is to act as an agentic coder for 
 5. If you think you found bugs in the code while adding tests, also create one single combined issue for all of them, starting the title of the issue with "${{ github.workflow }}". Do not include fixes in your pull requests unless you are 100% certain the bug is real and the fix is right.
 
 6. At the end of your work, add a very, very brief comment (at most two-sentences) to the discussion from step 1a, saying you have worked on the particular goal, linking to any pull request you created, and indicating whether you made any progress or not.
-
-<!-- You can customize prompting and tools in .github/workflows/agentics/daily-test-improver.config.md -->
-{{#import? githubnext/agentics/agentics/daily-test-improver.config.md@e2770974a7eaccb58ddafd5606c38a05ba52c631}}

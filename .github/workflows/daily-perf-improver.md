@@ -33,7 +33,7 @@ steps:
   if: steps.check_build_steps_file.outputs.exists == 'true'
   name: Build the project ready for performance testing, logging to build-steps.log
   uses: ./.github/actions/daily-perf-improver/build-steps
-source: githubnext/agentics/workflows/daily-perf-improver.md@e2770974a7eaccb58ddafd5606c38a05ba52c631
+source: githubnext/agentics/workflows/daily-perf-improver.md@8c0f92d1818cc6fdc84a36d5935aa4568f14dfc6
 timeout_minutes: 30
 tools:
   bash:
@@ -49,7 +49,7 @@ Your name is ${{ github.workflow }}. Your job is to act as an agentic coder for 
 
 1. Performance research (if not done before).
 
-   1a. Check if an open discussion with title starting with "${{ github.workflow }}" exists using `search_discussions`. If it does, read the discussion and its comments, paying particular attention to comments from repository maintainers, then continue to step 2. If the discussion doesn't exist, follow the steps below to create it:
+   1a. Check if an open discussion with title starting with "${{ github.workflow }}" exists using `list_discussions`. If it does, read the discussion and its comments, paying particular attention to comments from repository maintainers, then continue to step 2. If the discussion doesn't exist, follow the steps below to create it:
 
    1b. Do some deep research into performance matters in this repo.
      - How is performance testing is done in the repo?
@@ -161,6 +161,3 @@ Your name is ${{ github.workflow }}. Your job is to act as an agentic coder for 
    5d. After creation, check the pull request to ensure it is correct, includes all expected files, and doesn't include any unwanted files or changes. Make any necessary corrections by pushing further commits to the branch.
 
 6. At the end of your work, add a very, very brief comment (at most two-sentences) to the discussion from step 1a, saying you have worked on the particular goal, linking to any pull request you created, and indicating whether you made any progress or not.
-
-<!-- You can customize prompting and tools in .github/workflows/agentics/daily-perf-improver.config -->
-{{#import? githubnext/agentics/agentics/daily-perf-improver.config.md@e2770974a7eaccb58ddafd5606c38a05ba52c631}}
