@@ -1,44 +1,52 @@
 ---
 on:
-  schedule:
-  - cron: 0 2 * * 1-5
-  stop-after: +48h
-  workflow_dispatch: null
-permissions: read-all
-network: defaults
-engine: claude
-safe-outputs:
-  add-comment:
-    target: "*"
-  create-discussion:
-    category: ideas
-    title-prefix: ${{ github.workflow }}
-  create-pull-request:
-    draft: true
-steps:
-- name: Checkout repository
-  uses: actions/checkout@v5
-- id: check_coverage_steps_file
-  name: Check if action.yml exists
-  run: |
-    if [ -f ".github/actions/daily-test-improver/coverage-steps/action.yml" ]; then
-      echo "exists=true" >> $GITHUB_OUTPUT
-    else
-      echo "exists=false" >> $GITHUB_OUTPUT
-    fi
-  shell: bash
-- continue-on-error: true
-  id: coverage-steps
-  if: steps.check_coverage_steps_file.outputs.exists == 'true'
-  name: Build the project and produce coverage report, logging to coverage-steps.log
-  uses: ./.github/actions/daily-test-improver/coverage-steps
-source: githubnext/agentics/workflows/daily-test-improver.md@8c0f92d1818cc6fdc84a36d5935aa4568f14dfc6
+    workflow_dispatch:
+    schedule:
+        # Run daily at 2am UTC, all days except Saturday and Sunday
+        - cron: "0 2 * * 1-5"
+    stop-after: +48h # workflow will no longer trigger after 48 hours
+
 timeout_minutes: 30
+
+permissions: read-all
+
+network: defaults
+
+safe-outputs:
+  create-discussion: # needed to create planning discussion
+    title-prefix: "${{ github.workflow }}"
+    category: "ideas"
+  add-comment:
+    target: "*" # can add a comment to any one single issue or pull request
+  create-pull-request: # can create a pull request
+    draft: true
+
 tools:
-  bash:
-  - :*
-  web-fetch: null
-  web-search: null
+  web-fetch:
+  web-search:
+  # By default this workflow allows all bash commands within the confine of Github Actions VM 
+  bash: [ ":*" ]
+
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v5
+
+  - name: Check if action.yml exists
+    id: check_coverage_steps_file
+    run: |
+      if [ -f ".github/actions/daily-test-improver/coverage-steps/action.yml" ]; then
+        echo "exists=true" >> $GITHUB_OUTPUT
+      else
+        echo "exists=false" >> $GITHUB_OUTPUT
+      fi
+    shell: bash
+  - name: Build the project and produce coverage report, logging to coverage-steps.log
+    if: steps.check_coverage_steps_file.outputs.exists == 'true'
+    uses: ./.github/actions/daily-test-improver/coverage-steps
+    id: coverage-steps
+    continue-on-error: true # the model may not have got it right, so continue anyway, the model will check the results and try to fix the steps
+
+source: githubnext/agentics/workflows/daily-test-improver.md@eb489a0b6cb3bd7c7f94d5d3362237641c22cd31
 ---
 # Daily Test Coverage Improver
 
