@@ -8,6 +8,8 @@ on:
 
 timeout_minutes: 30
 
+engine: claude
+
 permissions: read-all
 
 network: defaults
