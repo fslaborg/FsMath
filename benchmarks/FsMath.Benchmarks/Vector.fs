@@ -31,24 +31,18 @@ type VectorBenchmarks() =
         let result = Vector.subtract vector1 vector2
         GC.KeepAlive(result) // Prevents the result from being optimized away
 
+    [<Benchmark>]
+    member _.Multiply() =
+        let result = Vector.multiply vector1 vector2
+        GC.KeepAlive(result) // Prevents the result from being optimized away
 
-    //[<Benchmark>]
-    //member _.multiply() =
-    //    let result = Vector.multiply vector1 vector2
-    //    GC.KeepAlive(result) // Prevents the result from being optimized away
+    [<Benchmark>]
+    member _.DotProduct() =
+        let result = Vector.dot vector1 vector2
+        GC.KeepAlive(result) // Prevents the result from being optimized away
 
-    //[<Benchmark>]
-    //member _.DotProduct() =
-    //    let result = Vector.dot vector1 vector2
-    //    GC.KeepAlive(result) // Prevents the result from being optimized away
-
-    //[<Benchmark>]
-    //member _.CrossProduct() =
-    //    let result = Vector.cross vector1 vector2
-    //    GC.KeepAlive(result) // Prevents the result from being optimized away
-
-    //[<Benchmark>]
-    //member _.Norm() =
-    //    let result = Vector.norm vector1
-    //    GC.KeepAlive(result) // Prevents the result from being optimized away
+    [<Benchmark>]
+    member _.Norm() =
+        let result = Vector.norm vector1
+        GC.KeepAlive(result) // Prevents the result from being optimized away
 
