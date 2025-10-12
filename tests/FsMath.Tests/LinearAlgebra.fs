@@ -209,6 +209,207 @@ module SolveTriangularLinearSystemTests =
 
 
 
+module HouseholderTests =
+
+    [<Fact>]
+    let ``create: simple vector [3, 0, 0]`` () =
+        let x = [| 3.0; 0.0; 0.0 |]
+        let h = Householder.create x
+        // For vector [3,0,0], sigma=0, so should return simple reflection
+        floatEqual h.Beta 3.0 1e-10
+        floatEqual h.Tau 0.0 1e-10
+        floatEqual h.V.[0] 1.0 1e-10
+
+    [<Fact>]
+    let ``create: vector [1, 1, 1] produces valid reflection`` () =
+        let x = [| 1.0; 1.0; 1.0 |]
+        let h = Householder.create x
+        // Beta should be sqrt(3) ~ 1.732
+        floatClose Accuracy.medium h.Beta (sqrt 3.0) "Beta should be sqrt(3)"
+        // V[0] should be 1.0 by construction
+        floatEqual h.V.[0] 1.0 1e-10
+        // Tau should be in (0, 2]
+        Assert.True(h.Tau > 0.0 && h.Tau <= 2.0, $"Tau should be in (0, 2], got {h.Tau}")
+
+    [<Fact>]
+    let ``create: vector [4, 3] produces non-zero tau`` () =
+        let x = [| 4.0; 3.0 |]
+        let h = Householder.create x
+        // Beta = 5.0 (Pythagorean triple)
+        floatEqual h.Beta 5.0 1e-10
+        // Tau should be non-zero
+        Assert.True(h.Tau > 0.0, $"Tau should be positive, got {h.Tau}")
+        floatEqual h.V.[0] 1.0 1e-10
+
+    [<Fact>]
+    let ``create: negative first element`` () =
+        let x = [| -2.0; 1.0; 1.0 |]
+        let h = Householder.create x
+        // Should handle negative alpha correctly
+        floatClose Accuracy.medium h.Beta (sqrt 6.0) "Beta should be sqrt(6)"
+        floatEqual h.V.[0] 1.0 1e-10
+
+    [<Fact>]
+    let ``create: single element vector`` () =
+        let x = [| 5.0 |]
+        let h = Householder.create x
+        floatEqual h.Beta 5.0 1e-10
+        floatEqual h.Tau 0.0 1e-10
+        floatEqual h.V.[0] 1.0 1e-10
+
+    [<Fact>]
+    let ``create: large vector maintains precision`` () =
+        let x = [| 1.0; 2.0; 3.0; 4.0; 5.0 |]
+        let h = Householder.create x
+        // Beta = sqrt(1+4+9+16+25) = sqrt(55)
+        floatClose Accuracy.medium h.Beta (sqrt 55.0) "Beta should be sqrt(55)"
+        floatEqual h.V.[0] 1.0 1e-10
+
+    [<Fact>]
+    let ``create: zero tail returns zero tau`` () =
+        let x = [| 7.0; 0.0; 0.0; 0.0 |]
+        let h = Householder.create x
+        floatEqual h.Tau 0.0 1e-10
+        floatEqual h.Beta 7.0 1e-10
+
+    [<Fact>]
+    let ``applyLeft: identity transformation on zero tau`` () =
+        let A = Matrix(3, 3, [| 1.0; 2.0; 3.0;
+                               4.0; 5.0; 6.0;
+                               7.0; 8.0; 9.0 |])
+        let h = { V = [| 1.0; 0.0; 0.0 |]; Tau = 0.0; Beta = 1.0 }
+        let A' = A |> Matrix.copy
+        Householder.applyLeft(h, A', 0)
+        // With tau=0, matrix should be unchanged
+        floatMatrixClose Accuracy.high A' A "Matrix should be unchanged with tau=0"
+
+    [<Fact>]
+    let ``applyLeft: transforms first column correctly`` () =
+        let A = Matrix(3, 2, [| 1.0; 1.0;
+                               1.0; 2.0;
+                               1.0; 3.0 |])
+        let x = Matrix.getCol 0 A
+        let h = Householder.create x
+        let A' = A |> Matrix.copy
+        Householder.applyLeft(h, A', 0)
+        // First column should become [beta, 0, 0]
+        floatClose Accuracy.medium A'.[0, 0] h.Beta "A'[0,0] should be beta"
+        floatClose Accuracy.medium A'.[1, 0] 0.0 "A'[1,0] should be zero"
+        floatClose Accuracy.medium A'.[2, 0] 0.0 "A'[2,0] should be zero"
+
+    [<Fact>]
+    let ``applyLeft: orthogonal transformation preserves norm`` () =
+        let A = Matrix(3, 3, [| 1.0; 2.0; 3.0;
+                               4.0; 5.0; 6.0;
+                               7.0; 8.0; 9.0 |])
+        let x = Matrix.getCol 0 A
+        let h = Householder.create x
+        let A' = A |> Matrix.copy
+        Householder.applyLeft(h, A', 0)
+        // Column norms should be preserved
+        let col0Norm = Vector.norm (Matrix.getCol 0 A)
+        let col0NormAfter = Vector.norm (Matrix.getCol 0 A')
+        floatClose Accuracy.medium col0NormAfter col0Norm "Column norm should be preserved"
+
+    [<Fact>]
+    let ``applyLeft: with row offset`` () =
+        let A = Matrix(4, 3, [| 1.0; 2.0; 3.0;
+                               4.0; 5.0; 6.0;
+                               7.0; 8.0; 9.0;
+                               10.0; 11.0; 12.0 |])
+        let x = [| 5.0; 8.0; 11.0 |]  // Second column from row 1 onwards
+        let h = Householder.create x
+        let A' = A |> Matrix.copy
+        Householder.applyLeft(h, A', 1)
+        // First row should be unchanged
+        floatEqual A'.[0, 0] 1.0 1e-10
+        floatEqual A'.[0, 1] 2.0 1e-10
+        floatEqual A'.[0, 2] 3.0 1e-10
+
+    [<Fact>]
+    let ``applyRight: identity transformation on zero tau`` () =
+        let A = Matrix(3, 3, [| 1.0; 2.0; 3.0;
+                               4.0; 5.0; 6.0;
+                               7.0; 8.0; 9.0 |])
+        let h = { V = [| 1.0; 0.0; 0.0 |]; Tau = 0.0; Beta = 1.0 }
+        let A' = A |> Matrix.copy
+        Householder.applyRight(h, A', 0)
+        // With tau=0, matrix should be unchanged
+        floatMatrixClose Accuracy.high A' A "Matrix should be unchanged with tau=0"
+
+    [<Fact>]
+    let ``applyRight: transforms first row correctly`` () =
+        let A = Matrix(2, 3, [| 1.0; 1.0; 1.0;
+                               2.0; 2.0; 2.0 |])
+        let x = Matrix.getRow 0 A
+        let h = Householder.create x
+        let A' = A |> Matrix.copy
+        Householder.applyRight(h, A', 0)
+        // First row should become [beta, 0, 0]
+        floatClose Accuracy.medium A'.[0, 0] h.Beta "A'[0,0] should be beta"
+        floatClose Accuracy.medium A'.[0, 1] 0.0 "A'[0,1] should be zero"
+        floatClose Accuracy.medium A'.[0, 2] 0.0 "A'[0,2] should be zero"
+
+    [<Fact>]
+    let ``applyRight: orthogonal transformation preserves norm`` () =
+        let A = Matrix(3, 3, [| 1.0; 2.0; 3.0;
+                               4.0; 5.0; 6.0;
+                               7.0; 8.0; 9.0 |])
+        let x = Matrix.getRow 0 A
+        let h = Householder.create x
+        let A' = A |> Matrix.copy
+        Householder.applyRight(h, A', 0)
+        // Row norms should be preserved
+        let row0Norm = Vector.norm (Matrix.getRow 0 A)
+        let row0NormAfter = Vector.norm (Matrix.getRow 0 A')
+        floatClose Accuracy.medium row0NormAfter row0Norm "Row norm should be preserved"
+
+    [<Fact>]
+    let ``applyRight: with column offset`` () =
+        let A = Matrix(3, 4, [| 1.0; 2.0; 3.0; 4.0;
+                               5.0; 6.0; 7.0; 8.0;
+                               9.0; 10.0; 11.0; 12.0 |])
+        let x = [| 2.0; 3.0; 4.0 |]  // First row from column 1 onwards
+        let h = Householder.create x
+        let A' = A |> Matrix.copy
+        Householder.applyRight(h, A', 1)
+        // First column should be unchanged
+        floatEqual A'.[0, 0] 1.0 1e-10
+        floatEqual A'.[1, 0] 5.0 1e-10
+        floatEqual A'.[2, 0] 9.0 1e-10
+
+    [<Fact>]
+    let ``Householder reflection involution property`` () =
+        // Applying the same Householder transformation twice should return original
+        let A = Matrix(3, 3, [| 1.0; 2.0; 3.0;
+                               4.0; 5.0; 6.0;
+                               7.0; 8.0; 9.0 |])
+        let x = Matrix.getCol 0 A
+        let h = Householder.create x
+        let A' = A |> Matrix.copy
+        Householder.applyLeft(h, A', 0)
+        Householder.applyLeft(h, A', 0)
+        // Should be back to original (within numerical precision)
+        floatMatrixClose Accuracy.low A' A "Applying Householder twice should give original"
+
+    [<Fact>]
+    let ``create: vector with mixed signs`` () =
+        let x = [| 3.0; -4.0; 0.0 |]
+        let h = Householder.create x
+        // Beta = 5.0
+        floatEqual h.Beta 5.0 1e-10
+        floatEqual h.V.[0] 1.0 1e-10
+        Assert.True(h.Tau > 0.0, $"Tau should be positive, got {h.Tau}")
+
+    [<Fact>]
+    let ``create: small values maintain precision`` () =
+        let x = [| 1e-10; 2e-10; 3e-10 |]
+        let h = Householder.create x
+        // Beta should be sqrt(1e-20 + 4e-20 + 9e-20) = sqrt(14e-20)
+        let expectedBeta = sqrt(14e-20)
+        floatClose Accuracy.low h.Beta expectedBeta "Beta should handle small values"
+
+
 module QrDecompositionHouseHolderTests =
 
 
