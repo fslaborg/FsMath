@@ -15,6 +15,7 @@
     <Compile Include="VectorFloatTests.fs" />
     <Compile Include="VectorIntTests.fs" />
     <Compile Include="VectorStaticMethodTests.fs" />
+    <Compile Include="VectorQuotationTests.fs" />
     <Compile Include="VectorManipulationTests.fs" />
     <Compile Include="MatrixModuleTests.fs" />
     <Compile Include="MatrixModuleQuotationTests.fs" />
