@@ -22,6 +22,7 @@
     <Compile Include="PermutationTests.fs" />
     <Compile Include="LinearAlgebra.fs" />
     <Compile Include="LinearAlgebraAdvancedTests.fs" />
+    <Compile Include="HouseholderQuotationTests.fs" />
     <Compile Include="EVD.fs" />
     <Compile Include="SVD.fs" />
     <Compile Include="SpecialFunctions.fs" />
