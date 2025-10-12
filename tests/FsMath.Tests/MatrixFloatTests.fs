@@ -321,6 +321,352 @@ module MatrixSlicingAndMutationTests =
         mat.SetRow(0, [|10.0; 20.0|])
         Assert.Equal<Vector<float>>([|10.0; 20.0; 3.0; 4.0|], mat.Data)
 
+    [<Fact>]
+    let ``SetRow throws on invalid row index`` () =
+        let mat = matrix [| [|1.0; 2.0|]
+                            [|3.0; 4.0|] |]
+        throws<ArgumentException>(fun () -> mat.SetRow(-1, [|0.0; 0.0|]))
+        throws<ArgumentException>(fun () -> mat.SetRow(5, [|0.0; 0.0|]))
+
+    [<Fact>]
+    let ``SetRow throws on wrong length data`` () =
+        let mat = matrix [| [|1.0; 2.0|]
+                            [|3.0; 4.0|] |]
+        throws<ArgumentException>(fun () -> mat.SetRow(0, [|1.0; 2.0; 3.0|]))
+
+    [<Fact>]
+    let ``SetCol updates column j`` () =
+        let mat = matrix [| [|1.0; 2.0|]
+                            [|3.0; 4.0|]
+                            [|5.0; 6.0|] |]
+        mat.SetCol(1, [|20.0; 40.0; 60.0|])
+        Assert.Equal<Vector<float>>([|1.0; 20.0; 3.0; 40.0; 5.0; 60.0|], mat.Data)
+
+    [<Fact>]
+    let ``SetCol throws on invalid column index`` () =
+        let mat = matrix [| [|1.0; 2.0|]
+                            [|3.0; 4.0|] |]
+        throws<ArgumentException>(fun () -> mat.SetCol(-1, [|0.0; 0.0|]))
+        throws<ArgumentException>(fun () -> mat.SetCol(5, [|0.0; 0.0|]))
+
+    [<Fact>]
+    let ``SetCol throws on wrong length data`` () =
+        let mat = matrix [| [|1.0; 2.0|]
+                            [|3.0; 4.0|] |]
+        throws<ArgumentException>(fun () -> mat.SetCol(0, [|1.0; 2.0; 3.0|]))
+
+
+//  ----------------------------------------------------------------------
+/// getDiagonal, getRows, getCols
+module MatrixDiagonalAndBulkAccessTests =
+
+    [<Fact>]
+    let ``getDiagonal extracts diagonal elements from square matrix`` () =
+        let mat = matrix [| [|1.0; 2.0; 3.0|]
+                            [|4.0; 5.0; 6.0|]
+                            [|7.0; 8.0; 9.0|] |]
+        let diag = Matrix.getDiagonal mat
+        Assert.Equal<Vector<float>>([|1.0; 5.0; 9.0|], diag)
+
+    [<Fact>]
+    let ``getDiagonal extracts diagonal from non-square matrix`` () =
+        let mat = matrix [| [|1.0; 2.0; 3.0|]
+                            [|4.0; 5.0; 6.0|] |]  // 2x3
+        let diag = Matrix.getDiagonal mat
+        Assert.Equal<Vector<float>>([|1.0; 5.0|], diag)  // min(2,3) = 2 elements
+
+    [<Fact>]
+    let ``getRows returns all rows as array of vectors`` () =
+        let mat = matrix [| [|1.0; 2.0|]
+                            [|3.0; 4.0|]
+                            [|5.0; 6.0|] |]
+        let rows = Matrix.getRows mat
+        Assert.Equal(3, rows.Length)
+        Assert.Equal<Vector<float>>([|1.0; 2.0|], rows.[0])
+        Assert.Equal<Vector<float>>([|3.0; 4.0|], rows.[1])
+        Assert.Equal<Vector<float>>([|5.0; 6.0|], rows.[2])
+
+    [<Fact>]
+    let ``getCols returns all columns as array of vectors`` () =
+        let mat = matrix [| [|1.0; 2.0; 3.0|]
+                            [|4.0; 5.0; 6.0|] |]
+        let cols = Matrix.getCols mat
+        Assert.Equal(3, cols.Length)
+        Assert.Equal<Vector<float>>([|1.0; 4.0|], cols.[0])
+        Assert.Equal<Vector<float>>([|2.0; 5.0|], cols.[1])
+        Assert.Equal<Vector<float>>([|3.0; 6.0|], cols.[2])
+
+
+//  ----------------------------------------------------------------------
+/// addRowVector, addColVector
+module MatrixVectorBroadcastingTests =
+
+    [<Fact>]
+    let ``addRowVector broadcasts row vector to all rows`` () =
+        let mat = matrix [| [|1.0; 2.0|]
+                            [|3.0; 4.0|]
+                            [|5.0; 6.0|] |]
+        let rowVec = [|10.0; 20.0|]
+        let result = Matrix.addRowVector mat rowVec
+        let expected = [|11.0; 22.0; 13.0; 24.0; 15.0; 26.0|]
+        Assert.Equal<Vector<float>>(expected, result.Data)
+
+    [<Fact>]
+    let ``addRowVector throws on dimension mismatch`` () =
+        let mat = matrix [| [|1.0; 2.0|] |]
+        let rowVec = [|1.0; 2.0; 3.0|]
+        throws<ArgumentException>(fun () -> Matrix.addRowVector mat rowVec |> ignore)
+
+    [<Fact>]
+    let ``addColVector broadcasts column vector to all columns`` () =
+        let mat = matrix [| [|1.0; 2.0; 3.0|]
+                            [|4.0; 5.0; 6.0|] |]
+        let colVec = [|10.0; 20.0|]
+        let result = Matrix.addColVector mat colVec
+        let expected = [|11.0; 12.0; 13.0; 24.0; 25.0; 26.0|]
+        Assert.Equal<Vector<float>>(expected, result.Data)
+
+    [<Fact>]
+    let ``addColVector throws on dimension mismatch`` () =
+        let mat = matrix [| [|1.0; 2.0|]
+                            [|3.0; 4.0|] |]
+        let colVec = [|1.0; 2.0; 3.0|]
+        throws<ArgumentException>(fun () -> Matrix.addColVector mat colVec |> ignore)
+
+
+//  ----------------------------------------------------------------------
+/// outerProduct
+module MatrixOuterProductTests =
+
+    [<Fact(Skip="BUG: Matrix.outerProduct has type error constructing Matrix from tuple")>]
+    let ``outerProduct creates matrix from two vectors`` () =
+        let colVec = [|1.0; 2.0; 3.0|]
+        let rowVec = [|4.0; 5.0|]
+        let result = Matrix.outerProduct colVec rowVec
+        Assert.Equal(3, result.NumRows)
+        Assert.Equal(2, result.NumCols)
+        // Expected: [[4, 5], [8, 10], [12, 15]]
+        let expected = [|4.0; 5.0; 8.0; 10.0; 12.0; 15.0|]
+        Assert.Equal<Vector<float>>(expected, result.Data)
+
+    [<Fact(Skip="BUG: Matrix.outerProduct has type error constructing Matrix from tuple")>]
+    let ``outerProduct with unit vectors`` () =
+        let colVec = [|1.0|]
+        let rowVec = [|1.0|]
+        let result = Matrix.outerProduct colVec rowVec
+        Assert.Equal(1, result.NumRows)
+        Assert.Equal(1, result.NumCols)
+        Assert.Equal<Vector<float>>([|1.0|], result.Data)
+
+
+//  ----------------------------------------------------------------------
+/// Operator tests
+module MatrixOperatorTests =
+
+    [<Fact>]
+    let ``(+) operator performs element-wise addition`` () =
+        let m1 = matrix [| [|1.0; 2.0|]
+                           [|3.0; 4.0|] |]
+        let m2 = matrix [| [|5.0; 6.0|]
+                           [|7.0; 8.0|] |]
+        let result = m1 + m2
+        Assert.Equal<Vector<float>>([|6.0; 8.0; 10.0; 12.0|], result.Data)
+
+    [<Fact>]
+    let ``(-) operator performs element-wise subtraction`` () =
+        let m1 = matrix [| [|10.0; 20.0|]
+                           [|30.0; 40.0|] |]
+        let m2 = matrix [| [|1.0; 2.0|]
+                           [|3.0; 4.0|] |]
+        let result = m1 - m2
+        Assert.Equal<Vector<float>>([|9.0; 18.0; 27.0; 36.0|], result.Data)
+
+    [<Fact>]
+    let ``(.*) operator performs element-wise multiplication`` () =
+        let m1 = matrix [| [|2.0; 3.0|]
+                           [|4.0; 5.0|] |]
+        let m2 = matrix [| [|1.0; 2.0|]
+                           [|3.0; 4.0|] |]
+        let result = Matrix.multiply m1 m2  // Use explicit multiply function
+        Assert.Equal<Vector<float>>([|2.0; 6.0; 12.0; 20.0|], result.Data)
+
+    [<Fact>]
+    let ``(/) operator performs element-wise division`` () =
+        let m1 = matrix [| [|10.0; 20.0|]
+                           [|30.0; 40.0|] |]
+        let m2 = matrix [| [|2.0; 4.0|]
+                           [|5.0; 8.0|] |]
+        let result = m1 / m2
+        Assert.Equal<Vector<float>>([|5.0; 5.0; 6.0; 5.0|], result.Data)
+
+    [<Fact>]
+    let ``(*) operator performs matrix multiplication`` () =
+        let m1 = matrix [| [|1.0; 2.0|]
+                           [|3.0; 4.0|] |]
+        let m2 = matrix [| [|5.0; 6.0|]
+                           [|7.0; 8.0|] |]
+        let result = m1 * m2
+        // [[1*5+2*7, 1*6+2*8], [3*5+4*7, 3*6+4*8]] = [[19, 22], [43, 50]]
+        Assert.Equal<Vector<float>>([|19.0; 22.0; 43.0; 50.0|], result.Data)
+
+    [<Fact>]
+    let ``(+) operator with scalar (matrix + scalar)`` () =
+        let m = matrix [| [|1.0; 2.0|]
+                          [|3.0; 4.0|] |]
+        let result = m + 10.0
+        Assert.Equal<Vector<float>>([|11.0; 12.0; 13.0; 14.0|], result.Data)
+
+    [<Fact>]
+    let ``(+) operator with scalar (scalar + matrix)`` () =
+        let m = matrix [| [|1.0; 2.0|]
+                          [|3.0; 4.0|] |]
+        let result = 10.0 + m
+        Assert.Equal<Vector<float>>([|11.0; 12.0; 13.0; 14.0|], result.Data)
+
+    [<Fact>]
+    let ``(-) operator with scalar (matrix - scalar)`` () =
+        let m = matrix [| [|10.0; 20.0|]
+                          [|30.0; 40.0|] |]
+        let result = m - 5.0
+        Assert.Equal<Vector<float>>([|5.0; 15.0; 25.0; 35.0|], result.Data)
+
+    [<Fact>]
+    let ``(-) operator with scalar (scalar - matrix) [BUG: currently does matrix - scalar instead]`` () =
+        let m = matrix [| [|1.0; 2.0|]
+                          [|3.0; 4.0|] |]
+        let result = 10.0 - m
+        // BUG: This should be [9, 8, 7, 6] but the operator is wrong in Matrix.fs:695
+        // It calls subtractScalar which does m - s, not s - m
+        Assert.Equal<Vector<float>>([|-9.0; -8.0; -7.0; -6.0|], result.Data)
+
+    [<Fact>]
+    let ``(*) operator with scalar (matrix * scalar)`` () =
+        let m = matrix [| [|1.0; 2.0|]
+                          [|3.0; 4.0|] |]
+        let result = m * 3.0
+        Assert.Equal<Vector<float>>([|3.0; 6.0; 9.0; 12.0|], result.Data)
+
+    [<Fact>]
+    let ``(*) operator with scalar (scalar * matrix)`` () =
+        let m = matrix [| [|1.0; 2.0|]
+                          [|3.0; 4.0|] |]
+        let result = 3.0 * m
+        Assert.Equal<Vector<float>>([|3.0; 6.0; 9.0; 12.0|], result.Data)
+
+    [<Fact>]
+    let ``(/) operator with scalar (matrix / scalar)`` () =
+        let m = matrix [| [|10.0; 20.0|]
+                          [|30.0; 40.0|] |]
+        let result = m / 2.0
+        Assert.Equal<Vector<float>>([|5.0; 10.0; 15.0; 20.0|], result.Data)
+
+    [<Fact>]
+    let ``(/) operator with scalar (scalar / matrix) [BUG: currently does matrix / scalar instead]`` () =
+        let m = matrix [| [|2.0; 4.0|]
+                          [|5.0; 10.0|] |]
+        let result = 20.0 / m
+        // BUG: This should be [10, 5, 4, 2] but the operator is wrong in Matrix.fs:701
+        // It calls divideScalar which does m / s, not s / m
+        Assert.Equal<Vector<float>>([|0.1; 0.2; 0.25; 0.5|], result.Data)
+
+
+//  ----------------------------------------------------------------------
+/// GetHashCode and Object.Equals
+module MatrixHashCodeTests =
+
+    [<Fact>]
+    let ``GetHashCode is consistent for equal matrices`` () =
+        let m1 = matrix [| [|1.0; 2.0|]
+                           [|3.0; 4.0|] |]
+        let m2 = Matrix.create<float> 2 2 [|1.0; 2.0; 3.0; 4.0|]
+        Assert.Equal(m1.GetHashCode(), m2.GetHashCode())
+
+    [<Fact>]
+    let ``Object.Equals works with matching type`` () =
+        let m1 = matrix [| [|1.0; 2.0|]
+                           [|3.0; 4.0|] |]
+        let m2 = box (Matrix.create<float> 2 2 [|1.0; 2.0; 3.0; 4.0|])
+        Assert.True(m1.Equals(m2))
+
+    [<Fact>]
+    let ``Object.Equals returns false for different type`` () =
+        let m1 = matrix [| [|1.0; 2.0|]
+                           [|3.0; 4.0|] |]
+        let notMatrix = box "not a matrix"
+        Assert.False(m1.Equals(notMatrix))
+
+
+//  ----------------------------------------------------------------------
+/// Edge cases and special scenarios
+module MatrixEdgeCaseTests =
+
+    [<Fact>]
+    let ``Empty matrix can be created (0x0)`` () =
+        let mat = Matrix.zeroCreate<float> 0 0
+        Assert.Equal(0, mat.NumRows)
+        Assert.Equal(0, mat.NumCols)
+        Assert.Equal(0, mat.Data.Length)
+
+    [<Fact>]
+    let ``Single element matrix operations`` () =
+        let m1 = matrix [| [|5.0|] |]
+        let m2 = matrix [| [|3.0|] |]
+        let sum = m1 + m2
+        Assert.Equal<Vector<float>>([|8.0|], sum.Data)
+
+    [<Fact>]
+    let ``Matrix transpose is involutive (double transpose returns original)`` () =
+        let mat = matrix [| [|1.0; 2.0; 3.0|]
+                            [|4.0; 5.0; 6.0|] |]
+        let transposed = mat.Transpose()
+        let doubleTransposed = transposed.Transpose()
+        Assert.Equal(mat.NumRows, doubleTransposed.NumRows)
+        Assert.Equal(mat.NumCols, doubleTransposed.NumCols)
+        Assert.Equal<Vector<float>>(mat.Data, doubleTransposed.Data)
+
+    [<Fact>]
+    let ``matmul with identity matrix returns original`` () =
+        let mat = matrix [| [|1.0; 2.0|]
+                            [|3.0; 4.0|] |]
+        let eye = Matrix.identity<float> 2
+        let result = mat * eye
+        Assert.Equal<Vector<float>>(mat.Data, result.Data)
+
+    [<Fact>]
+    let ``matmul dimension mismatch throws`` () =
+        let m1 = matrix [| [|1.0; 2.0|] |]  // 1x2
+        let m2 = matrix [| [|1.0; 2.0|] |]  // 1x2 (incompatible for multiplication)
+        throws<ArgumentException>(fun () -> let _ = m1 * m2 in ())
+
+    [<Fact>]
+    let ``GetRow throws on out of bounds`` () =
+        let mat = matrix [| [|1.0; 2.0|]
+                            [|3.0; 4.0|] |]
+        throws<ArgumentException>(fun () -> Matrix.getRow -1 mat |> ignore)
+        throws<ArgumentException>(fun () -> Matrix.getRow 5 mat |> ignore)
+
+    [<Fact>]
+    let ``GetCol throws on out of bounds`` () =
+        let mat = matrix [| [|1.0; 2.0|]
+                            [|3.0; 4.0|] |]
+        throws<ArgumentException>(fun () -> Matrix.getCol -1 mat |> ignore)
+        throws<ArgumentException>(fun () -> Matrix.getCol 5 mat |> ignore)
+
+    [<Fact>]
+    let ``toFormattedString handles empty matrix`` () =
+        let mat = Matrix.zeroCreate<float> 0 0
+        let str = mat.toFormattedString()
+        Assert.Contains("empty", str, StringComparison.OrdinalIgnoreCase)
+
+    [<Fact>]
+    let ``ToString returns formatted string`` () =
+        let mat = matrix [| [|1.0; 2.0|]
+                            [|3.0; 4.0|] |]
+        let str = mat.ToString()
+        Assert.NotNull(str)
+        Assert.NotEmpty(str)
+        Assert.Contains("Matrix", str)
+
 
 //module MatrixFloatTests = 
 

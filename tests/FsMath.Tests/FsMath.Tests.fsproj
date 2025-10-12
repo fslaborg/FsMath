@@ -13,6 +13,7 @@
     <Compile Include="VectorModuleTests.fs" />
     <Compile Include="VectorFloatTests.fs" />
     <Compile Include="VectorIntTests.fs" />
+    <Compile Include="VectorStaticMethodTests.fs" />
     <Compile Include="VectorManipulationTests.fs" />
     <Compile Include="MatrixModuleTests.fs" />
     <Compile Include="VectorOpsTests.fs" />
@@ -20,8 +21,10 @@
     <Compile Include="PermutationTests.fs" />
     <Compile Include="LinearAlgebra.fs" />
     <Compile Include="LinearAlgebraAdvancedTests.fs" />
+    <Compile Include="EVD.fs" />
     <Compile Include="SpecialFunctions.fs" />
     <Compile Include="SpanMathTests.fs" />
+    <Compile Include="SIMDUtilsTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
