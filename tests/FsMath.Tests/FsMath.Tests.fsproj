@@ -24,6 +24,7 @@
     <Compile Include="MatrixAdditionalTests.fs" />
     <Compile Include="PermutationTests.fs" />
     <Compile Include="LinearAlgebra.fs" />
+    <Compile Include="LinearAlgebraQuotationTests.fs" />
     <Compile Include="LinearAlgebraAdvancedTests.fs" />
     <Compile Include="EVD.fs" />
     <Compile Include="SVD.fs" />
