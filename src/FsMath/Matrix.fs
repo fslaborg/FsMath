@@ -141,43 +141,72 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
         this.GetSlice(rowStart, rowEnd, colStart, colEnd)
 
 
-     /// Creates a new matrix by initializing each element with a function `f(row, col)`.
+     /// <summary>
+    /// Transposes a matrix using cache-friendly blocked algorithm with loop unrolling.
+    /// The block size is chosen adaptively based on element type for optimal cache utilization.
+    /// Within each block, uses loop unrolling to reduce loop overhead and improve instruction-level parallelism.
+    /// </summary>
     static member inline private transposeByBlock<'T when 'T :> Numerics.INumber<'T>
                 and 'T : (new: unit -> 'T)
                 and 'T : struct
                 and 'T :> ValueType>
-                (rows : int) 
+                (rows : int)
                 (cols : int)
-                (data: 'T[]) 
+                (data: 'T[])
                 (blockSize: int) =
-
-        //let blockSize = defaultArg blockSize 16
 
         let src = data
         let dst = Array.zeroCreate<'T> (rows * cols)
 
-        let vectorSize = Numerics.Vector<'T>.Count
-
-        // Process the matrix in blocks
+        // Process the matrix in blocks for cache efficiency
         for i0 in 0 .. blockSize .. rows - 1 do
             for j0 in 0 .. blockSize .. cols - 1 do
-
                 let iMax = min (i0 + blockSize) rows
                 let jMax = min (j0 + blockSize) cols
 
+                // Within each block, unroll the innermost loop by 4
                 for i in i0 .. iMax - 1 do
-                    let srcOffset = i * cols
-                    for j in j0 .. jMax - 1 do
-                        let v = src.[srcOffset + j]
+                    let mutable j = j0
+                    let srcRowOffset = i * cols
+
+                    // Unrolled loop: process 4 columns at a time
+                    while j + 3 < jMax do
+                        let v0 = src.[srcRowOffset + j]
+                        let v1 = src.[srcRowOffset + j + 1]
+                        let v2 = src.[srcRowOffset + j + 2]
+                        let v3 = src.[srcRowOffset + j + 3]
+
+                        dst.[j * rows + i] <- v0
+                        dst.[(j + 1) * rows + i] <- v1
+                        dst.[(j + 2) * rows + i] <- v2
+                        dst.[(j + 3) * rows + i] <- v3
+
+                        j <- j + 4
+
+                    // Handle remaining columns
+                    while j < jMax do
+                        let v = src.[srcRowOffset + j]
                         dst.[j * rows + i] <- v
+                        j <- j + 1
 
         dst
 
     static member inline transpose (m:Matrix<'T>) : Matrix<'T> =
         m.Transpose()
 
+     /// <summary>
+     /// Transposes this matrix (rows become columns, columns become rows).
+     /// Uses an adaptive block size based on element type for optimal cache performance.
+     /// </summary>
      member this.Transpose() =
-        let blocksize = 16
+        // Adaptive block size based on element type
+        // Larger elements (float64) benefit from smaller blocks to fit in L1 cache
+        // Smaller elements (float32, int) can use larger blocks
+        let blocksize =
+            match sizeof<'T> with
+            | 4 -> 32  // float32 or int32: 32x32 block = 4KB fits in L1
+            | 8 -> 16  // float64: 16x16 block = 2KB fits in L1
+            | _ -> 16  // fallback for other types
         Matrix(this.NumCols, this.NumRows, Matrix.transposeByBlock this.NumRows this.NumCols this.Data blocksize)
      
     static member init<'T when 'T :> Numerics.INumber<'T>
