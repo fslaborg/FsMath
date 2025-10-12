@@ -9,13 +9,18 @@
   <ItemGroup>
     <Compile Include="ExpectoStyle.fs" />
     <Compile Include="AssertHelpers.fs" />
+    <Compile Include="GenericMathTests.fs" />
+    <Compile Include="VectorModuleTests.fs" />
     <Compile Include="VectorFloatTests.fs" />
     <Compile Include="VectorIntTests.fs" />
     <Compile Include="VectorManipulationTests.fs" />
+    <Compile Include="VectorOpsTests.fs" />
     <Compile Include="MatrixFloatTests.fs" />
+    <Compile Include="PermutationTests.fs" />
     <Compile Include="LinearAlgebra.fs" />
     <Compile Include="LinearAlgebraAdvancedTests.fs" />
     <Compile Include="SpecialFunctions.fs" />
+    <Compile Include="SpanMathTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
