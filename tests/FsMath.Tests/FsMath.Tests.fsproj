@@ -18,6 +18,7 @@
     <Compile Include="MatrixModuleTests.fs" />
     <Compile Include="VectorOpsTests.fs" />
     <Compile Include="MatrixFloatTests.fs" />
+    <Compile Include="MatrixAdditionalTests.fs" />
     <Compile Include="PermutationTests.fs" />
     <Compile Include="LinearAlgebra.fs" />
     <Compile Include="LinearAlgebraAdvancedTests.fs" />
