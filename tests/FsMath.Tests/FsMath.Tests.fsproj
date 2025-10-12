@@ -13,6 +13,7 @@
     <Compile Include="VectorModuleTests.fs" />
     <Compile Include="VectorFloatTests.fs" />
     <Compile Include="VectorIntTests.fs" />
+    <Compile Include="VectorStaticMethodTests.fs" />
     <Compile Include="VectorManipulationTests.fs" />
     <Compile Include="MatrixModuleTests.fs" />
     <Compile Include="VectorOpsTests.fs" />
