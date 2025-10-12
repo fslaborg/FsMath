@@ -11,6 +11,7 @@
     <Compile Include="AssertHelpers.fs" />
     <Compile Include="GenericMathTests.fs" />
     <Compile Include="VectorModuleTests.fs" />
+    <Compile Include="VectorModuleQuotationTests.fs" />
     <Compile Include="VectorFloatTests.fs" />
     <Compile Include="VectorIntTests.fs" />
     <Compile Include="VectorStaticMethodTests.fs" />
