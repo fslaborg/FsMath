@@ -1,45 +1,59 @@
 ---
 on:
-  schedule:
-  - cron: 0 2 * * 1-5
-  stop-after: +48h
-  workflow_dispatch: null
+    workflow_dispatch:
+    schedule:
+        # Run daily at 2am UTC, all days except Saturday and Sunday
+        - cron: "0 2 * * 1-5"
+    stop-after: +48h # workflow will no longer trigger after 48 hours
+
+timeout_minutes: 30
+
+engine: claude
+
 permissions: read-all
+
 network: defaults
+
 safe-outputs:
-  add-comment:
-    target: "*"
   create-discussion:
-    category: ideas
+    title-prefix: "${{ github.workflow }}"
+    category: "ideas"
     max: 5
-    title-prefix: ${{ github.workflow }}
+  add-comment:
+    discussion: true
+    target: "*" # can add a comment to any one single issue or pull request
   create-pull-request:
     draft: true
-steps:
-- name: Checkout repository
-  uses: actions/checkout@v5
-- id: check_build_steps_file
-  name: Check if action.yml exists
-  run: |
-    if [ -f ".github/actions/daily-perf-improver/build-steps/action.yml" ]; then
-      echo "exists=true" >> $GITHUB_OUTPUT
-    else
-      echo "exists=false" >> $GITHUB_OUTPUT
-    fi
-  shell: bash
-- continue-on-error: true
-  id: build-steps
-  if: steps.check_build_steps_file.outputs.exists == 'true'
-  name: Build the project ready for performance testing, logging to build-steps.log
-  uses: ./.github/actions/daily-perf-improver/build-steps
-engine: claude
-source: githubnext/agentics/workflows/daily-perf-improver.md@ebedab5169a6ed038d5382fd8b329b7bd0042fc0
-timeout_minutes: 30
+
 tools:
-  bash:
-  - :*
-  web-fetch: null
-  web-search: null
+  web-fetch:
+  web-search:
+  
+  # Configure bash build commands here, or in .github/workflows/agentics/daily-dependency-updates.config.md
+  #
+  # By default this workflow allows all bash commands within the confine of Github Actions VM 
+  bash: [ ":*" ]
+
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v5
+
+  - name: Check if action.yml exists
+    id: check_build_steps_file
+    run: |
+      if [ -f ".github/actions/daily-perf-improver/build-steps/action.yml" ]; then
+        echo "exists=true" >> $GITHUB_OUTPUT
+      else
+        echo "exists=false" >> $GITHUB_OUTPUT
+      fi
+    shell: bash
+  - name: Build the project ready for performance testing, logging to build-steps.log
+    if: steps.check_build_steps_file.outputs.exists == 'true'
+    uses: ./.github/actions/daily-perf-improver/build-steps
+    id: build-steps
+    continue-on-error: true # the model may not have got it right, so continue anyway, the model will check the results and try to fix the steps
+
+source: githubnext/agentics/workflows/daily-perf-improver.md@ebedab5169a6ed038d5382fd8b329b7bd0042fc0
 ---
 # Daily Perf Improver
 
