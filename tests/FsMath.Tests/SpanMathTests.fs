@@ -396,3 +396,174 @@ module SpanMathMinMaxTests =
         throws<ArgumentException>(fun () ->
             let x = ReadOnlySpan(xArr)
             SpanMath.max(x) |> ignore)
+
+
+module SpanMathOuterProductTests =
+
+    [<Fact>]
+    let ``outerProduct: basic 3x2 example (float)`` () =
+        let u = ReadOnlySpan([| 1.0; 2.0; 3.0 |])
+        let v = ReadOnlySpan([| 4.0; 5.0 |])
+        let (rows, cols, data) = SpanMath.outerProduct(u, v)
+
+        Assert.Equal(3, rows)
+        Assert.Equal(2, cols)
+        Assert.Equal(6, data.Length)
+
+        // Expected result:
+        // [1*4  1*5]   [4  5]
+        // [2*4  2*5] = [8  10]
+        // [3*4  3*5]   [12 15]
+        let expected = [| 4.0; 5.0; 8.0; 10.0; 12.0; 15.0 |]
+        floatArrayClose expected data 1e-10
+
+    [<Fact>]
+    let ``outerProduct: basic 2x3 example (float)`` () =
+        let u = ReadOnlySpan([| 2.0; 3.0 |])
+        let v = ReadOnlySpan([| 1.0; 0.0; -1.0 |])
+        let (rows, cols, data) = SpanMath.outerProduct(u, v)
+
+        Assert.Equal(2, rows)
+        Assert.Equal(3, cols)
+
+        // Expected result:
+        // [2*1  2*0  2*(-1)]   [2  0  -2]
+        // [3*1  3*0  3*(-1)] = [3  0  -3]
+        let expected = [| 2.0; 0.0; -2.0; 3.0; 0.0; -3.0 |]
+        floatArrayClose expected data 1e-10
+
+    [<Fact>]
+    let ``outerProduct: basic example (int)`` () =
+        let u = ReadOnlySpan([| 1; 2; 3 |])
+        let v = ReadOnlySpan([| 4; 5 |])
+        let (rows, cols, data) = SpanMath.outerProduct(u, v)
+
+        Assert.Equal(3, rows)
+        Assert.Equal(2, cols)
+
+        let expected = [| 4; 5; 8; 10; 12; 15 |]
+        intArrayEqual expected data
+
+    [<Fact>]
+    let ``outerProduct: single element vectors`` () =
+        let u = ReadOnlySpan([| 7.0 |])
+        let v = ReadOnlySpan([| 3.0 |])
+        let (rows, cols, data) = SpanMath.outerProduct(u, v)
+
+        Assert.Equal(1, rows)
+        Assert.Equal(1, cols)
+
+        let expected = [| 21.0 |]
+        floatArrayClose expected data 1e-10
+
+    [<Fact>]
+    let ``outerProduct: with zero elements`` () =
+        let u = ReadOnlySpan([| 1.0; 0.0; 2.0 |])
+        let v = ReadOnlySpan([| 3.0; 0.0 |])
+        let (rows, cols, data) = SpanMath.outerProduct(u, v)
+
+        Assert.Equal(3, rows)
+        Assert.Equal(2, cols)
+
+        // Expected result:
+        // [1*3  1*0]   [3  0]
+        // [0*3  0*0] = [0  0]
+        // [2*3  2*0]   [6  0]
+        let expected = [| 3.0; 0.0; 0.0; 0.0; 6.0; 0.0 |]
+        floatArrayClose expected data 1e-10
+
+    [<Fact>]
+    let ``outerProduct: with negative values`` () =
+        let u = ReadOnlySpan([| 1.0; -2.0 |])
+        let v = ReadOnlySpan([| -3.0; 4.0 |])
+        let (rows, cols, data) = SpanMath.outerProduct(u, v)
+
+        Assert.Equal(2, rows)
+        Assert.Equal(2, cols)
+
+        // Expected result:
+        // [1*(-3)   1*4]     [-3   4]
+        // [(-2)*(-3) (-2)*4] = [6  -8]
+        let expected = [| -3.0; 4.0; 6.0; -8.0 |]
+        floatArrayClose expected data 1e-10
+
+    [<Fact>]
+    let ``outerProduct: larger vectors to test SIMD path`` () =
+        let size1 = 20
+        let size2 = 30
+        let u = ReadOnlySpan(Array.init size1 (fun i -> float (i + 1)))
+        let v = ReadOnlySpan(Array.init size2 (fun j -> float (j + 1)))
+        let (rows, cols, data) = SpanMath.outerProduct(u, v)
+
+        Assert.Equal(size1, rows)
+        Assert.Equal(size2, cols)
+        Assert.Equal(size1 * size2, data.Length)
+
+        // Verify a few specific elements
+        // data[0] should be u[0] * v[0] = 1 * 1 = 1
+        floatEqual 1.0 data.[0] 1e-10
+
+        // data[size2] should be u[1] * v[0] = 2 * 1 = 2
+        floatEqual 2.0 data.[size2] 1e-10
+
+        // Last element data[size1*size2-1] should be u[size1-1] * v[size2-1] = 20 * 30 = 600
+        floatEqual 600.0 data.[size1 * size2 - 1] 1e-10
+
+        // Middle element: data[10*size2 + 15] should be u[10] * v[15] = 11 * 16 = 176
+        floatEqual 176.0 data.[10 * size2 + 15] 1e-10
+
+    [<Fact>]
+    let ``outerProduct: mathematical property - u ⊗ v creates rank-1 matrix`` () =
+        let u = ReadOnlySpan([| 1.0; 2.0 |])
+        let v = ReadOnlySpan([| 3.0; 4.0; 5.0 |])
+        let (rows, cols, data) = SpanMath.outerProduct(u, v)
+
+        // All columns should be proportional to u
+        // Column 0: [1*3; 2*3] = [3; 6] = 3 * u
+        // Column 1: [1*4; 2*4] = [4; 8] = 4 * u
+        // Column 2: [1*5; 2*5] = [5; 10] = 5 * u
+
+        for j = 0 to cols - 1 do
+            let ratio = v.[j]
+            for i = 0 to rows - 1 do
+                let expected = u.[i] * ratio
+                floatEqual expected data.[i * cols + j] 1e-10
+
+    [<Fact>]
+    let ``outerProduct: identity-like vectors`` () =
+        let u = ReadOnlySpan([| 1.0; 0.0; 0.0 |])
+        let v = ReadOnlySpan([| 0.0; 1.0; 0.0 |])
+        let (rows, cols, data) = SpanMath.outerProduct(u, v)
+
+        Assert.Equal(3, rows)
+        Assert.Equal(3, cols)
+
+        // Expected result:
+        // [1*0  1*1  1*0]   [0  1  0]
+        // [0*0  0*1  0*0] = [0  0  0]
+        // [0*0  0*1  0*0]   [0  0  0]
+        let expected = [| 0.0; 1.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0 |]
+        floatArrayClose expected data 1e-10
+
+    [<Fact>]
+    let ``outerProduct: commutative property size check`` () =
+        let u = ReadOnlySpan([| 1.0; 2.0; 3.0 |])
+        let v = ReadOnlySpan([| 4.0; 5.0 |])
+
+        let (rows1, cols1, data1) = SpanMath.outerProduct(u, v)
+        let (rows2, cols2, data2) = SpanMath.outerProduct(v, u)
+
+        // u ⊗ v should be 3x2, v ⊗ u should be 2x3
+        Assert.Equal(3, rows1)
+        Assert.Equal(2, cols1)
+        Assert.Equal(2, rows2)
+        Assert.Equal(3, cols2)
+
+        // Both should have same total elements
+        Assert.Equal(data1.Length, data2.Length)
+
+        // data1 is row-major 3x2, data2 is row-major 2x3
+        // They should be transposes of each other
+        for i = 0 to rows1 - 1 do
+            for j = 0 to cols1 - 1 do
+                floatEqual data1.[i * cols1 + j] data2.[j * cols2 + i] 1e-10

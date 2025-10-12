@@ -320,6 +320,7 @@ type SpanMath =
 // outer product #######
     
     /// Computes the outer product of two spans.
+    /// Result[i,j] = u[i] * v[j] for all i,j
     static member inline outerProduct<'T
         when 'T :> Numerics.INumber<'T>
          and 'T : struct
@@ -335,19 +336,34 @@ type SpanMath =
         let cols = v.Length
         let data = Array.zeroCreate<'T> (rows * cols)
 
-        for i = 0 to rows - 1 do
-            let ui = u[i]
-            for j = 0 to cols - 1 do
-                let vSpan = v
-                let simdCols = Numerics.Vector<'T>.Count
-                let simdCount = cols / simdCols
-                let ceiling = simdCount * simdCols
+        if Numerics.Vector.IsHardwareAccelerated && cols >= Numerics.Vector<'T>.Count then
+            // SIMD path: broadcast each u[i] and multiply with v vector
+            let simdWidth = Numerics.Vector<'T>.Count
+            let simdCount = cols / simdWidth
+            let ceiling = simdCount * simdWidth
 
-                let vVec = MemoryMarshal.Cast<'T, Numerics.Vector<'T>>(v)
+            // Cast v to SIMD vectors once
+            let vVec = MemoryMarshal.Cast<'T, Numerics.Vector<'T>>(v)
 
+            for i = 0 to rows - 1 do
+                let ui = u[i]
+                let uBroadcast = Numerics.Vector<'T>(ui)
+                let rowStart = i * cols
+
+                // SIMD multiplication for aligned portion
                 for k = 0 to simdCount - 1 do
-                    let vi = Numerics.Vector<'T>(ui)
-                    let res = vi * vVec[k]
-                    res.CopyTo(MemoryMarshal.CreateSpan(&data.[i * cols + k * simdCols], simdCols))
+                    let result = uBroadcast * vVec[k]
+                    result.CopyTo(MemoryMarshal.CreateSpan(&data.[rowStart + k * simdWidth], simdWidth))
+
+                // Scalar fallback for remainder
+                for j = ceiling to cols - 1 do
+                    data.[rowStart + j] <- ui * v.[j]
+        else
+            // Scalar fallback for small vectors or no SIMD
+            for i = 0 to rows - 1 do
+                let ui = u[i]
+                let rowStart = i * cols
+                for j = 0 to cols - 1 do
+                    data.[rowStart + j] <- ui * v.[j]
 
         (rows, cols, data)
