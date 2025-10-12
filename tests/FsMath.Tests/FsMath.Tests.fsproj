@@ -20,6 +20,7 @@
     <Compile Include="MatrixModuleTests.fs" />
     <Compile Include="MatrixModuleQuotationTests.fs" />
     <Compile Include="VectorOpsTests.fs" />
+    <Compile Include="VectorOpsQuotationTests.fs" />
     <Compile Include="MatrixFloatTests.fs" />
     <Compile Include="MatrixAdditionalTests.fs" />
     <Compile Include="PermutationTests.fs" />
