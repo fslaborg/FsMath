@@ -3,9 +3,9 @@
 #   gh aw compile
 # For more information: https://github.com/githubnext/gh-aw/blob/main/.github/instructions/github-agentic-workflows.instructions.md
 #
-# Source: githubnext/agentics/workflows/daily-test-improver.md@eb489a0b6cb3bd7c7f94d5d3362237641c22cd31
+# Source: githubnext/agentics/workflows/daily-test-improver.md@ebedab5169a6ed038d5382fd8b329b7bd0042fc0
 #
-# Effective stop-time: 2025-10-13 19:06:49
+# Effective stop-time: 2025-10-14 00:12:13
 
 name: "Daily Test Coverage Improver"
 on:
@@ -144,7 +144,7 @@ jobs:
           WORKFLOW_NAME="Daily Test Coverage Improver"
           
           # Check stop-time limit
-          STOP_TIME="2025-10-13 19:06:49"
+          STOP_TIME="2025-10-14 00:12:13"
           echo "Checking stop-time limit: $STOP_TIME"
           
           # Convert stop time to epoch seconds
@@ -3278,9 +3278,10 @@ jobs:
         env:
           GITHUB_AW_AGENT_OUTPUT: ${{ needs.agent.outputs.output }}
           GITHUB_AW_WORKFLOW_NAME: "Daily Test Coverage Improver"
-          GITHUB_AW_WORKFLOW_SOURCE: "githubnext/agentics/workflows/daily-test-improver.md@eb489a0b6cb3bd7c7f94d5d3362237641c22cd31"
-          GITHUB_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/githubnext/agentics/tree/eb489a0b6cb3bd7c7f94d5d3362237641c22cd31/workflows/daily-test-improver.md"
+          GITHUB_AW_WORKFLOW_SOURCE: "githubnext/agentics/workflows/daily-test-improver.md@ebedab5169a6ed038d5382fd8b329b7bd0042fc0"
+          GITHUB_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/githubnext/agentics/tree/ebedab5169a6ed038d5382fd8b329b7bd0042fc0/workflows/daily-test-improver.md"
           GITHUB_AW_COMMENT_TARGET: "*"
+          GITHUB_AW_COMMENT_DISCUSSION: "true"
         with:
           script: |
             function generateFooter(workflowName, runUrl, workflowSource, workflowSourceURL) {

@@ -19,6 +19,7 @@ safe-outputs:
     title-prefix: "${{ github.workflow }}"
     category: "ideas"
   add-comment:
+    discussion: true
     target: "*" # can add a comment to any one single issue or pull request
   create-pull-request: # can create a pull request
     draft: true
@@ -48,7 +49,7 @@ steps:
     id: coverage-steps
     continue-on-error: true # the model may not have got it right, so continue anyway, the model will check the results and try to fix the steps
 
-source: githubnext/agentics/workflows/daily-test-improver.md@eb489a0b6cb3bd7c7f94d5d3362237641c22cd31
+source: githubnext/agentics/workflows/daily-test-improver.md@ebedab5169a6ed038d5382fd8b329b7bd0042fc0
 ---
 # Daily Test Coverage Improver
 

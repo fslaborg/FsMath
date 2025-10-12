@@ -20,6 +20,7 @@ safe-outputs:
     category: "ideas"
     max: 5
   add-comment:
+    discussion: true
     target: "*" # can add a comment to any one single issue or pull request
   create-pull-request:
     draft: true
@@ -52,7 +53,7 @@ steps:
     id: build-steps
     continue-on-error: true # the model may not have got it right, so continue anyway, the model will check the results and try to fix the steps
 
-source: githubnext/agentics/workflows/daily-perf-improver.md@eb489a0b6cb3bd7c7f94d5d3362237641c22cd31
+source: githubnext/agentics/workflows/daily-perf-improver.md@ebedab5169a6ed038d5382fd8b329b7bd0042fc0
 ---
 # Daily Perf Improver
 
