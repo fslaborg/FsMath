@@ -236,3 +236,66 @@ module VectorModuleTests =
         let v = [| 1.0; 2.0; 3.0 |]
         let result = Vector.sub 3 v
         Assert.Empty(result)
+
+    // Tests for permuteBy function
+    [<Fact>]
+    let ``permuteBy: applies identity permutation`` () =
+        let v = [| 1.0; 2.0; 3.0; 4.0 |]
+        let P = Permutation.identity
+        let result = Vector.permuteBy P v
+        floatArrayClose [| 1.0; 2.0; 3.0; 4.0 |] result 1e-10
+
+    [<Fact>]
+    let ``permuteBy: applies simple permutation`` () =
+        // Permutation: [2, 0, 1] means result[0] = v[2], result[1] = v[0], result[2] = v[1]
+        let v = [| 10.0; 20.0; 30.0 |]
+        let P = Permutation.ofArray [| 2; 0; 1 |]
+        let result = Vector.permuteBy P v
+        floatArrayClose [| 30.0; 10.0; 20.0 |] result 1e-10
+
+    [<Fact>]
+    let ``permuteBy: applies swap permutation`` () =
+        let v = [| 1.0; 2.0; 3.0; 4.0; 5.0 |]
+        let P = Permutation.swap 1 3  // Swap indices 1 and 3
+        let result = Vector.permuteBy P v
+        floatArrayClose [| 1.0; 4.0; 3.0; 2.0; 5.0 |] result 1e-10
+
+    [<Fact>]
+    let ``permuteBy: applies reversal permutation`` () =
+        let v = [| 1.0; 2.0; 3.0; 4.0; 5.0 |]
+        let P = Permutation.reversal 5
+        let result = Vector.permuteBy P v
+        floatArrayClose [| 5.0; 4.0; 3.0; 2.0; 1.0 |] result 1e-10
+
+    [<Fact>]
+    let ``permuteBy: applies rotation permutation`` () =
+        let v = [| 1.0; 2.0; 3.0; 4.0 |]
+        let P = Permutation.rotation 4 1  // Rotate right by 1
+        let result = Vector.permuteBy P v
+        floatArrayClose [| 2.0; 3.0; 4.0; 1.0 |] result 1e-10
+
+    [<Fact>]
+    let ``permuteBy: works with single element`` () =
+        let v = [| 42.0 |]
+        let P = Permutation.identity
+        let result = Vector.permuteBy P v
+        floatArrayClose [| 42.0 |] result 1e-10
+
+    [<Fact>]
+    let ``permuteBy: double permutation equals inverse`` () =
+        // Applying a permutation twice with its inverse should return original
+        let v = [| 1.0; 2.0; 3.0; 4.0 |]
+        let pArray = [| 2; 0; 3; 1 |]
+        let P = Permutation.ofArray pArray
+        let Pinv = Permutation.inverse 4 P
+        let permuted = Vector.permuteBy P v
+        let restored = Vector.permuteBy Pinv permuted
+        floatArrayClose v restored 1e-10
+
+    [<Fact>]
+    let ``permuteBy: works with integers`` () =
+        let v = [| 10; 20; 30; 40 |]
+        let P = Permutation.ofArray [| 3; 2; 1; 0 |]
+        let result = Vector.permuteBy P v
+        let expected = [| 40; 30; 20; 10 |]
+        Assert.Equal<int[]>(expected, result)
