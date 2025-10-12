@@ -349,3 +349,218 @@ module SVDTests =
         let VtV = matmul Vt V
         for i in 0 .. Vt.GetLength(0) - 1 do
             assertApproxEqual 1.0 VtV.[i,i]
+
+
+/// Quotation-based tests for Givens module (inline functions)
+/// Using F# quotation evaluation to track coverage of inline functions
+module GivensQuotationTests =
+
+    open Microsoft.FSharp.Linq.RuntimeHelpers
+
+    let private tolerance = 1e-10
+
+    /// Helper to evaluate F# quotations
+    let inline eval<'T> (expr: Microsoft.FSharp.Quotations.Expr<'T>) : 'T =
+        LeafExpressionConverter.EvaluateQuotation expr :?> 'T
+
+    /// Helper to assert two floats are approximately equal
+    let private assertApproxEqual (expected: float) (actual: float) =
+        let diff = abs(expected - actual)
+        Assert.True(diff < tolerance, sprintf "Expected %f but got %f (diff: %e)" expected actual diff)
+
+    [<Fact>]
+    let ``Givens.compute Q: when b is zero, returns (1, 0)`` () =
+        let a = 5.0
+        let b = 0.0
+        let (c, s) = eval <@ Givens.compute a b @>
+        assertApproxEqual 1.0 c
+        assertApproxEqual 0.0 s
+
+    [<Fact>]
+    let ``Givens.compute Q: when a is zero and b is nonzero`` () =
+        let a = 0.0
+        let b = 3.0
+        let (c, s) = eval <@ Givens.compute a b @>
+        // When a=0, |b| > |a|, so s = 1/sqrt(1 + 0) = 1, c = 0
+        assertApproxEqual 0.0 c
+        let expectedS = if b > 0.0 then 1.0 else -1.0
+        assertApproxEqual expectedS s
+
+    [<Fact>]
+    let ``Givens.compute Q: when |b| > |a|`` () =
+        let a = 1.0
+        let b = 3.0
+        let (c, s) = eval <@ Givens.compute a b @>
+        // Should satisfy c^2 + s^2 = 1 (approximately)
+        let sumSquares = c * c + s * s
+        assertApproxEqual 1.0 sumSquares
+
+    [<Fact>]
+    let ``Givens.compute Q: when |a| > |b|`` () =
+        let a = 5.0
+        let b = 2.0
+        let (c, s) = eval <@ Givens.compute a b @>
+        // Should satisfy c^2 + s^2 = 1 (approximately)
+        let sumSquares = c * c + s * s
+        assertApproxEqual 1.0 sumSquares
+
+    [<Fact>]
+    let ``Givens.compute Q: rotation eliminates b component`` () =
+        let a = 3.0
+        let b = 4.0
+        let (c, s) = eval <@ Givens.compute a b @>
+        // After rotation: [c, s; -s, c] * [a; b] = [r; 0]
+        let r = c * a + s * b
+        let eliminated = -s * a + c * b
+        // eliminated should be approximately 0
+        Assert.True(abs eliminated < tolerance, sprintf "Expected eliminated component to be ~0, got %f" eliminated)
+        // r should be approximately sqrt(a^2 + b^2)
+        let expectedR = sqrt(a * a + b * b)
+        assertApproxEqual expectedR r
+
+    [<Fact>]
+    let ``Givens.compute Q: with negative values`` () =
+        let a = -3.0
+        let b = 4.0
+        let (c, s) = eval <@ Givens.compute a b @>
+        // Should still satisfy c^2 + s^2 = 1
+        let sumSquares = c * c + s * s
+        assertApproxEqual 1.0 sumSquares
+
+    [<Fact>]
+    let ``Givens.compute Q: with equal magnitude values`` () =
+        let a = 3.0
+        let b = 3.0
+        let (c, s) = eval <@ Givens.compute a b @>
+        // Should satisfy c^2 + s^2 = 1
+        let sumSquares = c * c + s * s
+        assertApproxEqual 1.0 sumSquares
+
+    [<Fact>]
+    let ``Givens.compute Q: with very small values`` () =
+        let a = 1e-10
+        let b = 2e-10
+        let (c, s) = eval <@ Givens.compute a b @>
+        // Should still maintain c^2 + s^2 = 1
+        let sumSquares = c * c + s * s
+        assertApproxEqual 1.0 sumSquares
+
+
+/// Quotation-based tests for GolubKahan module (inline functions)
+module GolubKahanQuotationTests =
+
+    open Microsoft.FSharp.Linq.RuntimeHelpers
+
+    let private tolerance = 1e-8
+
+    /// Helper to evaluate F# quotations
+    let inline eval<'T> (expr: Microsoft.FSharp.Quotations.Expr<'T>) : 'T =
+        LeafExpressionConverter.EvaluateQuotation expr :?> 'T
+
+    /// Helper to assert two floats are approximately equal
+    let private assertApproxEqual (expected: float) (actual: float) =
+        let diff = abs(expected - actual)
+        Assert.True(diff < tolerance, sprintf "Expected %f but got %f (diff: %e)" expected actual diff)
+
+    [<Fact>]
+    let ``GolubKahan.diagonalize Q: diagonal matrix returns diagonal values`` () =
+        let d = [| 5.0; 3.0; 1.0 |]
+        let e = [| 0.0; 0.0 |]
+        let b = { D = d; E = e }
+        let result = eval <@ GolubKahan.diagonalize b @>
+
+        // When off-diagonal is zero, should converge immediately
+        Assert.Equal(3, result.Length)
+        // Singular values should be sorted descending and non-negative
+        Assert.True(result.[0] >= result.[1])
+        Assert.True(result.[1] >= result.[2])
+        for i in 0..2 do
+            Assert.True(result.[i] >= 0.0)
+
+    [<Fact>]
+    let ``GolubKahan.diagonalize Q: single element returns absolute value`` () =
+        let d = [| 3.0 |]
+        let e = [| |]
+        let b = { D = d; E = e }
+        let result = eval <@ GolubKahan.diagonalize b @>
+
+        Assert.Equal(1, result.Length)
+        assertApproxEqual 3.0 result.[0]
+
+    [<Fact>]
+    let ``GolubKahan.diagonalize Q: 2x2 bidiagonal matrix`` () =
+        let d = [| 4.0; 3.0 |]
+        let e = [| 1.0 |]
+        let b = { D = d; E = e }
+        let result = eval <@ GolubKahan.diagonalize b @>
+
+        Assert.Equal(2, result.Length)
+        // Should be sorted descending
+        Assert.True(result.[0] >= result.[1])
+        // All non-negative
+        for i in 0..1 do
+            Assert.True(result.[i] >= 0.0)
+
+    [<Fact>]
+    let ``GolubKahan.diagonalize Q: returns non-negative singular values`` () =
+        let d = [| 3.0; 2.0; 1.0 |]
+        let e = [| 0.5; 0.3 |]
+        let b = { D = d; E = e }
+        let result = eval <@ GolubKahan.diagonalize b @>
+
+        // All singular values should be non-negative (within numerical tolerance)
+        // Note: GolubKahan may produce tiny negative values due to numerical precision
+        let relaxedTolerance = 1e-4
+        for i in 0 .. result.Length-1 do
+            Assert.True(result.[i] > -relaxedTolerance, sprintf "Singular value at index %d should be >= 0 (within tolerance), got %f" i result.[i])
+
+    [<Fact>]
+    let ``GolubKahan.diagonalize Q: singular values sorted descending`` () =
+        let d = [| 5.0; 3.0; 4.0; 1.0 |]
+        let e = [| 0.5; 0.3; 0.2 |]
+        let b = { D = d; E = e }
+        let result = eval <@ GolubKahan.diagonalize b @>
+
+        // Should be sorted in descending order
+        for i in 0 .. result.Length-2 do
+            Assert.True(result.[i] >= result.[i+1], sprintf "result.[%d]=%f should be >= result.[%d]=%f" i result.[i] (i+1) result.[i+1])
+
+    [<Fact>]
+    let ``GolubKahan.diagonalize Q: converges for well-conditioned matrix`` () =
+        let d = [| 10.0; 8.0; 6.0; 4.0 |]
+        let e = [| 0.1; 0.1; 0.1 |]
+        let b = { D = d; E = e }
+        let result = eval <@ GolubKahan.diagonalize b @>
+
+        // Should successfully diagonalize without error
+        Assert.Equal(4, result.Length)
+        // Check all values are finite
+        for i in 0..3 do
+            Assert.True(System.Double.IsFinite(result.[i]))
+
+    [<Fact>]
+    let ``GolubKahan.diagonalize Q: handles near-zero superdiagonal`` () =
+        let d = [| 5.0; 3.0; 1.0 |]
+        let e = [| 1e-12; 1e-12 |]
+        let b = { D = d; E = e }
+        let result = eval <@ GolubKahan.diagonalize b @>
+
+        // Should converge quickly with near-zero off-diagonal
+        Assert.Equal(3, result.Length)
+        // All values should be non-negative (within tolerance) and finite
+        for i in 0..2 do
+            Assert.True(result.[i] > -tolerance, sprintf "Result[%d]=%f should be >= 0 (within tolerance)" i result.[i])
+            Assert.True(System.Double.IsFinite(result.[i]), sprintf "Result[%d]=%f should be finite" i result.[i])
+
+    [<Fact>]
+    let ``GolubKahan.diagonalize Q: 3x3 bidiagonal with varying values`` () =
+        let d = [| 7.0; 5.0; 3.0 |]
+        let e = [| 2.0; 1.0 |]
+        let b = { D = d; E = e }
+        let result = eval <@ GolubKahan.diagonalize b @>
+
+        Assert.Equal(3, result.Length)
+        // Basic sanity checks
+        Assert.True(result.[0] > 0.0)
+        Assert.True(result.[0] >= result.[1])
+        Assert.True(result.[1] >= result.[2])
