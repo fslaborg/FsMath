@@ -333,3 +333,42 @@ module PermutationTests =
         Assert.Equal(0, composed 2)
         // p1(3)=0, p2(0)=3
         Assert.Equal(3, composed 3)
+
+    // ========================================
+    // Additional edge cases for better coverage
+    // ========================================
+
+    [<Fact>]
+    let ``ofFreshArray: validates all elements are unique (comprehensive check)`` () =
+        // Test that validation catches duplicates at various positions
+        let arr1 = [| 0; 0 |]  // Duplicate at positions 0 and 1
+        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr1 |> ignore)
+
+        let arr2 = [| 0; 1; 2; 1 |]  // Duplicate 1 at positions 1 and 3
+        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr2 |> ignore)
+
+        let arr3 = [| 2; 2; 0 |]  // Duplicate 2 at positions 0 and 1
+        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr3 |> ignore)
+
+    [<Fact>]
+    let ``ofFreshArray: validates range for every element`` () =
+        // Test that out-of-range validation works for various positions
+        let arr1 = [| -2; 0; 1 |]  // Negative at position 0
+        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr1 |> ignore)
+
+        let arr2 = [| 0; 1; 5 |]  // Out of range at position 2 (size=3, max=2)
+        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr2 |> ignore)
+
+        let arr3 = [| 0; 10; 2 |]  // Out of range at position 1
+        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr3 |> ignore)
+
+    [<Fact>]
+    let ``permutation function validates index range on every call`` () =
+        let p = Permutation.ofArray [| 1; 0; 2 |]
+
+        // Test various out-of-range indices
+        throws<ArgumentException>(fun () -> p -1 |> ignore)
+        throws<ArgumentException>(fun () -> p -100 |> ignore)
+        throws<ArgumentException>(fun () -> p 3 |> ignore)
+        throws<ArgumentException>(fun () -> p 10 |> ignore)
+        throws<ArgumentException>(fun () -> p 999 |> ignore)
