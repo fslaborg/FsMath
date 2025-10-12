@@ -18,6 +18,7 @@
     <Compile Include="MatrixFloatTests.fs" />
     <Compile Include="LinearAlgebra.fs" />
     <Compile Include="SpecialFunctions.fs" />
+    <Compile Include="SpanMathTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
