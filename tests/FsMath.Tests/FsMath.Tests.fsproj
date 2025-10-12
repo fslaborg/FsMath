@@ -27,6 +27,7 @@
     <Compile Include="SpecialFunctions.fs" />
     <Compile Include="SpanMathTests.fs" />
     <Compile Include="SIMDUtilsTests.fs" />
+    <Compile Include="SpanPrimitivesTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
