@@ -25,6 +25,7 @@
     <Compile Include="EVD.fs" />
     <Compile Include="SVD.fs" />
     <Compile Include="SpecialFunctions.fs" />
+    <Compile Include="GammaQuotationTests.fs" />
     <Compile Include="SpanMathTests.fs" />
     <Compile Include="SIMDUtilsTests.fs" />
     <Compile Include="Program.fs" />
