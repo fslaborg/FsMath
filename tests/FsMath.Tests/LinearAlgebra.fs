@@ -410,6 +410,196 @@ module HouseholderTests =
         floatClose Accuracy.low h.Beta expectedBeta "Beta should handle small values"
 
 
+// Quotation-based tests for inline Householder functions
+// These tests use F# quotation evaluation to ensure inline functions are tracked by coverage tools
+module HouseholderQuotationTests =
+
+    open Microsoft.FSharp.Linq.RuntimeHelpers
+
+    // Helper to evaluate quotations
+    let eval q = LeafExpressionConverter.EvaluateQuotation q
+
+    [<Fact>]
+    let ``createQ: simple vector [3, 0, 0]`` () =
+        let x = [| 3.0; 0.0; 0.0 |]
+        let h = eval <@ Householder.create x @> :?> Householder<float>
+        floatEqual h.Beta 3.0 1e-10
+        floatEqual h.Tau 0.0 1e-10
+        floatEqual h.V.[0] 1.0 1e-10
+
+    [<Fact>]
+    let ``createQ: vector [1, 1, 1] produces valid reflection`` () =
+        let x = [| 1.0; 1.0; 1.0 |]
+        let h = eval <@ Householder.create x @> :?> Householder<float>
+        floatClose Accuracy.medium h.Beta (sqrt 3.0) "Beta should be sqrt(3)"
+        floatEqual h.V.[0] 1.0 1e-10
+        Assert.True(h.Tau > 0.0 && h.Tau <= 2.0, $"Tau should be in (0, 2], got {h.Tau}")
+
+    [<Fact>]
+    let ``createQ: vector [4, 3] produces non-zero tau`` () =
+        let x = [| 4.0; 3.0 |]
+        let h = eval <@ Householder.create x @> :?> Householder<float>
+        floatEqual h.Beta 5.0 1e-10
+        Assert.True(h.Tau > 0.0, $"Tau should be positive, got {h.Tau}")
+        floatEqual h.V.[0] 1.0 1e-10
+
+    [<Fact>]
+    let ``createQ: negative first element`` () =
+        let x = [| -2.0; 1.0; 1.0 |]
+        let h = eval <@ Householder.create x @> :?> Householder<float>
+        floatClose Accuracy.medium h.Beta (sqrt 6.0) "Beta should be sqrt(6)"
+        floatEqual h.V.[0] 1.0 1e-10
+
+    [<Fact>]
+    let ``createQ: single element vector`` () =
+        let x = [| 5.0 |]
+        let h = eval <@ Householder.create x @> :?> Householder<float>
+        floatEqual h.Beta 5.0 1e-10
+        floatEqual h.Tau 0.0 1e-10
+        floatEqual h.V.[0] 1.0 1e-10
+
+    [<Fact>]
+    let ``createQ: large vector maintains precision`` () =
+        let x = [| 1.0; 2.0; 3.0; 4.0; 5.0 |]
+        let h = eval <@ Householder.create x @> :?> Householder<float>
+        floatClose Accuracy.medium h.Beta (sqrt 55.0) "Beta should be sqrt(55)"
+        floatEqual h.V.[0] 1.0 1e-10
+
+    [<Fact>]
+    let ``createQ: zero tail returns zero tau`` () =
+        let x = [| 7.0; 0.0; 0.0; 0.0 |]
+        let h = eval <@ Householder.create x @> :?> Householder<float>
+        floatEqual h.Tau 0.0 1e-10
+        floatEqual h.Beta 7.0 1e-10
+
+    [<Fact>]
+    let ``createQ: vector with mixed signs`` () =
+        let x = [| 3.0; -4.0; 0.0 |]
+        let h = eval <@ Householder.create x @> :?> Householder<float>
+        floatEqual h.Beta 5.0 1e-10
+        floatEqual h.V.[0] 1.0 1e-10
+        Assert.True(h.Tau > 0.0, $"Tau should be positive, got {h.Tau}")
+
+    [<Fact>]
+    let ``applyLeftQ: identity transformation on zero tau`` () =
+        let A = Matrix(3, 3, [| 1.0; 2.0; 3.0;
+                               4.0; 5.0; 6.0;
+                               7.0; 8.0; 9.0 |])
+        let h = { V = [| 1.0; 0.0; 0.0 |]; Tau = 0.0; Beta = 1.0 }
+        let A' = A |> Matrix.copy
+        let applyAction = eval <@ fun () -> Householder.applyLeft(h, A', 0) @> :?> (unit -> unit)
+        applyAction()
+        floatMatrixClose Accuracy.high A' A "Matrix should be unchanged with tau=0"
+
+    [<Fact>]
+    let ``applyLeftQ: transforms first column correctly`` () =
+        let A = Matrix(3, 2, [| 1.0; 1.0;
+                               1.0; 2.0;
+                               1.0; 3.0 |])
+        let x = Matrix.getCol 0 A
+        let h = eval <@ Householder.create x @> :?> Householder<float>
+        let A' = A |> Matrix.copy
+        let applyAction = eval <@ fun () -> Householder.applyLeft(h, A', 0) @> :?> (unit -> unit)
+        applyAction()
+        floatClose Accuracy.medium A'.[0, 0] h.Beta "A'[0,0] should be beta"
+        floatClose Accuracy.medium A'.[1, 0] 0.0 "A'[1,0] should be zero"
+        floatClose Accuracy.medium A'.[2, 0] 0.0 "A'[2,0] should be zero"
+
+    [<Fact>]
+    let ``applyLeftQ: orthogonal transformation preserves norm`` () =
+        let A = Matrix(3, 3, [| 1.0; 2.0; 3.0;
+                               4.0; 5.0; 6.0;
+                               7.0; 8.0; 9.0 |])
+        let x = Matrix.getCol 0 A
+        let h = eval <@ Householder.create x @> :?> Householder<float>
+        let A' = A |> Matrix.copy
+        let applyAction = eval <@ fun () -> Householder.applyLeft(h, A', 0) @> :?> (unit -> unit)
+        applyAction()
+        let col0Norm = Vector.norm (Matrix.getCol 0 A)
+        let col0NormAfter = Vector.norm (Matrix.getCol 0 A')
+        floatClose Accuracy.medium col0NormAfter col0Norm "Column norm should be preserved"
+
+    [<Fact>]
+    let ``applyLeftQ: with row offset`` () =
+        let A = Matrix(4, 3, [| 1.0; 2.0; 3.0;
+                               4.0; 5.0; 6.0;
+                               7.0; 8.0; 9.0;
+                               10.0; 11.0; 12.0 |])
+        let x = [| 5.0; 8.0; 11.0 |]
+        let h = eval <@ Householder.create x @> :?> Householder<float>
+        let A' = A |> Matrix.copy
+        let applyAction = eval <@ fun () -> Householder.applyLeft(h, A', 1) @> :?> (unit -> unit)
+        applyAction()
+        floatEqual A'.[0, 0] 1.0 1e-10
+        floatEqual A'.[0, 1] 2.0 1e-10
+        floatEqual A'.[0, 2] 3.0 1e-10
+
+    [<Fact>]
+    let ``applyRightQ: identity transformation on zero tau`` () =
+        let A = Matrix(3, 3, [| 1.0; 2.0; 3.0;
+                               4.0; 5.0; 6.0;
+                               7.0; 8.0; 9.0 |])
+        let h = { V = [| 1.0; 0.0; 0.0 |]; Tau = 0.0; Beta = 1.0 }
+        let A' = A |> Matrix.copy
+        let applyAction = eval <@ fun () -> Householder.applyRight(h, A', 0) @> :?> (unit -> unit)
+        applyAction()
+        floatMatrixClose Accuracy.high A' A "Matrix should be unchanged with tau=0"
+
+    [<Fact>]
+    let ``applyRightQ: transforms first row correctly`` () =
+        let A = Matrix(2, 3, [| 1.0; 1.0; 1.0;
+                               2.0; 2.0; 2.0 |])
+        let x = Matrix.getRow 0 A
+        let h = eval <@ Householder.create x @> :?> Householder<float>
+        let A' = A |> Matrix.copy
+        let applyAction = eval <@ fun () -> Householder.applyRight(h, A', 0) @> :?> (unit -> unit)
+        applyAction()
+        floatClose Accuracy.medium A'.[0, 0] h.Beta "A'[0,0] should be beta"
+        floatClose Accuracy.medium A'.[0, 1] 0.0 "A'[0,1] should be zero"
+        floatClose Accuracy.medium A'.[0, 2] 0.0 "A'[0,2] should be zero"
+
+    [<Fact>]
+    let ``applyRightQ: orthogonal transformation preserves norm`` () =
+        let A = Matrix(3, 3, [| 1.0; 2.0; 3.0;
+                               4.0; 5.0; 6.0;
+                               7.0; 8.0; 9.0 |])
+        let x = Matrix.getRow 0 A
+        let h = eval <@ Householder.create x @> :?> Householder<float>
+        let A' = A |> Matrix.copy
+        let applyAction = eval <@ fun () -> Householder.applyRight(h, A', 0) @> :?> (unit -> unit)
+        applyAction()
+        let row0Norm = Vector.norm (Matrix.getRow 0 A)
+        let row0NormAfter = Vector.norm (Matrix.getRow 0 A')
+        floatClose Accuracy.medium row0NormAfter row0Norm "Row norm should be preserved"
+
+    [<Fact>]
+    let ``applyRightQ: with column offset`` () =
+        let A = Matrix(3, 4, [| 1.0; 2.0; 3.0; 4.0;
+                               5.0; 6.0; 7.0; 8.0;
+                               9.0; 10.0; 11.0; 12.0 |])
+        let x = [| 2.0; 3.0; 4.0 |]
+        let h = eval <@ Householder.create x @> :?> Householder<float>
+        let A' = A |> Matrix.copy
+        let applyAction = eval <@ fun () -> Householder.applyRight(h, A', 1) @> :?> (unit -> unit)
+        applyAction()
+        floatEqual A'.[0, 0] 1.0 1e-10
+        floatEqual A'.[1, 0] 5.0 1e-10
+        floatEqual A'.[2, 0] 9.0 1e-10
+
+    [<Fact>]
+    let ``HouseholderQ: reflection involution property`` () =
+        let A = Matrix(3, 3, [| 1.0; 2.0; 3.0;
+                               4.0; 5.0; 6.0;
+                               7.0; 8.0; 9.0 |])
+        let x = Matrix.getCol 0 A
+        let h = eval <@ Householder.create x @> :?> Householder<float>
+        let A' = A |> Matrix.copy
+        let applyAction = eval <@ fun () -> Householder.applyLeft(h, A', 0) @> :?> (unit -> unit)
+        applyAction()
+        applyAction()
+        floatMatrixClose Accuracy.low A' A "Applying Householder twice should give original"
+
+
 module QrDecompositionHouseHolderTests =
 
 
