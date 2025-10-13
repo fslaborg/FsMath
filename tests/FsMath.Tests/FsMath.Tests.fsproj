@@ -26,6 +26,7 @@
     <Compile Include="AlgTypesTopLevelOpsCoverageTests.fs" />
     <Compile Include="MatrixFloatTests.fs" />
     <Compile Include="MatrixAdditionalTests.fs" />
+    <Compile Include="MatrixEdgeCaseTests.fs" />
     <Compile Include="PermutationTests.fs" />
     <Compile Include="LinearAlgebraTests.fs" />
     <Compile Include="LinearAlgebraCoverageTests.fs" />
