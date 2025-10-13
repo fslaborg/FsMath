@@ -11,28 +11,29 @@
     <Compile Include="AssertHelpers.fs" />
     <Compile Include="GenericMathTests.fs" />
     <Compile Include="VectorModuleTests.fs" />
-    <Compile Include="VectorModuleQuotationTests.fs" />
+    <Compile Include="VectorModuleCoverageTests.fs" />
     <Compile Include="VectorFloatTests.fs" />
     <Compile Include="VectorIntTests.fs" />
     <Compile Include="VectorStaticMethodTests.fs" />
-    <Compile Include="VectorQuotationTests.fs" />
+    <Compile Include="VectorCoverageTests.fs" />
     <Compile Include="VectorManipulationTests.fs" />
     <Compile Include="MatrixModuleTests.fs" />
-    <Compile Include="MatrixModuleQuotationTests.fs" />
-    <Compile Include="MatrixStaticQuotationTests.fs" />
+    <Compile Include="MatrixModuleCoverageTests.fs" />
+    <Compile Include="MatrixStaticCoverageTests.fs" />
+    <Compile Include="MatrixExtCoverageTests.fs" />
     <Compile Include="VectorOpsTests.fs" />
-    <Compile Include="VectorOpsQuotationTests.fs" />
+    <Compile Include="VectorOpsCoverageTests.fs" />
     <Compile Include="MatrixFloatTests.fs" />
     <Compile Include="MatrixAdditionalTests.fs" />
     <Compile Include="PermutationTests.fs" />
-    <Compile Include="LinearAlgebra.fs" />
-    <Compile Include="LinearAlgebraQuotationTests.fs" />
+    <Compile Include="LinearAlgebraTests.fs" />
+    <Compile Include="LinearAlgebraCoverageTests.fs" />
     <Compile Include="LinearAlgebraAdvancedTests.fs" />
-    <Compile Include="EVD.fs" />
-    <Compile Include="SVD.fs" />
-    <Compile Include="BidiagonalizationQuotationTests.fs" />
-    <Compile Include="SpecialFunctions.fs" />
-    <Compile Include="GammaQuotationTests.fs" />
+    <Compile Include="EVDTests.fs" />
+    <Compile Include="SVDTests.fs" />
+    <Compile Include="BidiagonalizationCoverageTests.fs" />
+    <Compile Include="SpecialFunctionsTests.fs" />
+    <Compile Include="GammaCoverageTests.fs" />
     <Compile Include="SpanMathTests.fs" />
     <Compile Include="SIMDUtilsTests.fs" />
     <Compile Include="SpanPrimitivesTests.fs" />
@@ -44,6 +45,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="coverlet.msbuild" Version="6.0.4" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.0.2">

@@ -14,7 +14,7 @@ open Microsoft.FSharp.Linq.RuntimeHelpers
 // Quotation-based tests for inline LinearAlgebra functions
 // These tests use F# quotation evaluation to ensure inline functions are tracked by coverage tools
 
-module LinearAlgebraQuotationTests =
+module LinearAlgebraCoverageTests =
 
     // Helper to evaluate quotations
     let eval q = LeafExpressionConverter.EvaluateQuotation q

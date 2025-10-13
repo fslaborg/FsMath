@@ -412,7 +412,7 @@ module HouseholderTests =
 
 // Quotation-based tests for inline Householder functions
 // These tests use F# quotation evaluation to ensure inline functions are tracked by coverage tools
-module HouseholderQuotationTests =
+module HouseholderCoverageTests =
 
     open Microsoft.FSharp.Linq.RuntimeHelpers
 

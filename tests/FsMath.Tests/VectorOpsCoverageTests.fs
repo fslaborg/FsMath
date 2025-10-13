@@ -18,7 +18,7 @@ open FSharp.Linq.RuntimeHelpers
 /// See: https://github.com/fslaborg/FsMath/discussions/5
 /// Maintainer recommendation: Use quotation evaluation technique for inline functions
 /// </summary>
-module VectorOpsQuotationTests =
+module VectorOpsCoverageTests =
 
     /// Helper to evaluate quotations that return a value
     let inline evalQ<'T> (expr: Microsoft.FSharp.Quotations.Expr<'T>) : 'T =
