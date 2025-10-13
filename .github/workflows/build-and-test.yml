@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
   build-and-test-linux:
@@ -14,15 +17,54 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.x.x
     - name: make script executable
       run: chmod u+x build.sh
-    - name: Build and test
+    - name: Build and test with coverage
       working-directory: ./
-      run: ./build.sh runtests
+      run: ./build.sh runtestswithcoverage
+    
+    - name: Install ReportGenerator
+      run: dotnet tool install -g dotnet-reportgenerator-globaltool
+    
+    - name: Generate coverage report
+      run: |
+        reportgenerator \
+          -reports:"TestResults/**/coverage.cobertura.xml" \
+          -targetdir:"TestResults/CoverageReport" \
+          -reporttypes:"Html;Cobertura;JsonSummary" \
+          -verbosity:"Info"
+    
+    - name: Code Coverage Report
+      uses: irongut/CodeCoverageSummary@v1.3.0
+      with:
+        filename: TestResults/**/coverage.cobertura.xml
+        badge: true
+        fail_below_min: false
+        format: markdown
+        hide_branch_rate: false
+        hide_complexity: true
+        indicators: true
+        output: both
+        thresholds: '60 80'
+    
+    - name: Add Coverage PR Comment
+      uses: marocchino/sticky-pull-request-comment@v2
+      if: github.event_name == 'pull_request'
+      with:
+        recreate: true
+        path: code-coverage-results.md
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: TestResults/CoverageReport/
 
   build-and-test-windows:
     
@@ -34,6 +76,6 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.x.x
-    - name: Build and test
+    - name: Build and test with coverage
       working-directory: ./
-      run: ./build.cmd runtests
+      run: ./build.cmd runtestswithcoverage
