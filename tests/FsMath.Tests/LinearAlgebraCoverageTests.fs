@@ -570,3 +570,160 @@ module LinearAlgebraCoverageTests =
                                4.0; 5.0; 6.0 |])
         let action = eval <@ fun () -> LinearAlgebra.determinant A @> :?> (unit -> float)
         throws<ArgumentException> (fun () -> action() |> ignore) "Should throw ArgumentException"
+
+    // ============ symmetricEigenspectrum tests ============
+
+    [<Fact>]
+    let ``symmetricEigenspectrumQ: identity matrix`` () =
+        let I = Matrix.identity 3
+        let (V, d) = eval <@ LinearAlgebra.symmetricEigenspectrum I @> :?> (Matrix<float> * Vector<float>)
+        // Eigenvalues of identity should all be 1.0
+        for i in 0 .. 2 do
+            floatEqual d.[i] 1.0 1e-10
+
+    [<Fact>]
+    let ``symmetricEigenspectrumQ: diagonal matrix`` () =
+        let D = Matrix(3, 3, [| 2.0; 0.0; 0.0;
+                               0.0; 5.0; 0.0;
+                               0.0; 0.0; 3.0 |])
+        let (V, d) = eval <@ LinearAlgebra.symmetricEigenspectrum D @> :?> (Matrix<float> * Vector<float>)
+        // Eigenvalues should be the diagonal elements (in some order)
+        let expected = [| 2.0; 5.0; 3.0 |] |> Array.sort
+        let actual = d |> Array.sort
+        for i in 0 .. 2 do
+            floatEqual actual.[i] expected.[i] 1e-10
+
+    [<Fact>]
+    let ``symmetricEigenspectrumQ: 2x2 symmetric matrix`` () =
+        let A = Matrix(2, 2, [| 4.0; 2.0;
+                               2.0; 3.0 |])
+        let (V, d) = eval <@ LinearAlgebra.symmetricEigenspectrum A @> :?> (Matrix<float> * Vector<float>)
+        // Check that A * V = V * D (where D = diag(d))
+        let AV = Matrix.matmul A V
+        // Compute V * D  manually: multiply each column of V by corresponding eigenvalue
+        let VD = Matrix.zeroCreate 2 2
+        for j in 0 .. 1 do
+            for i in 0 .. 1 do
+                VD.[i, j] <- V.[i, j] * d.[j]
+        floatMatrixClose Accuracy.medium AV VD "A * V should equal V * D"
+
+    [<Fact>]
+    let ``symmetricEigenspectrumQ: known symmetric matrix`` () =
+        let A = Matrix(2, 2, [| 2.0; -1.0;
+                               -1.0; 2.0 |])
+        let (V, d) = eval <@ LinearAlgebra.symmetricEigenspectrum A @> :?> (Matrix<float> * Vector<float>)
+        // Known eigenvalues: 1.0 and 3.0
+        let sortedEigenvalues = d |> Array.sort
+        floatEqual sortedEigenvalues.[0] 1.0 1e-6
+        floatEqual sortedEigenvalues.[1] 3.0 1e-6
+
+    [<Fact>]
+    let ``symmetricEigenspectrumQ: eigenvectors are orthonormal`` () =
+        let A = Matrix(3, 3, [| 25.0; 15.0; -5.0;
+                               15.0; 18.0;  0.0;
+                               -5.0; 0.0; 11.0 |])
+        let (V, _) = eval <@ LinearAlgebra.symmetricEigenspectrum A @> :?> (Matrix<float> * Vector<float>)
+        // V should be orthonormal: V^T * V = I
+        let VtV = Matrix.matmul (Matrix.transpose V) V
+        let I = Matrix.identity 3
+        floatMatrixClose Accuracy.medium VtV I "V^T * V should be identity"
+
+    // ============ subScaledRowInPlace tests ============
+
+    [<Fact>]
+    let ``subScaledRowInPlaceQ: basic subtraction`` () =
+        let dst = [| 10.0; 20.0; 30.0; 40.0 |]
+        let src = [| 1.0; 2.0; 3.0; 4.0 |]
+        eval <@ LinearAlgebra.subScaledRowInPlace 2.0 0 0 4 dst src @> |> ignore
+        // dst should now be [10 - 2*1, 20 - 2*2, 30 - 2*3, 40 - 2*4] = [8, 16, 24, 32]
+        let expected = [| 8.0; 16.0; 24.0; 32.0 |]
+        for i in 0 .. 3 do
+            floatEqual dst.[i] expected.[i] 1e-10
+
+    [<Fact>]
+    let ``subScaledRowInPlaceQ: with offsets`` () =
+        let dst = [| 0.0; 0.0; 10.0; 20.0; 30.0; 0.0 |]
+        let src = [| 0.0; 1.0; 2.0; 3.0; 0.0; 0.0 |]
+        eval <@ LinearAlgebra.subScaledRowInPlace 3.0 2 1 3 dst src @> |> ignore
+        // dst[2..4] -= 3.0 * src[1..3]
+        // dst[2..4] = [10, 20, 30] - 3.0 * [1, 2, 3] = [7, 14, 21]
+        floatEqual dst.[2] 7.0 1e-10
+        floatEqual dst.[3] 14.0 1e-10
+        floatEqual dst.[4] 21.0 1e-10
+        // Other elements should be unchanged
+        floatEqual dst.[0] 0.0 1e-10
+        floatEqual dst.[1] 0.0 1e-10
+        floatEqual dst.[5] 0.0 1e-10
+
+    [<Fact>]
+    let ``subScaledRowInPlaceQ: scale factor zero`` () =
+        let dst = [| 5.0; 10.0; 15.0 |]
+        let src = [| 1.0; 2.0; 3.0 |]
+        eval <@ LinearAlgebra.subScaledRowInPlace 0.0 0 0 3 dst src @> |> ignore
+        // With scale 0, dst should be unchanged
+        floatEqual dst.[0] 5.0 1e-10
+        floatEqual dst.[1] 10.0 1e-10
+        floatEqual dst.[2] 15.0 1e-10
+
+    [<Fact>]
+    let ``subScaledRowInPlaceQ: scale factor one`` () =
+        let dst = [| 10.0; 20.0; 30.0 |]
+        let src = [| 1.0; 2.0; 3.0 |]
+        eval <@ LinearAlgebra.subScaledRowInPlace 1.0 0 0 3 dst src @> |> ignore
+        // dst -= 1.0 * src
+        let expected = [| 9.0; 18.0; 27.0 |]
+        for i in 0 .. 2 do
+            floatEqual dst.[i] expected.[i] 1e-10
+
+    [<Fact>]
+    let ``subScaledRowInPlaceQ: negative scale factor`` () =
+        let dst = [| 10.0; 20.0 |]
+        let src = [| 5.0; 10.0 |]
+        eval <@ LinearAlgebra.subScaledRowInPlace -2.0 0 0 2 dst src @> |> ignore
+        // dst -= (-2.0) * src = dst + 2.0 * src
+        // [10, 20] + 2*[5, 10] = [20, 40]
+        floatEqual dst.[0] 20.0 1e-10
+        floatEqual dst.[1] 40.0 1e-10
+
+    [<Fact>]
+    let ``subScaledRowInPlaceQ: count = 1`` () =
+        let dst = [| 10.0; 20.0; 30.0 |]
+        let src = [| 5.0; 10.0; 15.0 |]
+        eval <@ LinearAlgebra.subScaledRowInPlace 2.0 1 1 1 dst src @> |> ignore
+        // Only dst[1] -= 2.0 * src[1]
+        // dst[1] = 20 - 2*10 = 0
+        floatEqual dst.[0] 10.0 1e-10
+        floatEqual dst.[1] 0.0 1e-10
+        floatEqual dst.[2] 30.0 1e-10
+
+    [<Fact>]
+    let ``subScaledRowInPlaceQ: in-place same array`` () =
+        let arr = [| 10.0; 20.0; 30.0; 40.0 |]
+        eval <@ LinearAlgebra.subScaledRowInPlace 0.5 0 0 4 arr arr @> |> ignore
+        // arr -= 0.5 * arr => arr = 0.5 * arr
+        let expected = [| 5.0; 10.0; 15.0; 20.0 |]
+        for i in 0 .. 3 do
+            floatEqual arr.[i] expected.[i] 1e-10
+
+    [<Fact>]
+    let ``subScaledRowInPlaceQ: different offset ranges`` () =
+        let dst = [| 100.0; 200.0; 300.0; 400.0; 500.0 |]
+        let src = [| 1.0; 2.0; 3.0; 4.0; 5.0 |]
+        eval <@ LinearAlgebra.subScaledRowInPlace 10.0 2 0 2 dst src @> |> ignore
+        // dst[2..3] -= 10.0 * src[0..1]
+        // [300, 400] - 10*[1, 2] = [290, 380]
+        floatEqual dst.[0] 100.0 1e-10
+        floatEqual dst.[1] 200.0 1e-10
+        floatEqual dst.[2] 290.0 1e-10
+        floatEqual dst.[3] 380.0 1e-10
+        floatEqual dst.[4] 500.0 1e-10
+
+    [<Fact>]
+    let ``subScaledRowInPlaceQ: large scale factor`` () =
+        let dst = [| 1000.0; 2000.0 |]
+        let src = [| 10.0; 20.0 |]
+        eval <@ LinearAlgebra.subScaledRowInPlace 100.0 0 0 2 dst src @> |> ignore
+        // dst -= 100 * src
+        // [1000, 2000] - 100*[10, 20] = [0, 0]
+        floatEqual dst.[0] 0.0 1e-10
+        floatEqual dst.[1] 0.0 1e-10
