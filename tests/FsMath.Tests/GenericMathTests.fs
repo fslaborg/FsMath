@@ -186,7 +186,7 @@ module GenericMathTests =
 // The quotation evaluation technique dynamically invokes the inline functions, allowing coverage
 // analysis to properly instrument them.
 
-module GenericMathQuotationTests =
+module GenericMathCoverageTests =
     open FSharp.Linq.RuntimeHelpers
 
     let inline eval q = LeafExpressionConverter.EvaluateQuotation q

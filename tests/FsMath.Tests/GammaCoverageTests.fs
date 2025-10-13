@@ -15,7 +15,7 @@ open Microsoft.FSharp.Linq.RuntimeHelpers
 /// Using F# 8.0's quotation evaluation, we can dynamically invoke inline functions
 /// to ensure they are executed and tracked by coverage tools.
 /// </summary>
-module GammaQuotationTests =
+module GammaCoverageTests =
 
     /// Helper to evaluate a quotation expression
     let inline eval q = LeafExpressionConverter.EvaluateQuotation q

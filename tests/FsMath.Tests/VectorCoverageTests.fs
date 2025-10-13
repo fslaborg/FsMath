@@ -17,7 +17,7 @@ open FSharp.Linq.RuntimeHelpers
 ///
 /// See: https://github.com/fslaborg/FsMath/discussions/5
 /// </summary>
-module VectorQuotationTests =
+module VectorCoverageTests =
 
     /// Helper to evaluate quotations that return a value
     let inline evalQ<'T> (expr: Microsoft.FSharp.Quotations.Expr<'T>) : 'T =

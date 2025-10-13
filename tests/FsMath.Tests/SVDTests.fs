@@ -353,7 +353,7 @@ module SVDTests =
 
 /// Quotation-based tests for Givens module (inline functions)
 /// Using F# quotation evaluation to track coverage of inline functions
-module GivensQuotationTests =
+module GivensCoverageTests =
 
     open Microsoft.FSharp.Linq.RuntimeHelpers
 
@@ -447,7 +447,7 @@ module GivensQuotationTests =
 
 
 /// Quotation-based tests for GolubKahan module (inline functions)
-module GolubKahanQuotationTests =
+module GolubKahanCoverageTests =
 
     open Microsoft.FSharp.Linq.RuntimeHelpers
 
