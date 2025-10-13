@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en" data-root="https://fslab.org/FsMath/">
+<head>
+    <meta charset="UTF-8">
+    <meta content="IE=edge" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="Timo Mühlhaus, FsLab open source contributors" name="author">
+    <!-- Opengraph properties (https://ogp.me/) -->
+    <meta property="og:site_name" content="FsMath">
+    <meta property="og:title" content="Coverage Analysis Setup
+" />
+    <meta property="og:url" content="https://fslab.org/FsMath/coverage.html">
+    <meta property="og:type" content="website" />
+    <!-- Twitter cards (https://developer.twitter.com/en/docs/twitter-for-websites/cards/overview/summary-card-with-large-image) -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="https://fslab.org/FsMath/">
+    <meta name="twitter:title" content="Coverage Analysis Setup
+">
+    
+    <title>Coverage Analysis Setup
+ | FsMath</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link href="https://fslab.org/FsMath/img/favicon.ico" rel="icon" sizes="32x32" type="image/png"/>
+    <script type="application/javascript" src="https://fslab.org/FsMath/content/fsdocs-theme-set-dark.js"></script>
+    <link href="https://fslab.org/FsMath/content/fsdocs-default.css" rel="stylesheet" type="text/css"/>
+    <link href="https://fslab.org/FsMath/content/fsdocs-theme.css" rel="stylesheet" type="text/css"/>
+    
+    
+</head>
+<body class="content">
+<header>
+    <div class="start">
+        <div id="menu-toggle">
+            <iconify-icon class="icon closed" height="22" icon="eva:menu-fill" width="22"></iconify-icon>
+            <iconify-icon class="icon open" height="22" icon="mi:close" width="22"></iconify-icon>
+            <input type="checkbox" name="mobile-menu" />
+            <ul class="menu">
+                <li class="nav-header">Links</li>
+                <li class="nav-item"><a class="nav-link" href="https://github.com/fslaborg/FsMath/blob/main/LICENSE">License</a>
+                </li>
+                <li class="nav-item"><a class="nav-link"
+                                        href="https://github.com/fslaborg/FsMath/blob/main/RELEASE_NOTES.md">Release
+                    Notes</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://github.com/fslaborg/FsMath/">Source
+                    Repository</a></li>
+                <li class="nav-header">
+  Documentation
+</li>             
+<li class="nav-item active">
+  <a class="nav-link" href="https://fslab.org/FsMath/coverage.html">
+    Coverage Analysis Setup
+
+  </a>
+</li>
+                <li class="nav-header">
+  API Reference
+</li>             
+<li class="nav-item">
+  <a class="nav-link" href="https://fslab.org/FsMath/reference/index.html">
+    All Namespaces
+  </a>
+</li>
+            </ul>
+        </div>
+        <a href="https://fslab.org/FsMath/">
+            <img alt="Header menu logo" src="https://fslab.org/FsMath/img/logo.png">
+            <strong>FsMath</strong>
+        </a>
+    </div>
+    <div class="end">
+        <a href="https://github.com/fslaborg/FsMath/" target="_blank">
+            <iconify-icon icon="uil:github" width="26" height="26"></iconify-icon>
+        </a>
+        <iconify-icon id="search-btn" icon="carbon:search" class="search" width="24" height="24"></iconify-icon>
+        <fsdocs-theme-toggle></fsdocs-theme-toggle>
+    </div>
+</header>
+<aside id="fsdocs-main-menu">
+    <ul class="menu">
+        <li class="nav-header">Links</li>
+        <li class="nav-item"><a class="nav-link" href="https://github.com/fslaborg/FsMath/blob/main/LICENSE">License</a>
+        </li>
+        <li class="nav-item"><a class="nav-link"
+                                href="https://github.com/fslaborg/FsMath/blob/main/RELEASE_NOTES.md">Release
+            Notes</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://github.com/fslaborg/FsMath/">Source
+            Repository</a></li>
+        <li class="nav-header">
+  Documentation
+</li>             
+<li class="nav-item active">
+  <a class="nav-link" href="https://fslab.org/FsMath/coverage.html">
+    Coverage Analysis Setup
+
+  </a>
+</li>
+        <li class="nav-header">
+  API Reference
+</li>             
+<li class="nav-item">
+  <a class="nav-link" href="https://fslab.org/FsMath/reference/index.html">
+    All Namespaces
+  </a>
+</li>
+    </ul>
+</aside>
+<main>
+    <div id="content">
+        <h1><a name="Coverage-Analysis-Setup" class="anchor" href="#Coverage-Analysis-Setup">Coverage Analysis Setup</a></h1>
+<p>This document describes the code coverage analysis and reporting setup for FsMath.</p>
+<h2><a name="Overview" class="anchor" href="#Overview">Overview</a></h2>
+<p>The project uses <a href="https://github.com/coverlet-coverage/coverlet">Coverlet</a> for code coverage collection and reporting. Coverage reports are generated automatically during CI/CD builds with detailed HTML reports available as artifacts and coverage summaries in pull requests.</p>
+<h2><a name="Tools-Used" class="anchor" href="#Tools-Used">Tools Used</a></h2>
+<ul>
+<li><strong>Coverlet</strong>: .NET code coverage library</li>
+<li><strong>ReportGenerator</strong>: Tool for generating HTML/XML coverage reports</li>
+<li><strong>GitHub Actions</strong>: CI/CD automation with coverage integration</li>
+</ul>
+<h2><a name="Local-Development" class="anchor" href="#Local-Development">Local Development</a></h2>
+<h3><a name="Running-Tests-with-Coverage" class="anchor" href="#Running-Tests-with-Coverage">Running Tests with Coverage</a></h3>
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="bash"># Basic coverage collection
+./build.sh runtestswithcoverage   # Linux/macOS
+./build.cmd runtestswithcoverage  # Windows
+
+# Full coverage report generation
+./scripts/generate-coverage.sh   # Linux/macOS
+./scripts/generate-coverage.ps1  # Windows
+</code></pre></td></tr></table>
+<h3><a name="Coverage-Configuration" class="anchor" href="#Coverage-Configuration">Coverage Configuration</a></h3>
+<p>The coverage setup is configured through several files:</p>
+<ul>
+<li><code>coverlet.runsettings</code>: MSBuild test settings for coverage collection</li>
+<li><code>.coverletrc</code>: Coverlet-specific configuration for exclusions</li>
+<li>Test project files include <code>coverlet.msbuild</code> and <code>coverlet.collector</code> packages</li>
+</ul>
+<h3><a name="Exclusions" class="anchor" href="#Exclusions">Exclusions</a></h3>
+<p>The following items are excluded from coverage analysis:
+- Test assemblies and test-related code
+- Generated code (marked with attributes)
+- Program entry points
+- Obsolete code</p>
+<h2><a name="CI-CD-Integration" class="anchor" href="#CI-CD-Integration">CI/CD Integration</a></h2>
+<h3><a name="GitHub-Actions-Workflow" class="anchor" href="#GitHub-Actions-Workflow">GitHub Actions Workflow</a></h3>
+<p>The <code>build-and-test.yml</code> workflow includes:</p>
+<ol>
+<li><strong>Test Execution</strong>: Runs tests with coverage collection using XPlat Code Coverage</li>
+<li><strong>Report Generation</strong>: Creates HTML and Cobertura reports using ReportGenerator</li>
+<li><strong>PR Comments</strong>: Adds coverage summary comments to pull requests</li>
+<li><strong>Artifact Storage</strong>: Stores HTML coverage reports as build artifacts</li>
+</ol>
+<h3><a name="Coverage-Thresholds" class="anchor" href="#Coverage-Thresholds">Coverage Thresholds</a></h3>
+<ul>
+<li><strong>Warning threshold</strong>: 60% coverage</li>
+<li><strong>Good threshold</strong>: 80% coverage</li>
+<li><strong>CI doesn't fail</strong> on coverage below thresholds (informational only)</li>
+</ul>
+<h2><a name="Coverage-Reports" class="anchor" href="#Coverage-Reports">Coverage Reports</a></h2>
+<h3><a name="Local-Reports" class="anchor" href="#Local-Reports">Local Reports</a></h3>
+<ul>
+<li><strong>Location</strong>: <code>TestResults/CoverageReport/</code></li>
+<li><strong>Format</strong>: HTML (main), Cobertura XML, JSON summary</li>
+<li><strong>View</strong>: Open <code>TestResults/CoverageReport/index.html</code> in browser</li>
+</ul>
+<h3><a name="GitHub-Integration" class="anchor" href="#GitHub-Integration">GitHub Integration</a></h3>
+<ul>
+<li><strong>Coverage Badge</strong>: Generated in pull request comments</li>
+<li><strong>PR Integration</strong>: Coverage changes shown in pull request comments</li>
+<li><strong>Artifact Downloads</strong>: Full HTML reports available from GitHub Actions</li>
+</ul>
+<h2><a name="Troubleshooting" class="anchor" href="#Troubleshooting">Troubleshooting</a></h2>
+<h3><a name="Common-Issues" class="anchor" href="#Common-Issues">Common Issues</a></h3>
+<ol>
+<li><strong>No coverage data</strong>: Ensure tests are running and <code>coverlet.collector</code> is installed</li>
+<li><strong>Low coverage</strong>: Check exclusions in <code>.coverletrc</code> and <code>coverlet.runsettings</code></li>
+<li><strong>Report generation fails</strong>: Verify ReportGenerator is installed globally</li>
+</ol>
+<h3><a name="Debug-Coverage-Collection" class="anchor" href="#Debug-Coverage-Collection">Debug Coverage Collection</a></h3>
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="bash"># Run with verbose logging
+dotnet test --collect:"XPlat Code Coverage" --logger "console;verbosity=detailed"
+
+# Check for coverage files
+find TestResults -name "*.cobertura.xml"
+</code></pre></td></tr></table>
+<h2><a name="Maintenance" class="anchor" href="#Maintenance">Maintenance</a></h2>
+<p>The coverage setup should be reviewed periodically to:</p>
+<ul>
+<li>Update exclusion patterns as the codebase evolves</li>
+<li>Adjust coverage thresholds based on project maturity</li>
+<li>Update tool versions (Coverlet, ReportGenerator)</li>
+<li>Review GitHub Actions workflow and coverage reporting</li>
+</ul>
+
+        
+    </div>
+</main>
+<aside id="fsdocs-page-menu">
+    <p id="on-this-page">On this page</p>
+    <ul>
+  <li class="level-1">
+    <a href="#Coverage-Analysis-Setup">
+      Coverage Analysis Setup
+    </a>
+  </li>
+  <li class="level-2">
+    <a href="#Overview">
+      Overview
+    </a>
+  </li>
+  <li class="level-2">
+    <a href="#Tools-Used">
+      Tools Used
+    </a>
+  </li>
+  <li class="level-2">
+    <a href="#Local-Development">
+      Local Development
+    </a>
+  </li>
+  <li class="level-3">
+    <a href="#Running-Tests-with-Coverage">
+      Running Tests with Coverage
+    </a>
+  </li>
+  <li class="level-3">
+    <a href="#Coverage-Configuration">
+      Coverage Configuration
+    </a>
+  </li>
+  <li class="level-3">
+    <a href="#Exclusions">
+      Exclusions
+    </a>
+  </li>
+  <li class="level-2">
+    <a href="#CI-CD-Integration">
+      CI/CD Integration
+    </a>
+  </li>
+  <li class="level-3">
+    <a href="#GitHub-Actions-Workflow">
+      GitHub Actions Workflow
+    </a>
+  </li>
+  <li class="level-3">
+    <a href="#Coverage-Thresholds">
+      Coverage Thresholds
+    </a>
+  </li>
+  <li class="level-2">
+    <a href="#Coverage-Reports">
+      Coverage Reports
+    </a>
+  </li>
+  <li class="level-3">
+    <a href="#Local-Reports">
+      Local Reports
+    </a>
+  </li>
+  <li class="level-3">
+    <a href="#GitHub-Integration">
+      GitHub Integration
+    </a>
+  </li>
+  <li class="level-2">
+    <a href="#Troubleshooting">
+      Troubleshooting
+    </a>
+  </li>
+  <li class="level-3">
+    <a href="#Common-Issues">
+      Common Issues
+    </a>
+  </li>
+  <li class="level-3">
+    <a href="#Debug-Coverage-Collection">
+      Debug Coverage Collection
+    </a>
+  </li>
+  <li class="level-2">
+    <a href="#Maintenance">
+      Maintenance
+    </a>
+  </li>
+</ul>
+</aside>
+<dialog>
+    <input type="search" placeholder="Search docs" />
+    <div class="results">
+        <ul></ul>
+        <p class="empty">Type something to start searching.</p>
+    </div>
+</dialog>
+<script type="module" src="https://fslab.org/FsMath/content/fsdocs-tips.js"></script>
+<script type="module" src="https://fslab.org/FsMath/content/fsdocs-theme-toggle.js"></script>
+<script type="module" src="https://fslab.org/FsMath/content/fsdocs-theme.js"></script>
+<script type="module" src="https://fslab.org/FsMath/content/fsdocs-search.js"></script>
+
+</body>
+</html>

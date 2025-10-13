@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en" data-root="https://fslab.org/FsMath/">
+<head>
+    <meta charset="UTF-8">
+    <meta content="IE=edge" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="Timo Mühlhaus, FsLab open source contributors" name="author">
+    <!-- Opengraph properties (https://ogp.me/) -->
+    <meta property="og:site_name" content="FsMath">
+    <meta property="og:title" content="SIMDUtils (FsMath)" />
+    <meta property="og:url" content="https://fslab.org/FsMath/{{fsdocs-source-basename}}.html">
+    <meta property="og:type" content="website" />
+    <!-- Twitter cards (https://developer.twitter.com/en/docs/twitter-for-websites/cards/overview/summary-card-with-large-image) -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="https://fslab.org/FsMath/">
+    <meta name="twitter:title" content="SIMDUtils (FsMath)">
+    
+    <title>SIMDUtils (FsMath) | FsMath</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link href="https://fslab.org/FsMath/img/favicon.ico" rel="icon" sizes="32x32" type="image/png"/>
+    <script type="application/javascript" src="https://fslab.org/FsMath/content/fsdocs-theme-set-dark.js"></script>
+    <link href="https://fslab.org/FsMath/content/fsdocs-default.css" rel="stylesheet" type="text/css"/>
+    <link href="https://fslab.org/FsMath/content/fsdocs-theme.css" rel="stylesheet" type="text/css"/>
+    
+    
+</head>
+<body class="api-docs">
+<header>
+    <div class="start">
+        <div id="menu-toggle">
+            <iconify-icon class="icon closed" height="22" icon="eva:menu-fill" width="22"></iconify-icon>
+            <iconify-icon class="icon open" height="22" icon="mi:close" width="22"></iconify-icon>
+            <input type="checkbox" name="mobile-menu" />
+            <ul class="menu">
+                <li class="nav-header">Links</li>
+                <li class="nav-item"><a class="nav-link" href="https://github.com/fslaborg/FsMath/blob/main/LICENSE">License</a>
+                </li>
+                <li class="nav-item"><a class="nav-link"
+                                        href="https://github.com/fslaborg/FsMath/blob/main/RELEASE_NOTES.md">Release
+                    Notes</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://github.com/fslaborg/FsMath/">Source
+                    Repository</a></li>
+                <li class="nav-header">
+  Documentation
+</li>             
+<li class="nav-item ">
+  <a class="nav-link" href="https://fslab.org/FsMath/coverage.html">
+    Coverage Analysis Setup
+
+  </a>
+</li>
+                <li class="nav-header">
+  API Reference
+</li>             
+<li class="nav-item">
+  <a class="nav-link" href="https://fslab.org/FsMath/reference/index.html">
+    All Namespaces
+  </a>
+</li>
+            </ul>
+        </div>
+        <a href="https://fslab.org/FsMath/">
+            <img alt="Header menu logo" src="https://fslab.org/FsMath/img/logo.png">
+            <strong>FsMath</strong>
+        </a>
+    </div>
+    <div class="end">
+        <a href="https://github.com/fslaborg/FsMath/" target="_blank">
+            <iconify-icon icon="uil:github" width="26" height="26"></iconify-icon>
+        </a>
+        <iconify-icon id="search-btn" icon="carbon:search" class="search" width="24" height="24"></iconify-icon>
+        <fsdocs-theme-toggle></fsdocs-theme-toggle>
+    </div>
+</header>
+<aside id="fsdocs-main-menu">
+    <ul class="menu">
+        <li class="nav-header">Links</li>
+        <li class="nav-item"><a class="nav-link" href="https://github.com/fslaborg/FsMath/blob/main/LICENSE">License</a>
+        </li>
+        <li class="nav-item"><a class="nav-link"
+                                href="https://github.com/fslaborg/FsMath/blob/main/RELEASE_NOTES.md">Release
+            Notes</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://github.com/fslaborg/FsMath/">Source
+            Repository</a></li>
+        <li class="nav-header">
+  Documentation
+</li>             
+<li class="nav-item ">
+  <a class="nav-link" href="https://fslab.org/FsMath/coverage.html">
+    Coverage Analysis Setup
+
+  </a>
+</li>
+        <li class="nav-header">
+  API Reference
+</li>             
+<li class="nav-item">
+  <a class="nav-link" href="https://fslab.org/FsMath/reference/index.html">
+    All Namespaces
+  </a>
+</li>
+    </ul>
+</aside>
+<main>
+    <div id="content">
+        <div>
+  <h2>
+    SIMDUtils Type
+  </h2>
+  <dl class="fsdocs-metadata">
+    <dt>
+      Namespace: 
+      <a href="https://fslab.org/FsMath/reference/fsmath.html">
+        FsMath
+      </a>
+    </dt>
+    <dt>
+      Assembly: FsMath.dll
+    </dt>
+    <dt>
+      Base Type: 
+      <code>obj</code>
+    </dt>
+  </dl>
+  <div class="fsdocs-xmldoc">
+    <div>
+      <p class="fsdocs-summary">
+         A utility class for performing SIMD (Single Instruction, Multiple Data) operations on arrays.
+      </p>
+    </div>
+  </div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div>
+    <h3>
+      Constructors
+    </h3>
+    <table class="table outer-list fsdocs-member-list">
+      <thead>
+        <tr>
+          <td class="fsdocs-member-list-header">
+            Constructor
+          </td>
+          <td class="fsdocs-member-list-header">
+            Description
+          </td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code onmouseout="hideTip(event, '141', 141)" onmouseover="showTip(event, '141', 141)">
+                <p>
+                  <a id="``.ctor``">
+                    <a href="#``.ctor``">
+                      <code><span>SIMDUtils<span>()</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div class="fsdocs-tip" id="141">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>SIMDUtils<span>()</span></span></code>
+                  <br/>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><a href="https://fslab.org/FsMath/reference/fsmath-simdutils.html">SIMDUtils</a></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <dl class="fsdocs-returns">
+              <dt>
+                <span class="fsdocs-return-name">
+                  Returns: 
+                </span>
+                <code><a href="https://fslab.org/FsMath/reference/fsmath-simdutils.html">SIMDUtils</a></code>
+              </dt>
+              <dd class="fsdocs-return-docs"></dd>
+            </dl>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div></div>
+  <div>
+    <h3>
+      Static members
+    </h3>
+    <table class="table outer-list fsdocs-member-list">
+      <thead>
+        <tr>
+          <td class="fsdocs-member-list-header">
+            Static member
+          </td>
+          <td class="fsdocs-member-list-header">
+            Description
+          </td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code onmouseout="hideTip(event, '142', 142)" onmouseover="showTip(event, '142', 142)">
+                <p>
+                  <a id="fold">
+                    <a href="#fold">
+                      <code><span>SIMDUtils.fold&#32;<span>fv&#32;f&#32;zero&#32;v</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div class="fsdocs-tip" id="142">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>SIMDUtils.fold&#32;<span>fv&#32;f&#32;zero&#32;v</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        fv
+                      </b>
+                      :
+                      <code><span><span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span></span></code>
+                       - 
+                      A function that performs the SIMD reduction on two vectors.
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        f
+                      </b>
+                      :
+                      <code><span>'T&#32;->&#32;'T&#32;->&#32;'T</span></code>
+                       - 
+                      A fallback function for scalar reduction.
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        zero
+                      </b>
+                      :
+                      <code>'T</code>
+                       - 
+                      The initial value for the reduction.
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        v
+                      </b>
+                      :
+                      <code><span>'T[]</span></code>
+                       - 
+                      The input array.
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>'T</code>
+                  </span>
+                  The result of the reduction.
+                  <br/>
+                  Modifiers: 
+                  inline
+                  <br/>
+                  Type parameters: 
+                  &#39;T
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <details>
+              <summary>
+                <div class="fsdocs-summary">
+                  <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('```cref:M:FsMath.SIMDUtils.fold``1```')">
+                    <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                  </div>
+                  <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:FsMath.SIMDUtils.fold``1\'/>')">
+                    <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                  </div>
+                  <a href="https://github.com/fslaborg/FsMath//tree/master/src/FsMath/SIMDUtils.fs#L91-91" class="fsdocs-source-link" title="Source on GitHub">
+                    <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                  </a>
+                  <p class="fsdocs-summary">
+                    
+ Reduces an array to a single value using a binary operation, with SIMD optimization.
+ 
+                  </p>
+                </div>
+              </summary>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    fv
+                  </span>
+                  :
+                  <code><span><span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span></span></code>
+                </dt>
+                <dd class="fsdocs-param-docs">
+                  <p>
+                    A function that performs the SIMD reduction on two vectors.
+                  </p>
+                </dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    f
+                  </span>
+                  :
+                  <code><span>'T&#32;->&#32;'T&#32;->&#32;'T</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs">
+                  <p>
+                    A fallback function for scalar reduction.
+                  </p>
+                </dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    zero
+                  </span>
+                  :
+                  <code>'T</code>
+                </dt>
+                <dd class="fsdocs-param-docs">
+                  <p>
+                    The initial value for the reduction.
+                  </p>
+                </dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    v
+                  </span>
+                  :
+                  <code><span>'T[]</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs">
+                  <p>
+                    The input array.
+                  </p>
+                </dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code>'T</code>
+                </dt>
+                <dd class="fsdocs-return-docs">
+                  <p>
+                    The result of the reduction.
+                  </p>
+                </dd>
+              </dl>
+            </details>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code onmouseout="hideTip(event, '143', 143)" onmouseover="showTip(event, '143', 143)">
+                <p>
+                  <a id="map">
+                    <a href="#map">
+                      <code><span>SIMDUtils.map&#32;<span>fv&#32;f&#32;v</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div class="fsdocs-tip" id="143">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>SIMDUtils.map&#32;<span>fv&#32;f&#32;v</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        fv
+                      </b>
+                      :
+                      <code><span><span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span></span></code>
+                       - 
+                      A function that performs the SIMD operation on a vector.
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        f
+                      </b>
+                      :
+                      <code><span>'T&#32;->&#32;'T</span></code>
+                       - 
+                      A fallback function for scalar operations.
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        v
+                      </b>
+                      :
+                      <code><span>'T[]</span></code>
+                       - 
+                      The input array.
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><span>'T[]</span></code>
+                  </span>
+                  An array with the operation applied to each element.
+                  <br/>
+                  Modifiers: 
+                  inline
+                  <br/>
+                  Type parameters: 
+                  &#39;T
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <details>
+              <summary>
+                <div class="fsdocs-summary">
+                  <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('```cref:M:FsMath.SIMDUtils.map``1```')">
+                    <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                  </div>
+                  <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:FsMath.SIMDUtils.map``1\'/>')">
+                    <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                  </div>
+                  <a href="https://github.com/fslaborg/FsMath//tree/master/src/FsMath/SIMDUtils.fs#L21-21" class="fsdocs-source-link" title="Source on GitHub">
+                    <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                  </a>
+                  <p class="fsdocs-summary">
+                    
+ Applies a safe element-wise unary operation on an array using SIMD for performance.
+ 
+                  </p>
+                </div>
+              </summary>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    fv
+                  </span>
+                  :
+                  <code><span><span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span></span></code>
+                </dt>
+                <dd class="fsdocs-param-docs">
+                  <p>
+                    A function that performs the SIMD operation on a vector.
+                  </p>
+                </dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    f
+                  </span>
+                  :
+                  <code><span>'T&#32;->&#32;'T</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs">
+                  <p>
+                    A fallback function for scalar operations.
+                  </p>
+                </dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    v
+                  </span>
+                  :
+                  <code><span>'T[]</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs">
+                  <p>
+                    The input array.
+                  </p>
+                </dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><span>'T[]</span></code>
+                </dt>
+                <dd class="fsdocs-return-docs">
+                  <p>
+                    An array with the operation applied to each element.
+                  </p>
+                </dd>
+              </dl>
+            </details>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code onmouseout="hideTip(event, '144', 144)" onmouseover="showTip(event, '144', 144)">
+                <p>
+                  <a id="map2RangeInPlace">
+                    <a href="#map2RangeInPlace">
+                      <code><span>SIMDUtils.map2RangeInPlace&#32;<span>fv&#32;f&#32;dstStartIndex&#32;srcStartIndex&#32;count&#32;dst&#32;src</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div class="fsdocs-tip" id="144">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>SIMDUtils.map2RangeInPlace&#32;<span>fv&#32;f&#32;dstStartIndex&#32;srcStartIndex&#32;count&#32;dst&#32;src</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        fv
+                      </b>
+                      :
+                      <code><span><span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span></span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        f
+                      </b>
+                      :
+                      <code><span>'T&#32;->&#32;'T&#32;->&#32;'T</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        dstStartIndex
+                      </b>
+                      :
+                      <code>int</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        srcStartIndex
+                      </b>
+                      :
+                      <code>int</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        count
+                      </b>
+                      :
+                      <code>int</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        dst
+                      </b>
+                      :
+                      <code><span>'T[]</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        src
+                      </b>
+                      :
+                      <code><span>'T[]</span></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  Modifiers: 
+                  inline
+                  <br/>
+                  Type parameters: 
+                  &#39;T
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <details>
+              <summary>
+                <div class="fsdocs-summary">
+                  <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('```cref:M:FsMath.SIMDUtils.map2RangeInPlace``1```')">
+                    <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                  </div>
+                  <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:FsMath.SIMDUtils.map2RangeInPlace``1\'/>')">
+                    <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                  </div>
+                  <a href="https://github.com/fslaborg/FsMath//tree/master/src/FsMath/SIMDUtils.fs#L242-242" class="fsdocs-source-link" title="Source on GitHub">
+                    <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                  </a>
+                  <p class="fsdocs-summary">
+                     In-place combination of two arrays (dst, src) over 'count' elements,
+ starting from 'dstStartIndex' and 'srcStartIndex' respectively.
+ Uses 'fv' for chunked SIMD processing and 'f' for leftover scalar elements.
+                  </p>
+                </div>
+              </summary>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    fv
+                  </span>
+                  :
+                  <code><span><span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span></span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    f
+                  </span>
+                  :
+                  <code><span>'T&#32;->&#32;'T&#32;->&#32;'T</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    dstStartIndex
+                  </span>
+                  :
+                  <code>int</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    srcStartIndex
+                  </span>
+                  :
+                  <code>int</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    count
+                  </span>
+                  :
+                  <code>int</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    dst
+                  </span>
+                  :
+                  <code><span>'T[]</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    src
+                  </span>
+                  :
+                  <code><span>'T[]</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+            </details>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code onmouseout="hideTip(event, '145', 145)" onmouseover="showTip(event, '145', 145)">
+                <p>
+                  <a id="map2Unchecked">
+                    <a href="#map2Unchecked">
+                      <code><span>SIMDUtils.map2Unchecked&#32;<span>fv&#32;f&#32;v1&#32;v2</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div class="fsdocs-tip" id="145">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>SIMDUtils.map2Unchecked&#32;<span>fv&#32;f&#32;v1&#32;v2</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        fv
+                      </b>
+                      :
+                      <code><span><span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span></span></code>
+                       - 
+                      A function that performs the SIMD operation on two vectors.
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        f
+                      </b>
+                      :
+                      <code><span>'T&#32;->&#32;'T&#32;->&#32;'T</span></code>
+                       - 
+                      A fallback function for scalar operations.
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        v1
+                      </b>
+                      :
+                      <code><span>'T[]</span></code>
+                       - 
+                      The first input array.
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        v2
+                      </b>
+                      :
+                      <code><span>'T[]</span></code>
+                       - 
+                      The second input array.
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><span>'T&#32;array</span></code>
+                  </span>
+                  An array with the operation applied to each pair of elements.
+                  <br/>
+                  Modifiers: 
+                  inline
+                  <br/>
+                  Type parameters: 
+                  &#39;T
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <details>
+              <summary>
+                <div class="fsdocs-summary">
+                  <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('```cref:M:FsMath.SIMDUtils.map2Unchecked``1```')">
+                    <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                  </div>
+                  <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:FsMath.SIMDUtils.map2Unchecked``1\'/>')">
+                    <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                  </div>
+                  <a href="https://github.com/fslaborg/FsMath//tree/master/src/FsMath/SIMDUtils.fs#L55-55" class="fsdocs-source-link" title="Source on GitHub">
+                    <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                  </a>
+                  <p class="fsdocs-summary">
+                    
+ Applies an element-wise binary operation on two arrays using SIMD for performance.
+ 
+                  </p>
+                </div>
+              </summary>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    fv
+                  </span>
+                  :
+                  <code><span><span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span></span></code>
+                </dt>
+                <dd class="fsdocs-param-docs">
+                  <p>
+                    A function that performs the SIMD operation on two vectors.
+                  </p>
+                </dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    f
+                  </span>
+                  :
+                  <code><span>'T&#32;->&#32;'T&#32;->&#32;'T</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs">
+                  <p>
+                    A fallback function for scalar operations.
+                  </p>
+                </dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    v1
+                  </span>
+                  :
+                  <code><span>'T[]</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs">
+                  <p>
+                    The first input array.
+                  </p>
+                </dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    v2
+                  </span>
+                  :
+                  <code><span>'T[]</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs">
+                  <p>
+                    The second input array.
+                  </p>
+                </dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><span>'T&#32;array</span></code>
+                </dt>
+                <dd class="fsdocs-return-docs">
+                  <p>
+                    An array with the operation applied to each pair of elements.
+                  </p>
+                </dd>
+              </dl>
+            </details>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code onmouseout="hideTip(event, '146', 146)" onmouseover="showTip(event, '146', 146)">
+                <p>
+                  <a id="mapFoldUnchecked">
+                    <a href="#mapFoldUnchecked">
+                      <code><span>SIMDUtils.mapFoldUnchecked&#32;<span><span>(<span>fMapSimd,&#32;fMap,&#32;fReduceSimd,&#32;fReduceScalar,&#32;zero,&#32;input</span>)</span></span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div class="fsdocs-tip" id="146">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>SIMDUtils.mapFoldUnchecked&#32;<span><span>(<span>fMapSimd,&#32;fMap,&#32;fReduceSimd,&#32;fReduceScalar,&#32;zero,&#32;input</span>)</span></span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        fMapSimd
+                      </b>
+                      :
+                      <code><span><span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span></span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        fMap
+                      </b>
+                      :
+                      <code><span>'T&#32;->&#32;'T</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        fReduceSimd
+                      </b>
+                      :
+                      <code><span><span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span></span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        fReduceScalar
+                      </b>
+                      :
+                      <code><span>'T&#32;->&#32;'T&#32;->&#32;'T</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        zero
+                      </b>
+                      :
+                      <code>'T</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        input
+                      </b>
+                      :
+                      <code><span><a href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;'T&gt;</span></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>'T</code>
+                  </span>
+                  <br/>
+                  Modifiers: 
+                  inline
+                  <br/>
+                  Type parameters: 
+                  &#39;T
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <dl class="fsdocs-params">
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  fMapSimd
+                </span>
+                :
+                <code><span><span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span></span></code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  fMap
+                </span>
+                :
+                <code><span>'T&#32;->&#32;'T</span></code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  fReduceSimd
+                </span>
+                :
+                <code><span><span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span></span></code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  fReduceScalar
+                </span>
+                :
+                <code><span>'T&#32;->&#32;'T&#32;->&#32;'T</span></code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  zero
+                </span>
+                :
+                <code>'T</code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  input
+                </span>
+                :
+                <code><span><a href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;'T&gt;</span></code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+            </dl>
+            <dl class="fsdocs-returns">
+              <dt>
+                <span class="fsdocs-return-name">
+                  Returns: 
+                </span>
+                <code>'T</code>
+              </dt>
+              <dd class="fsdocs-return-docs"></dd>
+            </dl>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code onmouseout="hideTip(event, '147', 147)" onmouseover="showTip(event, '147', 147)">
+                <p>
+                  <a id="mapRangeInPlace">
+                    <a href="#mapRangeInPlace">
+                      <code><span>SIMDUtils.mapRangeInPlace&#32;<span>fv&#32;f&#32;startIndex&#32;count&#32;v</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div class="fsdocs-tip" id="147">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>SIMDUtils.mapRangeInPlace&#32;<span>fv&#32;f&#32;startIndex&#32;count&#32;v</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        fv
+                      </b>
+                      :
+                      <code><span><span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span></span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        f
+                      </b>
+                      :
+                      <code><span>'T&#32;->&#32;'T</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        startIndex
+                      </b>
+                      :
+                      <code>int</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        count
+                      </b>
+                      :
+                      <code>int</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        v
+                      </b>
+                      :
+                      <code><span>'T[]</span></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  Modifiers: 
+                  inline
+                  <br/>
+                  Type parameters: 
+                  &#39;T
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <details>
+              <summary>
+                <div class="fsdocs-summary">
+                  <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('```cref:M:FsMath.SIMDUtils.mapRangeInPlace``1```')">
+                    <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                  </div>
+                  <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:FsMath.SIMDUtils.mapRangeInPlace``1\'/>')">
+                    <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                  </div>
+                  <a href="https://github.com/fslaborg/FsMath//tree/master/src/FsMath/SIMDUtils.fs#L198-198" class="fsdocs-source-link" title="Source on GitHub">
+                    <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                  </a>
+                  <p class="fsdocs-summary">
+                     In-place transformation of v[startIndex..(startIndex + count - 1)]
+ using a SIMD operation (fv) for chunked parts and a scalar function (f) for leftovers.
+                  </p>
+                </div>
+              </summary>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    fv
+                  </span>
+                  :
+                  <code><span><span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span></span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    f
+                  </span>
+                  :
+                  <code><span>'T&#32;->&#32;'T</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    startIndex
+                  </span>
+                  :
+                  <code>int</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    count
+                  </span>
+                  :
+                  <code>int</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    v
+                  </span>
+                  :
+                  <code><span>'T[]</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+            </details>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code onmouseout="hideTip(event, '148', 148)" onmouseover="showTip(event, '148', 148)">
+                <p>
+                  <a id="mapScalar">
+                    <a href="#mapScalar">
+                      <code><span>SIMDUtils.mapScalar&#32;<span>fv&#32;f&#32;v1&#32;scalar</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div class="fsdocs-tip" id="148">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>SIMDUtils.mapScalar&#32;<span>fv&#32;f&#32;v1&#32;scalar</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        fv
+                      </b>
+                      :
+                      <code><span><span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span></span></code>
+                       - 
+                      A function that performs the SIMD operation on a vector and a scalar vector.
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        f
+                      </b>
+                      :
+                      <code><span>'T&#32;->&#32;'T&#32;->&#32;'T</span></code>
+                       - 
+                      A fallback function for scalar operations.
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        v1
+                      </b>
+                      :
+                      <code><span>'T[]</span></code>
+                       - 
+                      The input array.
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        scalar
+                      </b>
+                      :
+                      <code>'T</code>
+                       - 
+                      The scalar value.
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><span>'T[]</span></code>
+                  </span>
+                  An array with the operation applied to each element and the scalar.
+                  <br/>
+                  Modifiers: 
+                  inline
+                  <br/>
+                  Type parameters: 
+                  &#39;T
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <details>
+              <summary>
+                <div class="fsdocs-summary">
+                  <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('```cref:M:FsMath.SIMDUtils.mapScalar``1```')">
+                    <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                  </div>
+                  <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:FsMath.SIMDUtils.mapScalar``1\'/>')">
+                    <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                  </div>
+                  <a href="https://github.com/fslaborg/FsMath//tree/master/src/FsMath/SIMDUtils.fs#L130-130" class="fsdocs-source-link" title="Source on GitHub">
+                    <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                  </a>
+                  <p class="fsdocs-summary">
+                    
+ Applies an element-wise binary operation between an array and a scalar using SIMD for performance.
+ 
+                  </p>
+                </div>
+              </summary>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    fv
+                  </span>
+                  :
+                  <code><span><span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span>&#32;->&#32;<span><a href="https://learn.microsoft.com/dotnet/api/system.numerics.vector-1">Vector</a>&lt;'T&gt;</span></span></code>
+                </dt>
+                <dd class="fsdocs-param-docs">
+                  <p>
+                    A function that performs the SIMD operation on a vector and a scalar vector.
+                  </p>
+                </dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    f
+                  </span>
+                  :
+                  <code><span>'T&#32;->&#32;'T&#32;->&#32;'T</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs">
+                  <p>
+                    A fallback function for scalar operations.
+                  </p>
+                </dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    v1
+                  </span>
+                  :
+                  <code><span>'T[]</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs">
+                  <p>
+                    The input array.
+                  </p>
+                </dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    scalar
+                  </span>
+                  :
+                  <code>'T</code>
+                </dt>
+                <dd class="fsdocs-param-docs">
+                  <p>
+                    The scalar value.
+                  </p>
+                </dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><span>'T[]</span></code>
+                </dt>
+                <dd class="fsdocs-return-docs">
+                  <p>
+                    An array with the operation applied to each element and the scalar.
+                  </p>
+                </dd>
+              </dl>
+            </details>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+        
+    </div>
+</main>
+<aside id="fsdocs-page-menu">
+    <p id="on-this-page">On this page</p>
+    <div class="empty"></div>
+</aside>
+<dialog>
+    <input type="search" placeholder="Search docs" />
+    <div class="results">
+        <ul></ul>
+        <p class="empty">Type something to start searching.</p>
+    </div>
+</dialog>
+<script type="module" src="https://fslab.org/FsMath/content/fsdocs-tips.js"></script>
+<script type="module" src="https://fslab.org/FsMath/content/fsdocs-theme-toggle.js"></script>
+<script type="module" src="https://fslab.org/FsMath/content/fsdocs-theme.js"></script>
+<script type="module" src="https://fslab.org/FsMath/content/fsdocs-search.js"></script>
+
+</body>
+</html>
