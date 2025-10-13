@@ -30,6 +30,7 @@
     <Compile Include="LinearAlgebraAdvancedTests.fs" />
     <Compile Include="EVD.fs" />
     <Compile Include="SVD.fs" />
+    <Compile Include="BidiagonalizationQuotationTests.fs" />
     <Compile Include="SpecialFunctions.fs" />
     <Compile Include="GammaQuotationTests.fs" />
     <Compile Include="SpanMathTests.fs" />
