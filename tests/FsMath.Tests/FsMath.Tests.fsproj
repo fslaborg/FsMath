@@ -22,6 +22,7 @@
     <Compile Include="MatrixStaticQuotationTests.fs" />
     <Compile Include="VectorOpsTests.fs" />
     <Compile Include="VectorOpsQuotationTests.fs" />
+    <Compile Include="AlgTypesTopLevelOpsQuotationTests.fs" />
     <Compile Include="MatrixFloatTests.fs" />
     <Compile Include="MatrixAdditionalTests.fs" />
     <Compile Include="PermutationTests.fs" />
