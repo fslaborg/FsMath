@@ -471,3 +471,58 @@ module GammaCoverageTests =
     let ``Q: digamma(100.0) for large positive x`` () =
         let result = eval <@ Gamma.digamma 100.0 @> :?> float
         floatClose Accuracy.medium result 4.600161852 "Expected ψ(100)"
+
+    // ========================================
+    // Additional coverage tests for uncovered lines
+    // ========================================
+
+    [<Fact>]
+    let ``Q: upperIncompleteRegularized uses gammpapprox for large a (line 332)`` () =
+        // Line 332: 'T.One - Gamma.gammpapprox a x true when a >= 100.0
+        let result = eval <@ Gamma.upperIncompleteRegularized 150.0 160.0 @> :?> float
+        isTrue (result >= 0.0 && result <= 1.0) "Expected valid Q value via gammpapprox"
+
+    [<Fact>]
+    let ``Q: upperIncompleteRegularized uses gcf path for x >= a + 1 (line 336)`` () =
+        // Line 336: Gamma.gcf a x when x >= a + 1 and a < 100.0
+        let result = eval <@ Gamma.upperIncompleteRegularized 2.0 5.0 @> :?> float
+        floatClose Accuracy.medium result 0.0404276 "Expected Q value via gcf"
+
+    [<Fact>]
+    let ``Q: upperIncompleteRegularized with a=50, x=60 uses gammpapprox (line 332)`` () =
+        // Additional test for line 332 with different values
+        let result = eval <@ Gamma.upperIncompleteRegularized 120.0 100.0 @> :?> float
+        isTrue (result >= 0.0 && result <= 1.0) "Expected valid Q for large a"
+
+    [<Fact>]
+    let ``Q: upperIncompleteRegularized with a=10, x=15 uses gcf (line 336)`` () =
+        // Additional test for line 336
+        let result = eval <@ Gamma.upperIncompleteRegularized 10.0 15.0 @> :?> float
+        floatClose Accuracy.medium result 0.0698536607 "Expected Q value"
+
+    [<Fact>]
+    let ``Q: digammaPositive with x=1e17 uses large x asymptotic path (line 417)`` () =
+        // Line 417: ln s - half / s - w when s >= limit (1e17)
+        let result = eval <@ Gamma.digammaPositive 1.0e17 @> :?> float
+        let expected = log 1.0e17 - 0.5 / 1.0e17
+        floatClose Accuracy.low result expected "Expected asymptotic digamma for very large x"
+
+    [<Fact>]
+    let ``Q: digamma with x=1e17 uses large x asymptotic path (line 469)`` () =
+        // Line 469: log<'T> s - half / s - w when s >= limit (1e17)
+        let result = eval <@ Gamma.digamma 1.0e17 @> :?> float
+        let expected = log 1.0e17 - 0.5 / 1.0e17
+        floatClose Accuracy.low result expected "Expected asymptotic digamma for very large x"
+
+    [<Fact>]
+    let ``Q: digamma with x=5e17 uses asymptotic expansion`` () =
+        // Additional test for large x path
+        let result = eval <@ Gamma.digamma 5.0e17 @> :?> float
+        isTrue (result > 39.0) "Expected large digamma value for very large x"
+
+    [<Fact>]
+    let ``Q: digammaPositive with x=1e18 uses extreme asymptotic path`` () =
+        // Test with even larger value
+        let result = eval <@ Gamma.digammaPositive 1.0e18 @> :?> float
+        let expected = log 1.0e18
+        floatClose Accuracy.low result expected "Expected asymptotic behavior"
