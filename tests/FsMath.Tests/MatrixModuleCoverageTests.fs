@@ -13,7 +13,7 @@ open FsMath.Tests.AssertHelpers
 /// These tests use F# quotation evaluation to force the coverage tool
 /// to track inline function execution.
 /// </summary>
-module MatrixModuleQuotationTests =
+module MatrixModuleCoverageTests =
 
     /// Helper to evaluate F# quotations
     let inline eval<'T> (expr: Microsoft.FSharp.Quotations.Expr<'T>) : 'T =

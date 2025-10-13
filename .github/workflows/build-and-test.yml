@@ -48,17 +48,59 @@ jobs:
         fail_below_min: false
         format: markdown
         hide_branch_rate: false
-        hide_complexity: true
+        hide_complexity: false
         indicators: true
         output: both
         thresholds: '60 80'
     
-    - name: Add Coverage PR Comment
+    - name: Create Enhanced Coverage Report
+      run: |
+        echo "# 📊 Code Coverage Report" > enhanced-coverage-results.md
+        echo "" >> enhanced-coverage-results.md
+        echo "## Summary" >> enhanced-coverage-results.md
+        cat code-coverage-results.md >> enhanced-coverage-results.md
+        echo "" >> enhanced-coverage-results.md
+        echo "## 📈 Coverage Analysis" >> enhanced-coverage-results.md
+        echo "" >> enhanced-coverage-results.md
+        
+        # Extract coverage percentage for analysis
+        COVERAGE=$(grep -o '[0-9]\+%' code-coverage-results.md | head -1 | tr -d '%')
+        
+        if [ "$COVERAGE" -ge 80 ]; then
+          echo "🟢 **Excellent Coverage!** Your code coverage is above 80%, which is considered very good practice." >> enhanced-coverage-results.md
+        elif [ "$COVERAGE" -ge 60 ]; then
+          echo "🟡 **Good Coverage** Your code coverage is above 60%. Consider adding more tests to reach 80%." >> enhanced-coverage-results.md
+        else
+          echo "🔴 **Low Coverage** Your code coverage is below 60%. Please add more tests to improve coverage." >> enhanced-coverage-results.md
+        fi
+        
+        echo "" >> enhanced-coverage-results.md
+        echo "## 🎯 Coverage Goals" >> enhanced-coverage-results.md
+        echo "- **Target**: 80% line coverage" >> enhanced-coverage-results.md
+        echo "- **Minimum**: 60% line coverage" >> enhanced-coverage-results.md
+        echo "- **Current**: ${COVERAGE}% line coverage" >> enhanced-coverage-results.md
+        echo "" >> enhanced-coverage-results.md
+        echo "## 📋 What These Numbers Mean" >> enhanced-coverage-results.md
+        echo "" >> enhanced-coverage-results.md
+        echo "- **Line Rate**: Percentage of code lines that were executed during tests" >> enhanced-coverage-results.md
+        echo "- **Branch Rate**: Percentage of code branches (if/else, switch cases) that were tested" >> enhanced-coverage-results.md
+        echo "- **Health**: Overall assessment combining line and branch coverage" >> enhanced-coverage-results.md
+        echo "" >> enhanced-coverage-results.md
+        echo "## 🔗 Detailed Reports" >> enhanced-coverage-results.md
+        echo "" >> enhanced-coverage-results.md
+        echo "📋 [Download Full Coverage Report](../actions/runs/${{ github.run_id }}) - Check the 'coverage-report' artifact for detailed HTML coverage report" >> enhanced-coverage-results.md
+        echo "" >> enhanced-coverage-results.md
+        echo "---" >> enhanced-coverage-results.md
+        echo "*Coverage report generated on $(date '+%Y-%m-%d at %H:%M:%S UTC')*" >> enhanced-coverage-results.md
+        echo "" >> enhanced-coverage-results.md
+        echo "<!-- Sticky Pull Request Comment -->" >> enhanced-coverage-results.md
+    
+    - name: Add Enhanced Coverage PR Comment
       uses: marocchino/sticky-pull-request-comment@v2
       if: github.event_name == 'pull_request'
       with:
         recreate: true
-        path: code-coverage-results.md
+        path: enhanced-coverage-results.md
 
     - name: Upload coverage report
       uses: actions/upload-artifact@v4

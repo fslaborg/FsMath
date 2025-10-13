@@ -49,38 +49,9 @@ module VectorOpsTests =
         floatArrayClose expected result 1e-10
 
     // =============================================
-    // Dot Product Tests (Vector.dot)
+    // Dot Product Tests - REMOVED: These tests are duplicated 
+    // in VectorFloatTests.fs and VectorIntTests.fs
     // =============================================
-    // Note: The @ operator in VectorOps.fs appears to map to Power, not Dot
-    // Using Vector.dot method instead
-
-    [<Fact>]
-    let ``dot product computes correctly (float)`` () =
-        let v1 = [| 1.0; 2.0; 3.0 |]
-        let v2 = [| 4.0; 5.0; 6.0 |]
-        let result = Vector.dot v1 v2
-        floatEqual 32.0 result 1e-10
-
-    [<Fact>]
-    let ``dot product computes correctly (int)`` () =
-        let v1 = [| 1; 2; 3 |]
-        let v2 = [| 4; 5; 6 |]
-        let result = Vector.dot v1 v2
-        Assert.Equal(32, result)
-
-    [<Fact>]
-    let ``dot product with orthogonal vectors is zero (float)`` () =
-        let v1 = [| 1.0; 0.0; 0.0 |]
-        let v2 = [| 0.0; 1.0; 0.0 |]
-        let result = Vector.dot v1 v2
-        floatEqual 0.0 result 1e-10
-
-    [<Fact>]
-    let ``dot product with identical vectors equals squared norm (float)`` () =
-        let v = [| 3.0; 4.0 |]
-        let result = Vector.dot v v
-        // Should equal 3^2 + 4^2 = 25
-        floatEqual 25.0 result 1e-10
 
     // =============================================
     // Scalar-Vector Operators (Scalar on Left)
