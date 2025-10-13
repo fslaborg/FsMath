@@ -44,24 +44,24 @@ module PermutationTests =
     [<Fact>]
     let ``ofFreshArray: throws on duplicate indices`` () =
         let arr = [| 0; 1; 1 |]
-        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr |> ignore)
+        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr |> ignore) "should throw on duplicate indices"
 
     [<Fact>]
     let ``ofFreshArray: throws on out-of-range negative index`` () =
         let arr = [| -1; 0; 1 |]
-        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr |> ignore)
+        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr |> ignore) "should throw on negative index"
 
     [<Fact>]
     let ``ofFreshArray: throws on out-of-range positive index`` () =
         let arr = [| 0; 1; 3 |]  // 3 is out of range for size 3
-        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr |> ignore)
+        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr |> ignore) "should throw on out-of-range positive index"
 
     [<Fact>]
     let ``ofFreshArray: permutation function throws on out-of-range query`` () =
         let arr = [| 1; 0 |]
         let p = Permutation.ofFreshArray arr
-        throws<ArgumentException>(fun () -> p 2 |> ignore)
-        throws<ArgumentException>(fun () -> p (-1) |> ignore)
+        throws<ArgumentException>(fun () -> p 2 |> ignore) "should throw on index too large"
+        throws<ArgumentException>(fun () -> p (-1) |> ignore) "should throw on negative index"
 
     // ========================================
     // ofArray tests
@@ -195,8 +195,8 @@ module PermutationTests =
 
     [<Fact>]
     let ``reversal: throws on non-positive size`` () =
-        throws<ArgumentException>(fun () -> Permutation.reversal 0 |> ignore)
-        throws<ArgumentException>(fun () -> Permutation.reversal -1 |> ignore)
+        throws<ArgumentException>(fun () -> Permutation.reversal 0 |> ignore) "should throw on size 0"
+        throws<ArgumentException>(fun () -> Permutation.reversal -1 |> ignore) "should throw on negative size"
 
     // ========================================
     // rotation tests
@@ -228,18 +228,18 @@ module PermutationTests =
     [<Fact>]
     let ``rotation: full rotation throws exception`` () =
         // This should throw because distance >= size
-        throws<ArgumentException>(fun () -> Permutation.rotation 5 5 |> ignore)
+        throws<ArgumentException>(fun () -> Permutation.rotation 5 5 |> ignore) "should throw on full rotation"
 
     [<Fact>]
     let ``rotation: throws on non-positive size`` () =
-        throws<ArgumentException>(fun () -> Permutation.rotation 0 1 |> ignore)
-        throws<ArgumentException>(fun () -> Permutation.rotation -1 1 |> ignore)
+        throws<ArgumentException>(fun () -> Permutation.rotation 0 1 |> ignore) "should throw on size 0"
+        throws<ArgumentException>(fun () -> Permutation.rotation -1 1 |> ignore) "should throw on negative size"
 
     [<Fact>]
     let ``rotation: throws on distance >= size`` () =
-        throws<ArgumentException>(fun () -> Permutation.rotation 5 5 |> ignore)
-        throws<ArgumentException>(fun () -> Permutation.rotation 5 6 |> ignore)
-        throws<ArgumentException>(fun () -> Permutation.rotation 5 -5 |> ignore)
+        throws<ArgumentException>(fun () -> Permutation.rotation 5 5 |> ignore) "should throw on distance = size"
+        throws<ArgumentException>(fun () -> Permutation.rotation 5 6 |> ignore) "should throw on distance > size"
+        throws<ArgumentException>(fun () -> Permutation.rotation 5 -5 |> ignore) "should throw on distance = -size"
 
     // ========================================
     // identity tests
@@ -299,8 +299,8 @@ module PermutationTests =
     [<Fact>]
     let ``inverse: throws on non-positive size`` () =
         let p = Permutation.identity
-        throws<ArgumentException>(fun () -> Permutation.inverse 0 p |> ignore)
-        throws<ArgumentException>(fun () -> Permutation.inverse -1 p |> ignore)
+        throws<ArgumentException>(fun () -> Permutation.inverse 0 p |> ignore) "should throw on size 0"
+        throws<ArgumentException>(fun () -> Permutation.inverse -1 p |> ignore) "should throw on negative size"
 
     // ========================================
     // Composition and algebraic properties
@@ -342,33 +342,33 @@ module PermutationTests =
     let ``ofFreshArray: validates all elements are unique (comprehensive check)`` () =
         // Test that validation catches duplicates at various positions
         let arr1 = [| 0; 0 |]  // Duplicate at positions 0 and 1
-        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr1 |> ignore)
+        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr1 |> ignore) "should throw on duplicate 0"
 
         let arr2 = [| 0; 1; 2; 1 |]  // Duplicate 1 at positions 1 and 3
-        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr2 |> ignore)
+        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr2 |> ignore) "should throw on duplicate 1"
 
         let arr3 = [| 2; 2; 0 |]  // Duplicate 2 at positions 0 and 1
-        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr3 |> ignore)
+        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr3 |> ignore) "should throw on duplicate 2"
 
     [<Fact>]
     let ``ofFreshArray: validates range for every element`` () =
         // Test that out-of-range validation works for various positions
         let arr1 = [| -2; 0; 1 |]  // Negative at position 0
-        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr1 |> ignore)
+        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr1 |> ignore) "should throw on negative at position 0"
 
         let arr2 = [| 0; 1; 5 |]  // Out of range at position 2 (size=3, max=2)
-        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr2 |> ignore)
+        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr2 |> ignore) "should throw on out-of-range at position 2"
 
         let arr3 = [| 0; 10; 2 |]  // Out of range at position 1
-        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr3 |> ignore)
+        throws<ArgumentException>(fun () -> Permutation.ofFreshArray arr3 |> ignore) "should throw on out-of-range at position 1"
 
     [<Fact>]
     let ``permutation function validates index range on every call`` () =
         let p = Permutation.ofArray [| 1; 0; 2 |]
 
         // Test various out-of-range indices
-        throws<ArgumentException>(fun () -> p -1 |> ignore)
-        throws<ArgumentException>(fun () -> p -100 |> ignore)
-        throws<ArgumentException>(fun () -> p 3 |> ignore)
-        throws<ArgumentException>(fun () -> p 10 |> ignore)
-        throws<ArgumentException>(fun () -> p 999 |> ignore)
+        throws<ArgumentException>(fun () -> p -1 |> ignore) "should throw on -1"
+        throws<ArgumentException>(fun () -> p -100 |> ignore) "should throw on -100"
+        throws<ArgumentException>(fun () -> p 3 |> ignore) "should throw on 3"
+        throws<ArgumentException>(fun () -> p 10 |> ignore) "should throw on 10"
+        throws<ArgumentException>(fun () -> p 999 |> ignore) "should throw on 999"
