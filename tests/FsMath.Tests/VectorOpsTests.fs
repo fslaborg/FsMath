@@ -301,3 +301,49 @@ module VectorOpsTests =
         let result1 = scalar .* (v1 .+ v2)
         let result2 = (scalar .* v1) .+ (scalar .* v2)
         floatArrayClose result1 result2 1e-10
+
+    // =============================================
+    // @ Operator Tests (Power operator - NOTE: Comment in VectorOps.fs incorrectly says "Dot product")
+    // =============================================
+
+    [<Fact>]
+    let ``@ operator applies power operation (float)`` () =
+        // The @ operator currently calls Power.Invoke, not Dot.Invoke
+        // despite the comment saying "// Dot product ( @ )"
+        let v = [| 2.0; 3.0; 4.0 |]
+        let power = 2.0
+        let result = v @ power
+        let expected = [| 4.0; 9.0; 16.0 |]
+        floatArrayClose expected result 1e-10
+
+    [<Fact>]
+    let ``@ operator with fractional power (float)`` () =
+        let v = [| 4.0; 9.0; 16.0 |]
+        let power = 0.5
+        let result = v @ power
+        let expected = [| 2.0; 3.0; 4.0 |]
+        floatArrayClose expected result 1e-10
+
+    [<Fact>]
+    let ``@ operator with negative power (float)`` () =
+        let v = [| 2.0; 4.0; 5.0 |]
+        let power = -1.0
+        let result = v @ power
+        let expected = [| 0.5; 0.25; 0.2 |]
+        floatArrayClose expected result 1e-10
+
+    [<Fact>]
+    let ``@ operator with zero power returns ones (float)`` () =
+        let v = [| 2.0; 3.0; 4.0 |]
+        let power = 0.0
+        let result = v @ power
+        let expected = [| 1.0; 1.0; 1.0 |]
+        floatArrayClose expected result 1e-10
+
+    [<Fact>]
+    let ``@ operator with integer power (float)`` () =
+        let v = [| 2.0; 3.0; 4.0 |]
+        let power = 3.0
+        let result = v @ power
+        let expected = [| 8.0; 27.0; 64.0 |]
+        floatArrayClose expected result 1e-10
