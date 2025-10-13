@@ -426,3 +426,38 @@ module VectorOpsCoverageTests =
         let result1 = evalQ <@ scalar .* (v1 .+ v2) @>
         let result2 = evalQ <@ (scalar .* v1) .+ (scalar .* v2) @>
         floatArrayClose result1 result2 1e-10
+
+    // ========================================
+    // Quotation tests for @ operator
+    // Note: @ operator currently calls Power.Invoke (not Dot.Invoke despite the comment)
+    // ========================================
+
+    [<Fact>]
+    let ``operator @_Q: applies power operation`` () =
+        let v = [| 2.0; 3.0; 4.0 |]
+        let result = evalQ <@ v @ 2.0 @>
+        floatArrayClose [| 4.0; 9.0; 16.0 |] result 1e-10
+
+    [<Fact>]
+    let ``operator @_Q: fractional power`` () =
+        let v = [| 4.0; 9.0; 16.0 |]
+        let result = evalQ <@ v @ 0.5 @>
+        floatArrayClose [| 2.0; 3.0; 4.0 |] result 1e-10
+
+    [<Fact>]
+    let ``operator @_Q: negative power`` () =
+        let v = [| 2.0; 4.0; 5.0 |]
+        let result = evalQ <@ v @ -1.0 @>
+        floatArrayClose [| 0.5; 0.25; 0.2 |] result 1e-10
+
+    [<Fact>]
+    let ``operator @_Q: power of zero`` () =
+        let v = [| 2.0; 3.0; 4.0 |]
+        let result = evalQ <@ v @ 0.0 @>
+        floatArrayClose [| 1.0; 1.0; 1.0 |] result 1e-10
+
+    [<Fact>]
+    let ``operator @_Q: integer power`` () =
+        let v = [| 2.0; 3.0; 4.0 |]
+        let result = evalQ <@ v @ 3.0 @>
+        floatArrayClose [| 8.0; 27.0; 64.0 |] result 1e-10
