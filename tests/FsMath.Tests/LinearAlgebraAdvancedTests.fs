@@ -255,6 +255,66 @@ module InverseTests =
         throws<ArgumentException>(fun () -> LinearAlgebra.inverse A |> ignore)
 
 
+module SolveLinearQRTests =
+
+    [<Fact>]
+    let ``Solve 2x2 system with QR`` () =
+        let A = Matrix(2, 2, [| 2.0; 1.0;
+                               1.0; 3.0 |])
+        let b = [| 5.0; 10.0 |]
+        let x = LinearAlgebra.solveLinearQR A b
+        // Verify A*x = b
+        let Ax = Matrix.muliplyVector A x
+        floatEqual Ax.[0] b.[0] 1e-10
+        floatEqual Ax.[1] b.[1] 1e-10
+
+    [<Fact>]
+    let ``Solve 3x3 system with QR`` () =
+        let A = Matrix(3, 3, [| 1.0; 2.0; 3.0;
+                               2.0; 5.0; 3.0;
+                               1.0; 0.0; 8.0 |])
+        let b = [| 14.0; 18.0; 27.0 |]
+        let x = LinearAlgebra.solveLinearQR A b
+        // Verify A*x = b
+        let Ax = Matrix.muliplyVector A x
+        for i in 0 .. 2 do
+            floatEqual Ax.[i] b.[i] 1e-9
+
+    [<Fact>]
+    let ``Solve with identity matrix returns b`` () =
+        let I = Matrix.identity 3
+        let b = [| 1.0; 2.0; 3.0 |]
+        let x = LinearAlgebra.solveLinearQR I b
+        floatArrayClose b x 1e-10
+
+    [<Fact>]
+    let ``Throws on dimension mismatch A and b`` () =
+        let A = Matrix.identity 3
+        let b = [| 1.0; 2.0 |]
+        throws<ArgumentException>(fun () -> LinearAlgebra.solveLinearQR A b |> ignore)
+
+    [<Fact>]
+    let ``Solve simple diagonal system`` () =
+        let A = Matrix(3, 3, [| 2.0; 0.0; 0.0;
+                               0.0; 3.0; 0.0;
+                               0.0; 0.0; 4.0 |])
+        let b = [| 6.0; 9.0; 12.0 |]
+        let x = LinearAlgebra.solveLinearQR A b
+        let expected = [| 3.0; 3.0; 3.0 |]
+        floatArrayClose expected x 1e-10
+
+    [<Fact>]
+    let ``Solve with negative values`` () =
+        let A = Matrix(2, 2, [| -2.0; 1.0;
+                               1.0; -3.0 |])
+        let b = [| 3.0; -5.0 |]
+        let x = LinearAlgebra.solveLinearQR A b
+        // Verify A*x = b
+        let Ax = Matrix.muliplyVector A x
+        floatEqual Ax.[0] b.[0] 1e-10
+        floatEqual Ax.[1] b.[1] 1e-10
+
+
 module DeterminantTests =
 
     [<Fact>]

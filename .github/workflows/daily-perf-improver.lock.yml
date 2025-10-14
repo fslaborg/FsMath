@@ -3,12 +3,12 @@
 #   gh aw compile
 # For more information: https://github.com/githubnext/gh-aw/blob/main/.github/instructions/github-agentic-workflows.instructions.md
 #
-# Source: githubnext/agentics/workflows/daily-perf-improver.md@ebedab5169a6ed038d5382fd8b329b7bd0042fc0
+# Source: githubnext/agentics/workflows/daily-perf-improver.md@fedb218f36641dcb301c812149aeb94907f777f9
 #
 # Effective stop-time: 2025-10-14 00:12:27
 
 name: "Daily Perf Improver"
-on:
+"on":
   schedule:
   - cron: 0 2 * * 1-5
   workflow_dispatch: null
@@ -656,20 +656,12 @@ jobs:
                 description: "Add a comment to a GitHub issue, pull request, or discussion",
                 inputSchema: {
                   type: "object",
-                  required: ["body"],
+                  required: ["body", "item_number"],
                   properties: {
                     body: { type: "string", description: "Comment body/content" },
-                    issue_number: {
+                    item_number: {
                       type: "number",
-                      description: "Issue number (optional for current context)",
-                    },
-                    pull_number: {
-                      type: "number",
-                      description: "Pull request number (optional, alternative to issue_number)",
-                    },
-                    discussion_number: {
-                      type: "number",
-                      description: "Discussion number for discussion comments (optional, alternative to issue_number)",
+                      description: "Issue, pull request or discussion number",
                     },
                   },
                   additionalProperties: false,
@@ -779,7 +771,7 @@ jobs:
                       items: { type: "string" },
                       description: "Labels to add",
                     },
-                    issue_number: {
+                    item_number: {
                       type: "number",
                       description: "Issue or PR number (optional for current context)",
                     },
@@ -853,11 +845,11 @@ jobs:
                   type: "object",
                   required: ["tool", "reason"],
                   properties: {
-                    tool: { type: "string", description: "Name of the missing tool" },
-                    reason: { type: "string", description: "Why this tool is needed" },
+                    tool: { type: "string", description: "Name of the missing tool (max 128 characters)" },
+                    reason: { type: "string", description: "Why this tool is needed (max 256 characters)" },
                     alternatives: {
                       type: "string",
-                      description: "Possible alternatives or workarounds",
+                      description: "Possible alternatives or workarounds (max 256 characters)",
                     },
                   },
                   additionalProperties: false,
@@ -1092,7 +1084,7 @@ jobs:
           
           1. Performance research (if not done before).
           
-             1a. Check if an open discussion with title starting with "${{ github.workflow }}" exists using `list_discussions`. If it does, read the discussion and its comments, paying particular attention to comments from repository maintainers, then continue to step 2. If the discussion doesn't exist, follow the steps below to create it:
+             1a. Check if an open discussion with title starting with "${{ github.workflow }}" exists using `list_discussions`. Make sure the discussion is OPEN not an old closed one! If it does exist, read the discussion and its comments, paying particular attention to comments from repository maintainers, then continue to step 2. If the discussion doesn't exist, follow the steps below to create it:
           
              1b. Do some deep research into performance matters in this repo.
                - How is performance testing is done in the repo?
@@ -1139,19 +1131,19 @@ jobs:
           3. Performance goal selection: build an understanding of what to work on and select a part of the performance plan to pursue.
           
              3a. You can now assume the repository is in a state where the steps in `.github/actions/daily-perf-improver/build-steps/action.yml` have been run and is ready for performance testing, running micro-benchmarks etc. Read this file to understand what has been done. Read any output files such as `build-steps.log` to understand what has been done. If the build steps failed, work out what needs to be fixed in `.github/actions/daily-perf-improver/build-steps/action.yml` and make a pull request for those fixes and exit the entire workflow.
-             
+          
              3b. Read the plan in the discussion mentioned earlier, along with comments.
           
              3c. Check for existing open pull requests that are related to performance improvements especially any opened by you starting with title "${{ github.workflow }}". Don't repeat work from any open pull requests.
-             
+          
              3d. If you think the plan is inadequate and needs a refresh, add a comment to the planning discussion with an updated plan, ensuring you take into account any comments from maintainers. Explain in the comment why the plan has been updated. Then continue to step 3e.
-            
+          
              3e. Select a performance improvement goal to pursue from the plan. Ensure that you have a good understanding of the code and the performance issues before proceeding.
           
           4. Work towards your selected goal.. For the performance improvement goal you selected, do the following:
           
              4a. Create a new branch starting with "perf/".
-             
+          
              4b. Work towards the performance improvement goal you selected. This may involve:
                - Refactoring code
                - Optimizing algorithms
@@ -1173,22 +1165,22 @@ jobs:
              4d. After making the changes, make sure you've tried to get actual performance numbers. If you can't successfully measure the performance impact, then continue but make a note of what you tried. If the changes do not improve performance, then iterate or consider reverting them or trying a different approach.
           
              4e. Apply any automatic code formatting used in the repo
-             
+          
              4f. Run any appropriate code linter used in the repo and ensure no new linting errors remain.
           
-          5. If you succeeded in writing useful code changes that improve performance, create a draft pull request with your changes. 
+          5. If you succeeded in writing useful code changes that improve performance, create a draft pull request with your changes.
           
              5a. Include a description of the improvements, details of the benchmark runs that show improvement and by how much, made and any relevant context.
-             
+          
              5b. Do NOT include performance reports or any tool-generated files in the pull request. Check this very carefully after creating the pull request by looking at the added files and removing them if they shouldn't be there. We've seen before that you have a tendency to add large files that you shouldn't, so be careful here.
           
              5c. In the description, explain:
-             
+          
              - the performance improvement goal you decided to pursue and why
              - the approach you took to your work, including your todo list
              - the actions you took
              - the build, test, benchmarking and other steps you used
-             - the performance measurements you made 
+             - the performance measurements you made
              - the measured improvements achieved
              - the problems you found
              - the changes made
@@ -1426,7 +1418,8 @@ jobs:
           script: |
             async function main() {
               const fs = require("fs");
-              function sanitizeContent(content) {
+              const maxBodyLength = 16384;
+              function sanitizeContent(content, maxLength) {
                 if (!content || typeof content !== "string") {
                   return "";
                 }
@@ -1445,14 +1438,19 @@ jobs:
                 sanitized = sanitized.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
                 sanitized = sanitizeUrlProtocols(sanitized);
                 sanitized = sanitizeUrlDomains(sanitized);
-                const maxLength = 524288;
-                if (sanitized.length > maxLength) {
-                  sanitized = sanitized.substring(0, maxLength) + "\n[Content truncated due to length]";
-                }
                 const lines = sanitized.split("\n");
                 const maxLines = 65000;
+                maxLength = maxLength || 524288;
                 if (lines.length > maxLines) {
-                  sanitized = lines.slice(0, maxLines).join("\n") + "\n[Content truncated due to line count]";
+                  const truncationMsg = "\n[Content truncated due to line count]";
+                  const truncatedLines = lines.slice(0, maxLines).join("\n") + truncationMsg;
+                  if (truncatedLines.length > maxLength) {
+                    sanitized = truncatedLines.substring(0, maxLength - truncationMsg.length) + truncationMsg;
+                  } else {
+                    sanitized = truncatedLines;
+                  }
+                } else if (sanitized.length > maxLength) {
+                  sanitized = sanitized.substring(0, maxLength) + "\n[Content truncated due to length]";
                 }
                 sanitized = neutralizeBotTriggers(sanitized);
                 return sanitized.trim();
@@ -1508,9 +1506,9 @@ jobs:
                   case "create-discussion":
                     return 1;
                   case "missing-tool":
-                    return 1000;
+                    return 20;
                   case "create-code-scanning-alert":
-                    return 1000;
+                    return 40;
                   case "upload-asset":
                     return 10;
                   default:
@@ -1844,10 +1842,10 @@ jobs:
                         errors.push(`Line ${i + 1}: create_issue requires a 'body' string field`);
                         continue;
                       }
-                      item.title = sanitizeContent(item.title);
-                      item.body = sanitizeContent(item.body);
+                      item.title = sanitizeContent(item.title, 128);
+                      item.body = sanitizeContent(item.body, maxBodyLength);
                       if (item.labels && Array.isArray(item.labels)) {
-                        item.labels = item.labels.map(label => (typeof label === "string" ? sanitizeContent(label) : label));
+                        item.labels = item.labels.map(label => (typeof label === "string" ? sanitizeContent(label, 128) : label));
                       }
                       if (item.parent !== undefined) {
                         const parentValidation = validateIssueOrPRNumber(item.parent, "create_issue 'parent'", i + 1);
@@ -1862,28 +1860,14 @@ jobs:
                         errors.push(`Line ${i + 1}: add_comment requires a 'body' string field`);
                         continue;
                       }
-                      if (item.issue_number !== undefined) {
-                        const issueNumValidation = validateIssueOrPRNumber(item.issue_number, "add_comment 'issue_number'", i + 1);
-                        if (!issueNumValidation.isValid) {
-                          if (issueNumValidation.error) errors.push(issueNumValidation.error);
+                      if (item.item_number !== undefined) {
+                        const itemNumberValidation = validateIssueOrPRNumber(item.item_number, "add_comment 'item_number'", i + 1);
+                        if (!itemNumberValidation.isValid) {
+                          if (itemNumberValidation.error) errors.push(itemNumberValidation.error);
                           continue;
                         }
                       }
-                      if (item.discussion_number !== undefined) {
-                        const discussionNumValidation = validateIssueOrPRNumber(item.discussion_number, "add_comment 'discussion_number'", i + 1);
-                        if (!discussionNumValidation.isValid) {
-                          if (discussionNumValidation.error) errors.push(discussionNumValidation.error);
-                          continue;
-                        }
-                      }
-                      if (item.pull_number !== undefined) {
-                        const pullNumValidation = validateIssueOrPRNumber(item.pull_number, "add_comment 'pull_number'", i + 1);
-                        if (!pullNumValidation.isValid) {
-                          if (pullNumValidation.error) errors.push(pullNumValidation.error);
-                          continue;
-                        }
-                      }
-                      item.body = sanitizeContent(item.body);
+                      item.body = sanitizeContent(item.body, maxBodyLength);
                       break;
                     case "create-pull-request":
                       if (!item.title || typeof item.title !== "string") {
@@ -1898,11 +1882,11 @@ jobs:
                         errors.push(`Line ${i + 1}: create_pull_request requires a 'branch' string field`);
                         continue;
                       }
-                      item.title = sanitizeContent(item.title);
-                      item.body = sanitizeContent(item.body);
-                      item.branch = sanitizeContent(item.branch);
+                      item.title = sanitizeContent(item.title, 128);
+                      item.body = sanitizeContent(item.body, maxBodyLength);
+                      item.branch = sanitizeContent(item.branch, 256);
                       if (item.labels && Array.isArray(item.labels)) {
-                        item.labels = item.labels.map(label => (typeof label === "string" ? sanitizeContent(label) : label));
+                        item.labels = item.labels.map(label => (typeof label === "string" ? sanitizeContent(label, 128) : label));
                       }
                       break;
                     case "add-labels":
@@ -1914,12 +1898,12 @@ jobs:
                         errors.push(`Line ${i + 1}: add_labels labels array must contain only strings`);
                         continue;
                       }
-                      const labelsIssueNumValidation = validateIssueOrPRNumber(item.issue_number, "add-labels 'issue_number'", i + 1);
-                      if (!labelsIssueNumValidation.isValid) {
-                        if (labelsIssueNumValidation.error) errors.push(labelsIssueNumValidation.error);
+                      const labelsItemNumberValidation = validateIssueOrPRNumber(item.item_number, "add-labels 'item_number'", i + 1);
+                      if (!labelsItemNumberValidation.isValid) {
+                        if (labelsItemNumberValidation.error) errors.push(labelsItemNumberValidation.error);
                         continue;
                       }
-                      item.labels = item.labels.map(label => sanitizeContent(label));
+                      item.labels = item.labels.map(label => sanitizeContent(label, 128));
                       break;
                     case "update-issue":
                       const hasValidField = item.status !== undefined || item.title !== undefined || item.body !== undefined;
@@ -1938,14 +1922,14 @@ jobs:
                           errors.push(`Line ${i + 1}: update-issue 'title' must be a string`);
                           continue;
                         }
-                        item.title = sanitizeContent(item.title);
+                        item.title = sanitizeContent(item.title, 128);
                       }
                       if (item.body !== undefined) {
                         if (typeof item.body !== "string") {
                           errors.push(`Line ${i + 1}: update-issue 'body' must be a string`);
                           continue;
                         }
-                        item.body = sanitizeContent(item.body);
+                        item.body = sanitizeContent(item.body, maxBodyLength);
                       }
                       const updateIssueNumValidation = validateIssueOrPRNumber(item.issue_number, "update-issue 'issue_number'", i + 1);
                       if (!updateIssueNumValidation.isValid) {
@@ -1962,8 +1946,8 @@ jobs:
                         errors.push(`Line ${i + 1}: push_to_pull_request_branch requires a 'message' string field`);
                         continue;
                       }
-                      item.branch = sanitizeContent(item.branch);
-                      item.message = sanitizeContent(item.message);
+                      item.branch = sanitizeContent(item.branch, 256);
+                      item.message = sanitizeContent(item.message, maxBodyLength);
                       const pushPRNumValidation = validateIssueOrPRNumber(
                         item.pull_request_number,
                         "push-to-pull-request-branch 'pull_request_number'",
@@ -1989,7 +1973,7 @@ jobs:
                         errors.push(`Line ${i + 1}: create-pull-request-review-comment requires a 'body' string field`);
                         continue;
                       }
-                      item.body = sanitizeContent(item.body);
+                      item.body = sanitizeContent(item.body, maxBodyLength);
                       const startLineValidation = validateOptionalPositiveInteger(
                         item.start_line,
                         "create-pull-request-review-comment 'start_line'",
@@ -2028,10 +2012,10 @@ jobs:
                           errors.push(`Line ${i + 1}: create_discussion 'category' must be a string`);
                           continue;
                         }
-                        item.category = sanitizeContent(item.category);
+                        item.category = sanitizeContent(item.category, 128);
                       }
-                      item.title = sanitizeContent(item.title);
-                      item.body = sanitizeContent(item.body);
+                      item.title = sanitizeContent(item.title, 128);
+                      item.body = sanitizeContent(item.body, maxBodyLength);
                       break;
                     case "missing-tool":
                       if (!item.tool || typeof item.tool !== "string") {
@@ -2042,14 +2026,14 @@ jobs:
                         errors.push(`Line ${i + 1}: missing_tool requires a 'reason' string field`);
                         continue;
                       }
-                      item.tool = sanitizeContent(item.tool);
-                      item.reason = sanitizeContent(item.reason);
+                      item.tool = sanitizeContent(item.tool, 128);
+                      item.reason = sanitizeContent(item.reason, 256);
                       if (item.alternatives !== undefined) {
                         if (typeof item.alternatives !== "string") {
                           errors.push(`Line ${i + 1}: missing-tool 'alternatives' must be a string`);
                           continue;
                         }
-                        item.alternatives = sanitizeContent(item.alternatives);
+                        item.alternatives = sanitizeContent(item.alternatives, 512);
                       }
                       break;
                     case "upload-asset":
@@ -2103,11 +2087,11 @@ jobs:
                         }
                       }
                       item.severity = item.severity.toLowerCase();
-                      item.file = sanitizeContent(item.file);
-                      item.severity = sanitizeContent(item.severity);
-                      item.message = sanitizeContent(item.message);
+                      item.file = sanitizeContent(item.file, 512);
+                      item.severity = sanitizeContent(item.severity, 64);
+                      item.message = sanitizeContent(item.message, 2048);
                       if (item.ruleIdSuffix) {
-                        item.ruleIdSuffix = sanitizeContent(item.ruleIdSuffix);
+                        item.ruleIdSuffix = sanitizeContent(item.ruleIdSuffix, 128);
                       }
                       break;
                     default:
@@ -2682,6 +2666,19 @@ jobs:
                 throw new Error(`Failed to parse GITHUB_AW_ERROR_PATTERNS as JSON: ${e instanceof Error ? e.message : String(e)}`);
               }
             }
+            function shouldSkipLine(line) {
+              const GITHUB_ACTIONS_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z\s+/;
+              if (new RegExp(GITHUB_ACTIONS_TIMESTAMP.source + "GITHUB_AW_ERROR_PATTERNS:").test(line)) {
+                return true;
+              }
+              if (/^\s+GITHUB_AW_ERROR_PATTERNS:\s*\[/.test(line)) {
+                return true;
+              }
+              if (new RegExp(GITHUB_ACTIONS_TIMESTAMP.source + "env:").test(line)) {
+                return true;
+              }
+              return false;
+            }
             function validateErrors(logContent, patterns) {
               const lines = logContent.split("\n");
               let hasErrors = false;
@@ -2700,6 +2697,9 @@ jobs:
                 }
                 for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
                   const line = lines[lineIndex];
+                  if (shouldSkipLine(line)) {
+                    continue;
+                  }
                   let match;
                   let iterationCount = 0;
                   let lastIndex = -1;
@@ -2771,6 +2771,7 @@ jobs:
                 extractMessage,
                 getErrorPatternsFromEnv,
                 truncateString,
+                shouldSkipLine,
               };
             }
             if (typeof module === "undefined" || require.main === module) {
@@ -2896,7 +2897,7 @@ jobs:
           AGENT_OUTPUT: ${{ needs.agent.outputs.output }}
           WORKFLOW_NAME: "Daily Perf Improver"
           WORKFLOW_DESCRIPTION: "No description provided"
-          WORKFLOW_MARKDOWN: "# Daily Perf Improver\n\n## Job Description\n\nYour name is ${{ github.workflow }}. Your job is to act as an agentic coder for the GitHub repository `${{ github.repository }}`. You're really good at all kinds of tasks. You're excellent at everything.\n\n1. Performance research (if not done before).\n\n   1a. Check if an open discussion with title starting with \"${{ github.workflow }}\" exists using `list_discussions`. If it does, read the discussion and its comments, paying particular attention to comments from repository maintainers, then continue to step 2. If the discussion doesn't exist, follow the steps below to create it:\n\n   1b. Do some deep research into performance matters in this repo.\n     - How is performance testing is done in the repo?\n     - How to do micro benchmarks in the repo?\n     - What are typical workloads for the software in this repo?\n     - Where are performance bottlenecks?\n     - Is perf I/O, CPU or Storage bound?\n     - What do the repo maintainers care about most w.r.t. perf.?\n     - What are realistic goals for Round 1, 2, 3 of perf improvement?\n     - What actual commands are used to build, test, profile and micro-benchmark the code in this repo?\n     - What concrete steps are needed to set up the environment for performance testing and micro-benchmarking?\n     - What existing documentation is there about performance in this repo?\n     - What exact steps need to be followed to benchmark and profile a typical part of the code in this repo?\n\n     Research:\n     - Functions or methods that are slow\n     - Algorithms that can be optimized\n     - Data structures that can be made more efficient\n     - Code that can be refactored for better performance\n     - Important routines that dominate performance\n     - Code that can be vectorized or other standard techniques to improve performance\n     - Any other areas that you identify as potential performance bottlenecks\n     - CPU, memory, I/O or other bottlenecks\n\n     Consider perf engineering fundamentals:\n     - You want to get to a zone where the engineers can run commands to get numbers towards some performance goal - with commands running reliably within 1min or so - and it can \"see\" the code paths associated with that. If you can achieve that, your engineers will be very good at finding low-hanging fruit to work towards the performance goals.\n\n     1b. Use this research to create a discussion with title \"${{ github.workflow }} - Research and Plan\", then exit this entire workflow.\n\n2. Build steps inference and configuration (if not done before)\n\n   2a. Check if `.github/actions/daily-perf-improver/build-steps/action.yml` exists in this repo. Note this path is relative to the current directory (the root of the repo). If this file exists then continue to step 3. Otherwise continue to step 2b.\n\n   2b. Check if an open pull request with title \"${{ github.workflow }} - Updates to complete configuration\" exists in this repo. If it does, add a comment to the pull request saying configuration needs to be completed, then exit the workflow. Otherwise continue to step 2c.\n\n   2c. Have a careful think about the CI commands needed to build the project and set up the environment for individual performance development work, assuming one set of build assumptions and one architecture (the one running). Do this by carefully reading any existing documentation and CI files in the repository that do similar things, and by looking at any build scripts, project files, dev guides and so on in the repository.\n\n   2d. Create the file `.github/actions/daily-perf-improver/build-steps/action.yml` as a GitHub Action containing these steps, ensuring that the action.yml file is valid and carefully cross-checking with other CI files and devcontainer configurations in the repo to ensure accuracy and correctness. Each step should append its output to a file called `build-steps.log` in the root of the repository. Ensure that the action.yml file is valid and correctly formatted.\n\n   2e. Make a pull request for the addition of this file, with title \"${{ github.workflow }} - Updates to complete configuration\". Encourage the maintainer to review the files carefully to ensure they are appropriate for the project. Exit the entire workflow.\n\n   2f. Try to run through the steps you worked out manually one by one. If the a step needs updating, then update the branch you created in step 2e. Continue through all the steps. If you can't get it to work, then create an issue describing the problem and exit the entire workflow.\n\n3. Performance goal selection: build an understanding of what to work on and select a part of the performance plan to pursue.\n\n   3a. You can now assume the repository is in a state where the steps in `.github/actions/daily-perf-improver/build-steps/action.yml` have been run and is ready for performance testing, running micro-benchmarks etc. Read this file to understand what has been done. Read any output files such as `build-steps.log` to understand what has been done. If the build steps failed, work out what needs to be fixed in `.github/actions/daily-perf-improver/build-steps/action.yml` and make a pull request for those fixes and exit the entire workflow.\n   \n   3b. Read the plan in the discussion mentioned earlier, along with comments.\n\n   3c. Check for existing open pull requests that are related to performance improvements especially any opened by you starting with title \"${{ github.workflow }}\". Don't repeat work from any open pull requests.\n   \n   3d. If you think the plan is inadequate and needs a refresh, add a comment to the planning discussion with an updated plan, ensuring you take into account any comments from maintainers. Explain in the comment why the plan has been updated. Then continue to step 3e.\n  \n   3e. Select a performance improvement goal to pursue from the plan. Ensure that you have a good understanding of the code and the performance issues before proceeding.\n\n4. Work towards your selected goal.. For the performance improvement goal you selected, do the following:\n\n   4a. Create a new branch starting with \"perf/\".\n   \n   4b. Work towards the performance improvement goal you selected. This may involve:\n     - Refactoring code\n     - Optimizing algorithms\n     - Changing data structures\n     - Adding caching\n     - Parallelizing code\n     - Improving memory access patterns\n     - Using more efficient libraries or frameworks\n     - Reducing I/O operations\n     - Reducing network calls\n     - Improving concurrency\n     - Using profiling tools to identify bottlenecks\n     - Other techniques to improve performance or performance engineering practices\n\n     If you do benchmarking then make sure you plan ahead about how to take before/after benchmarking performance figures. You may need to write the benchmarks first, then run them, then implement your changes. Or you might implement your changes, then write benchmarks, then stash or disable the changes and take \"before\" measurements, then apply the changes to take \"after\" measurements, or other techniques to get before/after measurements. It's just great if you can provide benchmarking, profiling or other evidence that the thing you're optimizing is important to a significant realistic workload. Run individual benchmarks and comparing results. Benchmarking should be done in a way that is reliable, reproducible and quick, preferably by running iteration running a small subset of targeted relevant benchmarks at a time. Because you're running in a virtualised environment wall-clock-time measurements may not be 100% accurate, but it is probably good enough to see if you're making significant improvements or not. Even better if you can use cycle-accurate timers or similar.\n\n   4c. Ensure the code still works as expected and that any existing relevant tests pass. Add new tests if appropriate and make sure they pass too.\n\n   4d. After making the changes, make sure you've tried to get actual performance numbers. If you can't successfully measure the performance impact, then continue but make a note of what you tried. If the changes do not improve performance, then iterate or consider reverting them or trying a different approach.\n\n   4e. Apply any automatic code formatting used in the repo\n   \n   4f. Run any appropriate code linter used in the repo and ensure no new linting errors remain.\n\n5. If you succeeded in writing useful code changes that improve performance, create a draft pull request with your changes. \n\n   5a. Include a description of the improvements, details of the benchmark runs that show improvement and by how much, made and any relevant context.\n   \n   5b. Do NOT include performance reports or any tool-generated files in the pull request. Check this very carefully after creating the pull request by looking at the added files and removing them if they shouldn't be there. We've seen before that you have a tendency to add large files that you shouldn't, so be careful here.\n\n   5c. In the description, explain:\n   \n   - the performance improvement goal you decided to pursue and why\n   - the approach you took to your work, including your todo list\n   - the actions you took\n   - the build, test, benchmarking and other steps you used\n   - the performance measurements you made \n   - the measured improvements achieved\n   - the problems you found\n   - the changes made\n   - what did and didn't work\n   - possible other areas for future improvement\n   - include links to any issues you created or commented on, and any pull requests you created.\n   - list any bash commands you used, any web searches you performed, and any web pages you visited that were relevant to your work. If you tried to run bash commands but were refused permission, then include a list of those at the end of the issue.\n\n   It is very important to include accurate performance measurements if you have them. Include a section \"Performance measurements\". Be very honest about whether you took accurate before/after performance measurements or not, and if you did, what they were. If you didn't, explain why not. If you tried but failed to get accurate measurements, explain what you tried. Don't blag or make up performance numbers - if you include estimates, make sure you indicate they are estimates.\n\n   Include a section \"Replicating the performance measurements\" with the exact commands needed to install dependencies, build the code, take before/after performance measurements and format them in a table, so that someone else can replicate them. If you used any scripts or benchmark programs to help with this, include them in the repository if appropriate, or include links to them if they are external.\n\n   5d. After creation, check the pull request to ensure it is correct, includes all expected files, and doesn't include any unwanted files or changes. Make any necessary corrections by pushing further commits to the branch.\n\n6. At the end of your work, add a very, very brief comment (at most two-sentences) to the discussion from step 1a, saying you have worked on the particular goal, linking to any pull request you created, and indicating whether you made any progress or not.\n"
+          WORKFLOW_MARKDOWN: "# Daily Perf Improver\n\n## Job Description\n\nYour name is ${{ github.workflow }}. Your job is to act as an agentic coder for the GitHub repository `${{ github.repository }}`. You're really good at all kinds of tasks. You're excellent at everything.\n\n1. Performance research (if not done before).\n\n   1a. Check if an open discussion with title starting with \"${{ github.workflow }}\" exists using `list_discussions`. Make sure the discussion is OPEN not an old closed one! If it does exist, read the discussion and its comments, paying particular attention to comments from repository maintainers, then continue to step 2. If the discussion doesn't exist, follow the steps below to create it:\n\n   1b. Do some deep research into performance matters in this repo.\n     - How is performance testing is done in the repo?\n     - How to do micro benchmarks in the repo?\n     - What are typical workloads for the software in this repo?\n     - Where are performance bottlenecks?\n     - Is perf I/O, CPU or Storage bound?\n     - What do the repo maintainers care about most w.r.t. perf.?\n     - What are realistic goals for Round 1, 2, 3 of perf improvement?\n     - What actual commands are used to build, test, profile and micro-benchmark the code in this repo?\n     - What concrete steps are needed to set up the environment for performance testing and micro-benchmarking?\n     - What existing documentation is there about performance in this repo?\n     - What exact steps need to be followed to benchmark and profile a typical part of the code in this repo?\n\n     Research:\n     - Functions or methods that are slow\n     - Algorithms that can be optimized\n     - Data structures that can be made more efficient\n     - Code that can be refactored for better performance\n     - Important routines that dominate performance\n     - Code that can be vectorized or other standard techniques to improve performance\n     - Any other areas that you identify as potential performance bottlenecks\n     - CPU, memory, I/O or other bottlenecks\n\n     Consider perf engineering fundamentals:\n     - You want to get to a zone where the engineers can run commands to get numbers towards some performance goal - with commands running reliably within 1min or so - and it can \"see\" the code paths associated with that. If you can achieve that, your engineers will be very good at finding low-hanging fruit to work towards the performance goals.\n\n     1b. Use this research to create a discussion with title \"${{ github.workflow }} - Research and Plan\", then exit this entire workflow.\n\n2. Build steps inference and configuration (if not done before)\n\n   2a. Check if `.github/actions/daily-perf-improver/build-steps/action.yml` exists in this repo. Note this path is relative to the current directory (the root of the repo). If this file exists then continue to step 3. Otherwise continue to step 2b.\n\n   2b. Check if an open pull request with title \"${{ github.workflow }} - Updates to complete configuration\" exists in this repo. If it does, add a comment to the pull request saying configuration needs to be completed, then exit the workflow. Otherwise continue to step 2c.\n\n   2c. Have a careful think about the CI commands needed to build the project and set up the environment for individual performance development work, assuming one set of build assumptions and one architecture (the one running). Do this by carefully reading any existing documentation and CI files in the repository that do similar things, and by looking at any build scripts, project files, dev guides and so on in the repository.\n\n   2d. Create the file `.github/actions/daily-perf-improver/build-steps/action.yml` as a GitHub Action containing these steps, ensuring that the action.yml file is valid and carefully cross-checking with other CI files and devcontainer configurations in the repo to ensure accuracy and correctness. Each step should append its output to a file called `build-steps.log` in the root of the repository. Ensure that the action.yml file is valid and correctly formatted.\n\n   2e. Make a pull request for the addition of this file, with title \"${{ github.workflow }} - Updates to complete configuration\". Encourage the maintainer to review the files carefully to ensure they are appropriate for the project. Exit the entire workflow.\n\n   2f. Try to run through the steps you worked out manually one by one. If the a step needs updating, then update the branch you created in step 2e. Continue through all the steps. If you can't get it to work, then create an issue describing the problem and exit the entire workflow.\n\n3. Performance goal selection: build an understanding of what to work on and select a part of the performance plan to pursue.\n\n   3a. You can now assume the repository is in a state where the steps in `.github/actions/daily-perf-improver/build-steps/action.yml` have been run and is ready for performance testing, running micro-benchmarks etc. Read this file to understand what has been done. Read any output files such as `build-steps.log` to understand what has been done. If the build steps failed, work out what needs to be fixed in `.github/actions/daily-perf-improver/build-steps/action.yml` and make a pull request for those fixes and exit the entire workflow.\n\n   3b. Read the plan in the discussion mentioned earlier, along with comments.\n\n   3c. Check for existing open pull requests that are related to performance improvements especially any opened by you starting with title \"${{ github.workflow }}\". Don't repeat work from any open pull requests.\n\n   3d. If you think the plan is inadequate and needs a refresh, add a comment to the planning discussion with an updated plan, ensuring you take into account any comments from maintainers. Explain in the comment why the plan has been updated. Then continue to step 3e.\n\n   3e. Select a performance improvement goal to pursue from the plan. Ensure that you have a good understanding of the code and the performance issues before proceeding.\n\n4. Work towards your selected goal.. For the performance improvement goal you selected, do the following:\n\n   4a. Create a new branch starting with \"perf/\".\n\n   4b. Work towards the performance improvement goal you selected. This may involve:\n     - Refactoring code\n     - Optimizing algorithms\n     - Changing data structures\n     - Adding caching\n     - Parallelizing code\n     - Improving memory access patterns\n     - Using more efficient libraries or frameworks\n     - Reducing I/O operations\n     - Reducing network calls\n     - Improving concurrency\n     - Using profiling tools to identify bottlenecks\n     - Other techniques to improve performance or performance engineering practices\n\n     If you do benchmarking then make sure you plan ahead about how to take before/after benchmarking performance figures. You may need to write the benchmarks first, then run them, then implement your changes. Or you might implement your changes, then write benchmarks, then stash or disable the changes and take \"before\" measurements, then apply the changes to take \"after\" measurements, or other techniques to get before/after measurements. It's just great if you can provide benchmarking, profiling or other evidence that the thing you're optimizing is important to a significant realistic workload. Run individual benchmarks and comparing results. Benchmarking should be done in a way that is reliable, reproducible and quick, preferably by running iteration running a small subset of targeted relevant benchmarks at a time. Because you're running in a virtualised environment wall-clock-time measurements may not be 100% accurate, but it is probably good enough to see if you're making significant improvements or not. Even better if you can use cycle-accurate timers or similar.\n\n   4c. Ensure the code still works as expected and that any existing relevant tests pass. Add new tests if appropriate and make sure they pass too.\n\n   4d. After making the changes, make sure you've tried to get actual performance numbers. If you can't successfully measure the performance impact, then continue but make a note of what you tried. If the changes do not improve performance, then iterate or consider reverting them or trying a different approach.\n\n   4e. Apply any automatic code formatting used in the repo\n\n   4f. Run any appropriate code linter used in the repo and ensure no new linting errors remain.\n\n5. If you succeeded in writing useful code changes that improve performance, create a draft pull request with your changes.\n\n   5a. Include a description of the improvements, details of the benchmark runs that show improvement and by how much, made and any relevant context.\n\n   5b. Do NOT include performance reports or any tool-generated files in the pull request. Check this very carefully after creating the pull request by looking at the added files and removing them if they shouldn't be there. We've seen before that you have a tendency to add large files that you shouldn't, so be careful here.\n\n   5c. In the description, explain:\n\n   - the performance improvement goal you decided to pursue and why\n   - the approach you took to your work, including your todo list\n   - the actions you took\n   - the build, test, benchmarking and other steps you used\n   - the performance measurements you made\n   - the measured improvements achieved\n   - the problems you found\n   - the changes made\n   - what did and didn't work\n   - possible other areas for future improvement\n   - include links to any issues you created or commented on, and any pull requests you created.\n   - list any bash commands you used, any web searches you performed, and any web pages you visited that were relevant to your work. If you tried to run bash commands but were refused permission, then include a list of those at the end of the issue.\n\n   It is very important to include accurate performance measurements if you have them. Include a section \"Performance measurements\". Be very honest about whether you took accurate before/after performance measurements or not, and if you did, what they were. If you didn't, explain why not. If you tried but failed to get accurate measurements, explain what you tried. Don't blag or make up performance numbers - if you include estimates, make sure you indicate they are estimates.\n\n   Include a section \"Replicating the performance measurements\" with the exact commands needed to install dependencies, build the code, take before/after performance measurements and format them in a table, so that someone else can replicate them. If you used any scripts or benchmark programs to help with this, include them in the repository if appropriate, or include links to them if they are external.\n\n   5d. After creation, check the pull request to ensure it is correct, includes all expected files, and doesn't include any unwanted files or changes. Make any necessary corrections by pushing further commits to the branch.\n\n6. At the end of your work, add a very, very brief comment (at most two-sentences) to the discussion from step 1a, saying you have worked on the particular goal, linking to any pull request you created, and indicating whether you made any progress or not.\n"
         with:
           script: |
             const fs = require('fs');
@@ -3307,8 +3308,8 @@ jobs:
         env:
           GITHUB_AW_AGENT_OUTPUT: ${{ needs.agent.outputs.output }}
           GITHUB_AW_WORKFLOW_NAME: "Daily Perf Improver"
-          GITHUB_AW_WORKFLOW_SOURCE: "githubnext/agentics/workflows/daily-perf-improver.md@ebedab5169a6ed038d5382fd8b329b7bd0042fc0"
-          GITHUB_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/githubnext/agentics/tree/ebedab5169a6ed038d5382fd8b329b7bd0042fc0/workflows/daily-perf-improver.md"
+          GITHUB_AW_WORKFLOW_SOURCE: "githubnext/agentics/workflows/daily-perf-improver.md@fedb218f36641dcb301c812149aeb94907f777f9"
+          GITHUB_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/githubnext/agentics/tree/fedb218f36641dcb301c812149aeb94907f777f9/workflows/daily-perf-improver.md"
           GITHUB_AW_COMMENT_TARGET: "*"
           GITHUB_AW_COMMENT_DISCUSSION: "true"
         with:
@@ -3403,16 +3404,7 @@ jobs:
                 }
               }
               function getTargetNumber(item) {
-                if (item.issue_number !== undefined) {
-                  return item.issue_number;
-                }
-                if (item.pull_number !== undefined) {
-                  return item.pull_number;
-                }
-                if (item.discussion_number !== undefined) {
-                  return item.discussion_number;
-                }
-                return undefined;
+                return item.item_number;
               }
               if (isStaged) {
                 let summaryContent = "## 🎭 Staged Mode: Add Comments Preview\n\n";
@@ -3461,32 +3453,31 @@ jobs:
               for (let i = 0; i < commentItems.length; i++) {
                 const commentItem = commentItems[i];
                 core.info(`Processing add-comment item ${i + 1}/${commentItems.length}: bodyLength=${commentItem.body.length}`);
-                let issueNumber;
+                let itemNumber;
                 let commentEndpoint;
                 if (commentTarget === "*") {
                   const targetNumber = getTargetNumber(commentItem);
                   if (targetNumber) {
-                    issueNumber = parseInt(targetNumber, 10);
-                    if (isNaN(issueNumber) || issueNumber <= 0) {
+                    itemNumber = parseInt(targetNumber, 10);
+                    if (isNaN(itemNumber) || itemNumber <= 0) {
                       core.info(`Invalid target number specified: ${targetNumber}`);
                       continue;
                     }
                     commentEndpoint = isDiscussion ? "discussions" : "issues";
                   } else {
-                    const expectedFields = isDiscussion ? "discussion_number" : "issue_number or pull_number";
-                    core.info(`Target is "*" but no ${expectedFields} specified in comment item`);
+                    core.info(`Target is "*" but no number specified in comment item`);
                     continue;
                   }
                 } else if (commentTarget && commentTarget !== "triggering") {
-                  issueNumber = parseInt(commentTarget, 10);
-                  if (isNaN(issueNumber) || issueNumber <= 0) {
+                  itemNumber = parseInt(commentTarget, 10);
+                  if (isNaN(itemNumber) || itemNumber <= 0) {
                     core.info(`Invalid target number in target configuration: ${commentTarget}`);
                     continue;
                   }
                   commentEndpoint = isDiscussion ? "discussions" : "issues";
                 } else {
                   if (isIssueContext) {
-                    issueNumber = context.payload.issue?.number || context.payload.pull_request?.number || context.payload.discussion?.number;
+                    itemNumber = context.payload.issue?.number || context.payload.pull_request?.number || context.payload.discussion?.number;
                     if (context.payload.issue) {
                       commentEndpoint = "issues";
                     } else {
@@ -3494,7 +3485,7 @@ jobs:
                       continue;
                     }
                   } else if (isPRContext) {
-                    issueNumber = context.payload.pull_request?.number || context.payload.issue?.number || context.payload.discussion?.number;
+                    itemNumber = context.payload.pull_request?.number || context.payload.issue?.number || context.payload.discussion?.number;
                     if (context.payload.pull_request) {
                       commentEndpoint = "issues"; 
                     } else {
@@ -3502,7 +3493,7 @@ jobs:
                       continue;
                     }
                   } else if (isDiscussionContext) {
-                    issueNumber = context.payload.discussion?.number || context.payload.issue?.number || context.payload.pull_request?.number;
+                    itemNumber = context.payload.discussion?.number || context.payload.issue?.number || context.payload.pull_request?.number;
                     if (context.payload.discussion) {
                       commentEndpoint = "discussions"; 
                     } else {
@@ -3511,7 +3502,7 @@ jobs:
                     }
                   }
                 }
-                if (!issueNumber) {
+                if (!itemNumber) {
                   core.info("Could not determine issue, pull request, or discussion number");
                   continue;
                 }
@@ -3528,18 +3519,18 @@ jobs:
                 try {
                   let comment;
                   if (isDiscussion) {
-                    core.info(`Creating comment on discussion #${issueNumber}`);
+                    core.info(`Creating comment on discussion #${itemNumber}`);
                     core.info(`Comment content length: ${body.length}`);
-                    comment = await commentOnDiscussion(github, context.repo.owner, context.repo.repo, issueNumber, body);
+                    comment = await commentOnDiscussion(github, context.repo.owner, context.repo.repo, itemNumber, body);
                     core.info("Created discussion comment #" + comment.id + ": " + comment.html_url);
                     comment.discussion_url = comment.discussion_url;
                   } else {
-                    core.info(`Creating comment on ${commentEndpoint} #${issueNumber}`);
+                    core.info(`Creating comment on ${commentEndpoint} #${itemNumber}`);
                     core.info(`Comment content length: ${body.length}`);
                     const { data: restComment } = await github.rest.issues.createComment({
                       owner: context.repo.owner,
                       repo: context.repo.repo,
-                      issue_number: issueNumber,
+                      issue_number: itemNumber,
                       body: body,
                     });
                     comment = restComment;
