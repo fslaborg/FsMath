@@ -8,6 +8,7 @@ let Main args =
     let switcher = BenchmarkSwitcher [|
         typeof<VectorBenchmarks>
         typeof<MatrixBenchmarks>
+        typeof<LinearAlgebraBenchmarks>
     |]
     switcher.Run args |> ignore
     0
