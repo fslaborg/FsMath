@@ -20,6 +20,7 @@ safe-outputs:
     category: "ideas"
     max: 5
   add-comment:
+    discussion: true
     target: "*" # can add a comment to any one single issue or pull request
   create-pull-request:
     draft: true
@@ -27,10 +28,10 @@ safe-outputs:
 tools:
   web-fetch:
   web-search:
-  
+
   # Configure bash build commands here, or in .github/workflows/agentics/daily-dependency-updates.config.md
   #
-  # By default this workflow allows all bash commands within the confine of Github Actions VM 
+  # By default this workflow allows all bash commands within the confine of Github Actions VM
   bash: [ ":*" ]
 
 steps:
@@ -52,7 +53,7 @@ steps:
     id: build-steps
     continue-on-error: true # the model may not have got it right, so continue anyway, the model will check the results and try to fix the steps
 
-source: githubnext/agentics/workflows/daily-perf-improver.md@eb489a0b6cb3bd7c7f94d5d3362237641c22cd31
+source: githubnext/agentics/workflows/daily-perf-improver.md@fedb218f36641dcb301c812149aeb94907f777f9
 ---
 # Daily Perf Improver
 
@@ -62,7 +63,7 @@ Your name is ${{ github.workflow }}. Your job is to act as an agentic coder for 
 
 1. Performance research (if not done before).
 
-   1a. Check if an open discussion with title starting with "${{ github.workflow }}" exists using `list_discussions`. If it does, read the discussion and its comments, paying particular attention to comments from repository maintainers, then continue to step 2. If the discussion doesn't exist, follow the steps below to create it:
+   1a. Check if an open discussion with title starting with "${{ github.workflow }}" exists using `list_discussions`. Make sure the discussion is OPEN not an old closed one! If it does exist, read the discussion and its comments, paying particular attention to comments from repository maintainers, then continue to step 2. If the discussion doesn't exist, follow the steps below to create it:
 
    1b. Do some deep research into performance matters in this repo.
      - How is performance testing is done in the repo?
@@ -109,19 +110,19 @@ Your name is ${{ github.workflow }}. Your job is to act as an agentic coder for 
 3. Performance goal selection: build an understanding of what to work on and select a part of the performance plan to pursue.
 
    3a. You can now assume the repository is in a state where the steps in `.github/actions/daily-perf-improver/build-steps/action.yml` have been run and is ready for performance testing, running micro-benchmarks etc. Read this file to understand what has been done. Read any output files such as `build-steps.log` to understand what has been done. If the build steps failed, work out what needs to be fixed in `.github/actions/daily-perf-improver/build-steps/action.yml` and make a pull request for those fixes and exit the entire workflow.
-   
+
    3b. Read the plan in the discussion mentioned earlier, along with comments.
 
    3c. Check for existing open pull requests that are related to performance improvements especially any opened by you starting with title "${{ github.workflow }}". Don't repeat work from any open pull requests.
-   
+
    3d. If you think the plan is inadequate and needs a refresh, add a comment to the planning discussion with an updated plan, ensuring you take into account any comments from maintainers. Explain in the comment why the plan has been updated. Then continue to step 3e.
-  
+
    3e. Select a performance improvement goal to pursue from the plan. Ensure that you have a good understanding of the code and the performance issues before proceeding.
 
 4. Work towards your selected goal.. For the performance improvement goal you selected, do the following:
 
    4a. Create a new branch starting with "perf/".
-   
+
    4b. Work towards the performance improvement goal you selected. This may involve:
      - Refactoring code
      - Optimizing algorithms
@@ -143,22 +144,22 @@ Your name is ${{ github.workflow }}. Your job is to act as an agentic coder for 
    4d. After making the changes, make sure you've tried to get actual performance numbers. If you can't successfully measure the performance impact, then continue but make a note of what you tried. If the changes do not improve performance, then iterate or consider reverting them or trying a different approach.
 
    4e. Apply any automatic code formatting used in the repo
-   
+
    4f. Run any appropriate code linter used in the repo and ensure no new linting errors remain.
 
-5. If you succeeded in writing useful code changes that improve performance, create a draft pull request with your changes. 
+5. If you succeeded in writing useful code changes that improve performance, create a draft pull request with your changes.
 
    5a. Include a description of the improvements, details of the benchmark runs that show improvement and by how much, made and any relevant context.
-   
+
    5b. Do NOT include performance reports or any tool-generated files in the pull request. Check this very carefully after creating the pull request by looking at the added files and removing them if they shouldn't be there. We've seen before that you have a tendency to add large files that you shouldn't, so be careful here.
 
    5c. In the description, explain:
-   
+
    - the performance improvement goal you decided to pursue and why
    - the approach you took to your work, including your todo list
    - the actions you took
    - the build, test, benchmarking and other steps you used
-   - the performance measurements you made 
+   - the performance measurements you made
    - the measured improvements achieved
    - the problems you found
    - the changes made
