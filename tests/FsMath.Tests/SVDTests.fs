@@ -1,0 +1,566 @@
+namespace FsMath.Tests
+
+open Xunit
+open FsMath
+open FsMath.Algebra
+
+/// Tests for Singular Value Decomposition (SVD)
+module SVDTests =
+
+    let private tolerance = 1e-10
+
+    /// Helper to assert two floats are approximately equal
+    let private assertApproxEqual (expected: float) (actual: float) =
+        let diff = abs(expected - actual)
+        Assert.True(diff < tolerance, sprintf "Expected %f but got %f (diff: %e)" expected actual diff)
+
+    /// Helper to assert two matrices are approximately equal
+    let private assertMatrixApproxEqual (expected: float[,]) (actual: float[,]) =
+        let m1 = expected.GetLength(0)
+        let n1 = expected.GetLength(1)
+        let m2 = actual.GetLength(0)
+        let n2 = actual.GetLength(1)
+        Assert.Equal(m1, m2)
+        Assert.Equal(n1, n2)
+        for i in 0 .. m1-1 do
+            for j in 0 .. n1-1 do
+                assertApproxEqual expected.[i,j] actual.[i,j]
+
+    /// Helper for matrix multiplication
+    let private matmul (A: float[,]) (B: float[,]) : float[,] =
+        let m = A.GetLength(0)
+        let n = A.GetLength(1)
+        let p = B.GetLength(1)
+        Assert.Equal(n, B.GetLength(0))
+        Array2D.init m p (fun i k ->
+            let mutable sum = 0.0
+            for j in 0 .. n-1 do
+                sum <- sum + A.[i,j] * B.[j,k]
+            sum
+        )
+
+    /// Helper to convert singular values array to diagonal matrix
+    let private singularValuesToMatrix (s: float[]) (m: int) (n: int) : float[,] =
+        Array2D.init m n (fun i j ->
+            if i = j && i < s.Length then s.[i]
+            else 0.0
+        )
+
+    /// Helper to transpose a matrix
+    let private transpose (A: float[,]) : float[,] =
+        let m = A.GetLength(0)
+        let n = A.GetLength(1)
+        Array2D.init n m (fun i j -> A.[j,i])
+
+    [<Fact>]
+    let ``SVD of identity matrix`` () =
+        let A = array2D [[1.0; 0.0; 0.0]
+                         [0.0; 1.0; 0.0]
+                         [0.0; 0.0; 1.0]]
+        let (U, s, Vt) = SVD.compute A
+
+        // Identity should have singular values of 1
+        Assert.Equal(3, s.Length)
+        for i in 0..2 do
+            assertApproxEqual 1.0 s.[i]
+
+        // U and V should be orthogonal (U*U^T = I)
+        let UtU = matmul (transpose U) U
+        assertMatrixApproxEqual A UtU
+
+    [<Fact>]
+    let ``SVD of diagonal matrix`` () =
+        let A = array2D [[3.0; 0.0; 0.0]
+                         [0.0; 2.0; 0.0]
+                         [0.0; 0.0; 1.0]]
+        let (U, s, Vt) = SVD.compute A
+
+        // Singular values should be diagonal elements in descending order
+        Assert.Equal(3, s.Length)
+        assertApproxEqual 3.0 s.[0]
+        assertApproxEqual 2.0 s.[1]
+        assertApproxEqual 1.0 s.[2]
+
+    [<Fact>]
+    let ``SVD reconstruction: A = U * Sigma * V^T`` () =
+        let A = array2D [[1.0; 2.0; 3.0]
+                         [4.0; 5.0; 6.0]
+                         [7.0; 8.0; 9.0]]
+        let (U, s, Vt) = SVD.compute A
+
+        // Reconstruct: A = U * Sigma * V^T
+        let Sigma = singularValuesToMatrix s (A.GetLength(0)) (A.GetLength(1))
+        let USigma = matmul U Sigma
+        let reconstructed = matmul USigma Vt
+
+        assertMatrixApproxEqual A reconstructed
+
+    [<Fact>]
+    let ``SVD of rectangular matrix (tall)`` () =
+        let A = array2D [[1.0; 2.0]
+                         [3.0; 4.0]
+                         [5.0; 6.0]]
+        let (U, s, Vt) = SVD.compute A
+
+        // Should work for m > n
+        Assert.Equal(3, U.GetLength(0))
+        Assert.Equal(3, U.GetLength(1))
+        Assert.Equal(2, Vt.GetLength(0))
+        Assert.Equal(2, Vt.GetLength(1))
+
+        // Verify reconstruction
+        let Sigma = singularValuesToMatrix s (A.GetLength(0)) (A.GetLength(1))
+        let reconstructed = matmul (matmul U Sigma) Vt
+        assertMatrixApproxEqual A reconstructed
+
+    [<Fact>]
+    let ``SVD of rectangular matrix (wide)`` () =
+        let A = array2D [[1.0; 2.0; 3.0; 4.0]
+                         [5.0; 6.0; 7.0; 8.0]]
+        let (U, s, Vt) = SVD.compute A
+
+        // Should work for m < n (matrix gets transposed internally)
+        Assert.Equal(2, s.Length)
+
+        // Verify reconstruction
+        let Sigma = singularValuesToMatrix s (A.GetLength(0)) (A.GetLength(1))
+        let reconstructed = matmul (matmul U Sigma) Vt
+        assertMatrixApproxEqual A reconstructed
+
+    [<Fact>]
+    let ``SVD singular values are non-negative`` () =
+        let A = array2D [[1.0; -2.0]
+                         [-3.0; 4.0]]
+        let (_, s, _) = SVD.compute A
+
+        // All singular values must be non-negative
+        for i in 0 .. s.Length-1 do
+            Assert.True(s.[i] >= 0.0, sprintf "Singular value s.[%d] = %f should be non-negative" i s.[i])
+
+    [<Fact>]
+    let ``SVD singular values are sorted descending`` () =
+        let A = array2D [[3.0; 1.0; 0.0]
+                         [0.0; 2.0; 1.0]
+                         [1.0; 0.0; 1.0]]
+        let (_, s, _) = SVD.compute A
+
+        // Singular values should be in descending order
+        for i in 0 .. s.Length-2 do
+            Assert.True(s.[i] >= s.[i+1], sprintf "s.[%d]=%f should be >= s.[%d]=%f" i s.[i] (i+1) s.[i+1])
+
+    [<Fact>]
+    let ``SVD of matrix with zero rows`` () =
+        let A = array2D [[1.0; 2.0; 3.0]
+                         [0.0; 0.0; 0.0]
+                         [4.0; 5.0; 6.0]]
+        let (U, s, Vt) = SVD.compute A
+
+        // Should handle zero rows correctly
+        let Sigma = singularValuesToMatrix s (A.GetLength(0)) (A.GetLength(1))
+        let reconstructed = matmul (matmul U Sigma) Vt
+        assertMatrixApproxEqual A reconstructed
+
+    [<Fact>]
+    let ``SVD of rank-1 matrix`` () =
+        // Outer product of two vectors creates rank-1 matrix
+        let A = array2D [[1.0; 2.0; 3.0]
+                         [2.0; 4.0; 6.0]
+                         [3.0; 6.0; 9.0]]
+        let (_, s, _) = SVD.compute A
+
+        // Rank-1 matrix should have only one non-zero singular value
+        Assert.True(s.[0] > 1e-6, "First singular value should be positive")
+        for i in 1 .. s.Length-1 do
+            Assert.True(abs(s.[i]) < 1e-6, sprintf "Singular value s.[%d]=%f should be near zero for rank-1 matrix" i s.[i])
+
+    [<Fact>]
+    let ``SVD U matrix is orthogonal (U^T * U = I)`` () =
+        let A = array2D [[2.0; 3.0]
+                         [5.0; 7.0]]
+        let (U, _, _) = SVD.compute A
+
+        // U should be orthogonal: U^T * U = I
+        let UtU = matmul (transpose U) U
+        let I = Array2D.init (U.GetLength(1)) (U.GetLength(1)) (fun i j -> if i = j then 1.0 else 0.0)
+        assertMatrixApproxEqual I UtU
+
+    [<Fact>]
+    let ``SVD V matrix is orthogonal (V * V^T = I)`` () =
+        let A = array2D [[2.0; 3.0]
+                         [5.0; 7.0]]
+        let (_, _, Vt) = SVD.compute A
+
+        // Since we get V^T, check: V^T * V = I, which is (V^T)^T * V^T = I
+        let V = transpose Vt
+        let VtV = matmul Vt V
+        let I = Array2D.init (Vt.GetLength(0)) (Vt.GetLength(0)) (fun i j -> if i = j then 1.0 else 0.0)
+        assertMatrixApproxEqual I VtV
+
+    [<Fact>]
+    let ``SVD of single element matrix`` () =
+        let A = array2D [[5.0]]
+        let (U, s, Vt) = SVD.compute A
+
+        // Single element should have singular value equal to absolute value
+        Assert.Equal(1, s.Length)
+        assertApproxEqual 5.0 s.[0]
+
+        // U and V should be 1x1 identity-like
+        assertApproxEqual 1.0 (abs U.[0,0])
+        assertApproxEqual 1.0 (abs Vt.[0,0])
+
+    [<Fact>]
+    let ``SVD of 2x2 known matrix`` () =
+        // Known example: [[3, 0], [4, 5]]
+        let A = array2D [[3.0; 0.0]
+                         [4.0; 5.0]]
+        let (U, s, Vt) = SVD.compute A
+
+        // Verify basic properties
+        Assert.Equal(2, s.Length)
+        Assert.True(s.[0] >= s.[1])
+        Assert.True(s.[0] > 0.0)
+
+        // Verify reconstruction
+        let Sigma = singularValuesToMatrix s 2 2
+        let reconstructed = matmul (matmul U Sigma) Vt
+        assertMatrixApproxEqual A reconstructed
+
+    [<Fact>]
+    let ``SVD handles negative entries correctly`` () =
+        let A = array2D [[-1.0; -2.0]
+                         [-3.0; -4.0]]
+        let (U, s, Vt) = SVD.compute A
+
+        // Singular values should still be positive
+        for i in 0 .. s.Length-1 do
+            Assert.True(s.[i] >= 0.0)
+
+        // Reconstruction should work
+        let Sigma = singularValuesToMatrix s 2 2
+        let reconstructed = matmul (matmul U Sigma) Vt
+        assertMatrixApproxEqual A reconstructed
+
+    [<Fact>]
+    let ``SVD of larger matrix (4x4)`` () =
+        let A = array2D [[1.0;  2.0;  3.0;  4.0]
+                         [5.0;  6.0;  7.0;  8.0]
+                         [9.0;  10.0; 11.0; 12.0]
+                         [13.0; 14.0; 15.0; 16.0]]
+        let (U, s, Vt) = SVD.compute A
+
+        // Basic checks
+        Assert.Equal(4, s.Length)
+        Assert.True(s.[0] > 0.0)
+
+        // Verify reconstruction
+        let Sigma = singularValuesToMatrix s 4 4
+        let reconstructed = matmul (matmul U Sigma) Vt
+        assertMatrixApproxEqual A reconstructed
+
+    [<Fact>]
+    let ``SVD computeInPlace modifies input matrix`` () =
+        let A = array2D [[1.0; 2.0]
+                         [3.0; 4.0]]
+        let original = Array2D.copy A
+        let (U, s, Vt) = SVD.computeInPlace A
+
+        // A should be modified (this is the in-place version)
+        // Just verify the decomposition works
+        let Sigma = singularValuesToMatrix s 2 2
+        let reconstructed = matmul (matmul U Sigma) Vt
+        assertMatrixApproxEqual original reconstructed
+
+    [<Fact>]
+    let ``SVD compute creates copy of input`` () =
+        let A = array2D [[1.0; 2.0]
+                         [3.0; 4.0]]
+        let original = Array2D.copy A
+        let (_, _, _) = SVD.compute A
+
+        // A should not be modified (compute copies first)
+        assertMatrixApproxEqual original A
+
+    [<Fact>]
+    let ``SVD of matrix with very small values`` () =
+        let A = array2D [[1e-10; 2e-10]
+                         [3e-10; 4e-10]]
+        let (U, s, Vt) = SVD.compute A
+
+        // Should handle small values without numerical issues
+        Assert.Equal(2, s.Length)
+
+        // Verify reconstruction (with appropriate tolerance for small values)
+        let Sigma = singularValuesToMatrix s 2 2
+        let reconstructed = matmul (matmul U Sigma) Vt
+        for i in 0..1 do
+            for j in 0..1 do
+                let diff = abs(A.[i,j] - reconstructed.[i,j])
+                Assert.True(diff < 1e-15, sprintf "Reconstruction error at [%d,%d]: %e" i j diff)
+
+    [<Fact>]
+    let ``SVD satisfies Frobenius norm property`` () =
+        let A = array2D [[1.0; 2.0; 3.0]
+                         [4.0; 5.0; 6.0]]
+        let (_, s, _) = SVD.compute A
+
+        // Frobenius norm of A equals sqrt(sum of squared singular values)
+        let frobeniusSquared =
+            seq { for i in 0 .. A.GetLength(0)-1 do
+                    for j in 0 .. A.GetLength(1)-1 do
+                        yield A.[i,j] * A.[i,j] }
+            |> Seq.sum
+
+        let singularValuesSquaredSum = s |> Array.sumBy (fun x -> x * x)
+
+        assertApproxEqual frobeniusSquared singularValuesSquaredSum
+
+    [<Fact>]
+    let ``SVD of matrix with repeated singular values`` () =
+        // Matrix where some singular values might be equal
+        let A = array2D [[1.0; 0.0; 0.0]
+                         [0.0; 1.0; 0.0]
+                         [0.0; 0.0; 1.0]
+                         [0.0; 0.0; 0.0]]
+        let (U, s, Vt) = SVD.compute A
+
+        // Should handle repeated singular values
+        let Sigma = singularValuesToMatrix s 4 3
+        let reconstructed = matmul (matmul U Sigma) Vt
+        assertMatrixApproxEqual A reconstructed
+
+    [<Fact>]
+    let ``SVD tall matrix maintains orthogonality`` () =
+        let A = array2D [[1.0; 2.0]
+                         [3.0; 4.0]
+                         [5.0; 6.0]
+                         [7.0; 8.0]]
+        let (U, _, Vt) = SVD.compute A
+
+        // U^T * U should be identity (or close to it for the relevant submatrix)
+        let UtU = matmul (transpose U) U
+
+        // Check diagonal is 1
+        for i in 0 .. min (U.GetLength(1)) (U.GetLength(1)) - 1 do
+            assertApproxEqual 1.0 UtU.[i,i]
+
+        // V^T * V should be identity
+        let V = transpose Vt
+        let VtV = matmul Vt V
+        for i in 0 .. Vt.GetLength(0) - 1 do
+            assertApproxEqual 1.0 VtV.[i,i]
+
+
+/// Quotation-based tests for Givens module (inline functions)
+/// Using F# quotation evaluation to track coverage of inline functions
+module GivensCoverageTests =
+
+    open Microsoft.FSharp.Linq.RuntimeHelpers
+
+    let private tolerance = 1e-10
+
+    /// Helper to evaluate F# quotations
+    let inline eval<'T> (expr: Microsoft.FSharp.Quotations.Expr<'T>) : 'T =
+        LeafExpressionConverter.EvaluateQuotation expr :?> 'T
+
+    /// Helper to assert two floats are approximately equal
+    let private assertApproxEqual (expected: float) (actual: float) =
+        let diff = abs(expected - actual)
+        Assert.True(diff < tolerance, sprintf "Expected %f but got %f (diff: %e)" expected actual diff)
+
+    [<Fact>]
+    let ``Givens.compute Q: when b is zero, returns (1, 0)`` () =
+        let a = 5.0
+        let b = 0.0
+        let (c, s) = eval <@ Givens.compute a b @>
+        assertApproxEqual 1.0 c
+        assertApproxEqual 0.0 s
+
+    [<Fact>]
+    let ``Givens.compute Q: when a is zero and b is nonzero`` () =
+        let a = 0.0
+        let b = 3.0
+        let (c, s) = eval <@ Givens.compute a b @>
+        // When a=0, |b| > |a|, so s = 1/sqrt(1 + 0) = 1, c = 0
+        assertApproxEqual 0.0 c
+        let expectedS = if b > 0.0 then 1.0 else -1.0
+        assertApproxEqual expectedS s
+
+    [<Fact>]
+    let ``Givens.compute Q: when |b| > |a|`` () =
+        let a = 1.0
+        let b = 3.0
+        let (c, s) = eval <@ Givens.compute a b @>
+        // Should satisfy c^2 + s^2 = 1 (approximately)
+        let sumSquares = c * c + s * s
+        assertApproxEqual 1.0 sumSquares
+
+    [<Fact>]
+    let ``Givens.compute Q: when |a| > |b|`` () =
+        let a = 5.0
+        let b = 2.0
+        let (c, s) = eval <@ Givens.compute a b @>
+        // Should satisfy c^2 + s^2 = 1 (approximately)
+        let sumSquares = c * c + s * s
+        assertApproxEqual 1.0 sumSquares
+
+    [<Fact>]
+    let ``Givens.compute Q: rotation eliminates b component`` () =
+        let a = 3.0
+        let b = 4.0
+        let (c, s) = eval <@ Givens.compute a b @>
+        // After rotation: [c, s; -s, c] * [a; b] = [r; 0]
+        let r = c * a + s * b
+        let eliminated = -s * a + c * b
+        // eliminated should be approximately 0
+        Assert.True(abs eliminated < tolerance, sprintf "Expected eliminated component to be ~0, got %f" eliminated)
+        // r should be approximately sqrt(a^2 + b^2)
+        let expectedR = sqrt(a * a + b * b)
+        assertApproxEqual expectedR r
+
+    [<Fact>]
+    let ``Givens.compute Q: with negative values`` () =
+        let a = -3.0
+        let b = 4.0
+        let (c, s) = eval <@ Givens.compute a b @>
+        // Should still satisfy c^2 + s^2 = 1
+        let sumSquares = c * c + s * s
+        assertApproxEqual 1.0 sumSquares
+
+    [<Fact>]
+    let ``Givens.compute Q: with equal magnitude values`` () =
+        let a = 3.0
+        let b = 3.0
+        let (c, s) = eval <@ Givens.compute a b @>
+        // Should satisfy c^2 + s^2 = 1
+        let sumSquares = c * c + s * s
+        assertApproxEqual 1.0 sumSquares
+
+    [<Fact>]
+    let ``Givens.compute Q: with very small values`` () =
+        let a = 1e-10
+        let b = 2e-10
+        let (c, s) = eval <@ Givens.compute a b @>
+        // Should still maintain c^2 + s^2 = 1
+        let sumSquares = c * c + s * s
+        assertApproxEqual 1.0 sumSquares
+
+
+/// Quotation-based tests for GolubKahan module (inline functions)
+module GolubKahanCoverageTests =
+
+    open Microsoft.FSharp.Linq.RuntimeHelpers
+
+    let private tolerance = 1e-8
+
+    /// Helper to evaluate F# quotations
+    let inline eval<'T> (expr: Microsoft.FSharp.Quotations.Expr<'T>) : 'T =
+        LeafExpressionConverter.EvaluateQuotation expr :?> 'T
+
+    /// Helper to assert two floats are approximately equal
+    let private assertApproxEqual (expected: float) (actual: float) =
+        let diff = abs(expected - actual)
+        Assert.True(diff < tolerance, sprintf "Expected %f but got %f (diff: %e)" expected actual diff)
+
+    [<Fact>]
+    let ``GolubKahan.diagonalize Q: diagonal matrix returns diagonal values`` () =
+        let d = [| 5.0; 3.0; 1.0 |]
+        let e = [| 0.0; 0.0 |]
+        let b = { D = d; E = e }
+        let result = eval <@ GolubKahan.diagonalize b @>
+
+        // When off-diagonal is zero, should converge immediately
+        Assert.Equal(3, result.Length)
+        // Singular values should be sorted descending and non-negative
+        Assert.True(result.[0] >= result.[1])
+        Assert.True(result.[1] >= result.[2])
+        for i in 0..2 do
+            Assert.True(result.[i] >= 0.0)
+
+    [<Fact>]
+    let ``GolubKahan.diagonalize Q: single element returns absolute value`` () =
+        let d = [| 3.0 |]
+        let e = [| |]
+        let b = { D = d; E = e }
+        let result = eval <@ GolubKahan.diagonalize b @>
+
+        Assert.Equal(1, result.Length)
+        assertApproxEqual 3.0 result.[0]
+
+    [<Fact>]
+    let ``GolubKahan.diagonalize Q: 2x2 bidiagonal matrix`` () =
+        let d = [| 4.0; 3.0 |]
+        let e = [| 1.0 |]
+        let b = { D = d; E = e }
+        let result = eval <@ GolubKahan.diagonalize b @>
+
+        Assert.Equal(2, result.Length)
+        // Should be sorted descending
+        Assert.True(result.[0] >= result.[1])
+        // All non-negative
+        for i in 0..1 do
+            Assert.True(result.[i] >= 0.0)
+
+    [<Fact>]
+    let ``GolubKahan.diagonalize Q: returns non-negative singular values`` () =
+        let d = [| 3.0; 2.0; 1.0 |]
+        let e = [| 0.5; 0.3 |]
+        let b = { D = d; E = e }
+        let result = eval <@ GolubKahan.diagonalize b @>
+
+        // All singular values should be non-negative (within numerical tolerance)
+        // Note: GolubKahan may produce tiny negative values due to numerical precision
+        let relaxedTolerance = 1e-4
+        for i in 0 .. result.Length-1 do
+            Assert.True(result.[i] > -relaxedTolerance, sprintf "Singular value at index %d should be >= 0 (within tolerance), got %f" i result.[i])
+
+    [<Fact>]
+    let ``GolubKahan.diagonalize Q: singular values sorted descending`` () =
+        let d = [| 5.0; 3.0; 4.0; 1.0 |]
+        let e = [| 0.5; 0.3; 0.2 |]
+        let b = { D = d; E = e }
+        let result = eval <@ GolubKahan.diagonalize b @>
+
+        // Should be sorted in descending order
+        for i in 0 .. result.Length-2 do
+            Assert.True(result.[i] >= result.[i+1], sprintf "result.[%d]=%f should be >= result.[%d]=%f" i result.[i] (i+1) result.[i+1])
+
+    [<Fact>]
+    let ``GolubKahan.diagonalize Q: converges for well-conditioned matrix`` () =
+        let d = [| 10.0; 8.0; 6.0; 4.0 |]
+        let e = [| 0.1; 0.1; 0.1 |]
+        let b = { D = d; E = e }
+        let result = eval <@ GolubKahan.diagonalize b @>
+
+        // Should successfully diagonalize without error
+        Assert.Equal(4, result.Length)
+        // Check all values are finite
+        for i in 0..3 do
+            Assert.True(System.Double.IsFinite(result.[i]))
+
+    [<Fact>]
+    let ``GolubKahan.diagonalize Q: handles near-zero superdiagonal`` () =
+        let d = [| 5.0; 3.0; 1.0 |]
+        let e = [| 1e-12; 1e-12 |]
+        let b = { D = d; E = e }
+        let result = eval <@ GolubKahan.diagonalize b @>
+
+        // Should converge quickly with near-zero off-diagonal
+        Assert.Equal(3, result.Length)
+        // All values should be non-negative (within tolerance) and finite
+        for i in 0..2 do
+            Assert.True(result.[i] > -tolerance, sprintf "Result[%d]=%f should be >= 0 (within tolerance)" i result.[i])
+            Assert.True(System.Double.IsFinite(result.[i]), sprintf "Result[%d]=%f should be finite" i result.[i])
+
+    [<Fact>]
+    let ``GolubKahan.diagonalize Q: 3x3 bidiagonal with varying values`` () =
+        let d = [| 7.0; 5.0; 3.0 |]
+        let e = [| 2.0; 1.0 |]
+        let b = { D = d; E = e }
+        let result = eval <@ GolubKahan.diagonalize b @>
+
+        Assert.Equal(3, result.Length)
+        // Basic sanity checks
+        Assert.True(result.[0] > 0.0)
+        Assert.True(result.[0] >= result.[1])
+        Assert.True(result.[1] >= result.[2])

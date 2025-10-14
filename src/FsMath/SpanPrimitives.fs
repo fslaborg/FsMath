@@ -641,9 +641,10 @@ type SpanINumberPrimitives =
                 let vy = Numerics.Vector<'T>(y.Slice(yi, simdWidth))
                 accVec <- fv accVec vx vy
 
-            let mutable acc = init
-            for i = 0 to Numerics.Vector<'T>.Count - 1 do
-                acc <- acc + accVec.[i]
+            //  Horizontal reduction: combine all SIMD lanes
+            // For fold2 with operation f(acc, x, y), the accVec contains results from multiple (x,y) pairs
+            // We need to reduce these using just addition since they're independent accumulated results
+            let mutable acc = Numerics.Vector.Sum(accVec)
 
             for i = ceiling to length - 1 do
                 acc <- f acc x.[xOffset + i] y.[yOffset + i]

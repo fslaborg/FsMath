@@ -1,0 +1,18 @@
+{
+  "exclude": [
+    "[*]*.Program",
+    "[*]*Tests*",
+    "[*]*Test*", 
+    "[*]*.*Tests",
+    "[*]*AssemblyInfo*"
+  ],
+  "excludebyattribute": [
+    "Obsolete",
+    "GeneratedCodeAttribute",
+    "CompilerGeneratedAttribute"
+  ],
+  "excludebyfile": [
+    "**/bin/**/*.*",
+    "**/obj/**/*.*"
+  ]
+}
