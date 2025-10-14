@@ -305,3 +305,222 @@ module GammaTests =
     //// let ``trigamma(-1.8209678549077879)`` () =
     ////     let triGam = Gamma.trigamma -1.8209678549077879
     ////     floatClose 34.283184056369407 triGam 1e-12
+
+
+// Additional comprehensive tests for Gamma functions
+module GammaComprehensiveTests =
+
+    // Tests for unregularized incomplete gamma functions
+    [<Fact>]
+    let ``lowerIncomplete(2.0, 1.0) computes unregularized lower incomplete gamma`` () =
+        let result = Gamma.lowerIncomplete 2.0 1.0
+        // γ(2, 1) = Γ(2) * P(2, 1) = 1! * P(2, 1) ≈ 0.2642411176571153
+        floatClose Accuracy.medium result 0.2642411176571153 "Expected unregularized lower incomplete gamma"
+
+    [<Fact>]
+    let ``lowerIncomplete(3.0, 2.0) computes correct value`` () =
+        let result = Gamma.lowerIncomplete 3.0 2.0
+        // γ(3, 2) = Γ(3) * P(3, 2) = 2! * P(3, 2) ≈ 0.646647
+        floatClose Accuracy.medium result 0.646647 "Expected unregularized lower incomplete gamma"
+
+    [<Fact>]
+    let ``upperIncomplete(2.0, 1.0) computes unregularized upper incomplete gamma`` () =
+        let result = Gamma.upperIncomplete 2.0 1.0
+        // Γ̄(2, 1) = Γ(2) * Q(2, 1) = 1! * Q(2, 1) ≈ 0.7357588823428847
+        floatClose Accuracy.medium result 0.7357588823428847 "Expected unregularized upper incomplete gamma"
+
+    [<Fact>]
+    let ``upperIncomplete(3.0, 2.0) computes correct value`` () =
+        let result = Gamma.upperIncomplete 3.0 2.0
+        // Γ̄(3, 2) = Γ(3) * Q(3, 2) = 2! * Q(3, 2) ≈ 1.353353
+        floatClose Accuracy.medium result 1.353353 "Expected unregularized upper incomplete gamma"
+
+    [<Fact>]
+    let ``lowerIncomplete + upperIncomplete = Gamma(a)`` () =
+        let a = 5.0
+        let x = 3.0
+        let lower = Gamma.lowerIncomplete a x
+        let upper = Gamma.upperIncomplete a x
+        let total = lower + upper
+        let expected = Gamma._gamma a
+        floatClose Accuracy.medium total expected "Lower + upper incomplete should equal Γ(a)"
+
+    // Tests for gser (series representation of lower incomplete gamma)
+    [<Fact>]
+    let ``gser(1.5, 0.5) converges to correct value`` () =
+        let result = Gamma.gser 1.5 0.5
+        floatClose Accuracy.medium result 0.198748 "Expected gser convergence"
+
+    [<Fact>]
+    let ``gser(2.0, 1.0) converges for small x`` () =
+        let result = Gamma.gser 2.0 1.0
+        floatClose Accuracy.medium result 0.264241 "Expected gser to converge"
+
+    [<Fact>]
+    let ``gser with very small x approaches 0`` () =
+        let result = Gamma.gser 2.0 0.001
+        floatClose Accuracy.low result 0.0000005 "Expected gser to be close to 0 for very small x"
+
+    // Tests for gcf (continued fraction representation of upper incomplete gamma)
+    [<Fact>]
+    let ``gcf(1.5, 5.0) converges to correct value`` () =
+        let result = Gamma.gcf 1.5 5.0
+        floatClose Accuracy.medium result 0.018566 "Expected gcf convergence"
+
+    [<Fact>]
+    let ``gcf(2.0, 3.0) converges for large x`` () =
+        let result = Gamma.gcf 2.0 3.0
+        floatClose Accuracy.medium result 0.199148 "Expected gcf to converge"
+
+    [<Fact>]
+    let ``gser + gcf = 1 (P + Q = 1)`` () =
+        let a = 2.5
+        let x = 2.0
+        let p = Gamma.gser a x
+        let q = Gamma.gcf a x
+        floatClose Accuracy.medium (p + q) 1.0 "Expected P(a,x) + Q(a,x) = 1"
+
+    // Tests for gammpapprox (Gauss-Legendre quadrature)
+    [<Fact>]
+    let ``gammpapprox(150.0, 140.0, true) computes P approximation`` () =
+        let result = Gamma.gammpapprox 150.0 140.0 true
+        isTrue (result >= 0.0 && result <= 1.0) "Expected gammpapprox to return valid probability"
+
+    [<Fact>]
+    let ``gammpapprox(150.0, 140.0, false) computes Q approximation`` () =
+        let result = Gamma.gammpapprox 150.0 140.0 false
+        isTrue (result >= 0.0 && result <= 1.0) "Expected gammpapprox to return valid probability"
+
+    [<Fact>]
+    let ``gammpapprox P and Q are complementary`` () =
+        let a = 150.0
+        let x = 160.0
+        let p = Gamma.gammpapprox a x true
+        let q = Gamma.gammpapprox a x false
+        floatClose Accuracy.low (p + q) 1.0 "Expected P + Q ≈ 1 for gammpapprox"
+
+    // Tests for lowerIncompleteRegularized edge cases and different code paths
+    [<Fact>]
+    let ``lowerIncompleteRegularized uses gser when x < a + 1`` () =
+        let result = Gamma.lowerIncompleteRegularized 3.0 2.0 // x < a + 1
+        floatClose Accuracy.medium result 0.323324 "Expected correct value via gser path"
+
+    [<Fact>]
+    let ``lowerIncompleteRegularized uses gcf when x >= a + 1`` () =
+        let result = Gamma.lowerIncompleteRegularized 2.0 5.0 // x >= a + 1
+        floatClose Accuracy.medium result 0.959572 "Expected correct value via gcf path"
+
+    [<Fact>]
+    let ``lowerIncompleteRegularized uses gammpapprox for large a`` () =
+        let result = Gamma.lowerIncompleteRegularized 150.0 160.0 // a >= 100
+        isTrue (result >= 0.0 && result <= 1.0) "Expected valid probability via gammpapprox"
+
+    [<Fact>]
+    let ``upperIncompleteRegularized uses different code paths`` () =
+        // Test x < a + 1 path
+        let result1 = Gamma.upperIncompleteRegularized 3.0 2.0
+        floatClose Accuracy.medium result1 0.676676 "Expected correct value via gser path"
+
+        // Test x >= a + 1 path
+        let result2 = Gamma.upperIncompleteRegularized 2.0 5.0
+        floatClose Accuracy.medium result2 0.040428 "Expected correct value via gcf path"
+
+    [<Fact>]
+    let ``upperIncompleteRegularized(0.5, 0) = 1`` () =
+        equal 1.0 (Gamma.upperIncompleteRegularized 0.5 0.0) "Expected Q(a, 0) = 1"
+
+    [<Fact>]
+    let ``lowerIncompleteRegularized with x < 0 returns nan`` () =
+        isTrue (Double.IsNaN (Gamma.lowerIncompleteRegularized 2.0 -1.0)) "Expected nan for negative x"
+
+    [<Fact>]
+    let ``upperIncompleteRegularized with x < 0 returns nan`` () =
+        isTrue (Double.IsNaN (Gamma.upperIncompleteRegularized 2.0 -1.0)) "Expected nan for negative x"
+
+    // Tests for digamma function
+    [<Fact>]
+    let ``digamma(1.0) ≈ -0.5772156649`` () =
+        floatClose Accuracy.high (Gamma.digamma 1.0) -0.5772156649 "Expected digamma(1) = -γ (negative Euler-Mascheroni constant)"
+
+    [<Fact>]
+    let ``digamma(2.0) = digamma(1.0) + 1`` () =
+        let d1 = Gamma.digamma 1.0
+        let d2 = Gamma.digamma 2.0
+        floatClose Accuracy.high d2 (d1 + 1.0) "Expected digamma recurrence relation"
+
+    [<Fact>]
+    let ``digamma(0) = -infinity`` () =
+        equal System.Double.NegativeInfinity (Gamma.digamma 0.0) "Expected digamma(0) = -∞"
+
+    [<Fact>]
+    let ``digamma with large positive x`` () =
+        let result = Gamma.digamma 100.0
+        floatClose Accuracy.medium result 4.600161852 "Expected digamma to converge for large x"
+
+    [<Fact>]
+    let ``digamma with negative x uses reflection`` () =
+        let result = Gamma.digamma -0.5
+        // ψ(-0.5) ≈ 0.03648997397857652
+        floatClose Accuracy.medium result 0.03649 "Expected digamma with reflection formula"
+
+    [<Fact>]
+    let ``digammaPositive(5.0) computes correctly`` () =
+        let result = Gamma.digammaPositive 5.0
+        floatClose Accuracy.high result 1.506117668 "Expected digammaPositive to match digamma for x > 1"
+
+    [<Fact>]
+    let ``digammaPositive(10.0) matches digamma(10.0)`` () =
+        let dp = Gamma.digammaPositive 10.0
+        let d = Gamma.digamma 10.0
+        floatClose Accuracy.high dp d "Expected digammaPositive to equal digamma for positive x"
+
+    [<Fact>]
+    let ``digammaPositive with very large x`` () =
+        let result = Gamma.digammaPositive 1000.0
+        let expected = log 1000.0 - 0.5 / 1000.0 // Asymptotic approximation
+        floatClose Accuracy.medium result expected "Expected digammaPositive asymptotic behavior"
+
+    // Additional edge cases for gamma and gammaLn
+    [<Fact>]
+    let ``gamma(0.5) = sqrt(π)`` () =
+        floatClose Accuracy.high (Gamma.gamma 0.5) (sqrt System.Math.PI) "Expected gamma(1/2) = √π"
+
+    [<Fact>]
+    let ``gamma(3.5) matches expected value`` () =
+        // Γ(3.5) = 2.5 * 1.5 * 0.5 * Γ(0.5) = 2.5 * 1.5 * 0.5 * √π
+        let expected = 2.5 * 1.5 * 0.5 * sqrt System.Math.PI
+        floatClose Accuracy.high (Gamma.gamma 3.5) expected "Expected gamma(3.5) via recurrence"
+
+    [<Fact>]
+    let ``gammaLn(1.0) = 0`` () =
+        floatClose Accuracy.high (Gamma.gammaLn 1.0) 0.0 "Expected ln(Γ(1)) = ln(1) = 0"
+
+    [<Fact>]
+    let ``gammaLn(2.0) = 0`` () =
+        floatClose Accuracy.high (Gamma.gammaLn 2.0) 0.0 "Expected ln(Γ(2)) = ln(1) = 0"
+
+    [<Fact>]
+    let ``gammaLn matches log of gamma for small values`` () =
+        let x = 3.0
+        let gln = Gamma.gammaLn x
+        let g = Gamma.gamma x
+        floatClose Accuracy.high gln (log g) "Expected gammaLn = log(gamma)"
+
+    // Consistency tests
+    [<Fact>]
+    let ``P(a,x) + Q(a,x) = 1 for various inputs`` () =
+        let testCases = [(1.0, 1.0); (2.5, 3.0); (5.0, 4.0); (10.0, 12.0)]
+        for (a, x) in testCases do
+            let p = Gamma.lowerIncompleteRegularized a x
+            let q = Gamma.upperIncompleteRegularized a x
+            floatClose Accuracy.medium (p + q) 1.0 $"Expected P + Q = 1 for a={a}, x={x}"
+
+    [<Fact>]
+    let ``gamma maximum constant is approximately 171.624`` () =
+        floatClose Accuracy.high Gamma.maximum 171.624376956302725 "Expected gamma maximum constant"
+
+    [<Fact>]
+    let ``gamma(maximum) is near overflow threshold`` () =
+        let result = Gamma.gamma Gamma.maximum
+        // gamma(171.624) is very large but shouldn't be exactly infinity
+        isTrue (result > 1e100) "Expected gamma(maximum) to be very large"
