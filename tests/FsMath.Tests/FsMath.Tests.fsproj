@@ -32,6 +32,7 @@
     <Compile Include="LinearAlgebraTests.fs" />
     <Compile Include="LinearAlgebraCoverageTests.fs" />
     <Compile Include="LinearAlgebraAdvancedTests.fs" />
+    <Compile Include="LinearAlgebraErrorTests.fs" />
     <Compile Include="EVDTests.fs" />
     <Compile Include="SVDTests.fs" />
     <Compile Include="BidiagonalizationCoverageTests.fs" />
