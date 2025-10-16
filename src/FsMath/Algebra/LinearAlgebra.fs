@@ -583,6 +583,10 @@ type LinearAlgebra =
                 M.[i, col] <- M.[j, col]
                 M.[j, col] <- tmp
 
+        // Get raw data arrays for SIMD-optimized row operations
+        let Udata = U.Data
+        let Ldata = L.Data
+
         // Perform the decomposition
         for i = 0 to n - 2 do
             // 1) Find pivot row by max absolute value in U column i
@@ -602,13 +606,27 @@ type LinearAlgebra =
                 P.[i] <- P.[pivotRow]
                 P.[pivotRow] <- tmp
 
-            // 3) Eliminate below pivot
+            // 3) Eliminate below pivot using SIMD-optimized row operations
+            let diagVal = U.[i,i]
             for j = i + 1 to n - 1 do
                 // L[j,i] = U[j,i] / U[i,i]
-                L.[j,i] <- U.[j,i] / U.[i,i]
-                // Update row j of U
-                for k = i + 1 to n - 1 do
-                    U.[j,k] <- U.[j,k] - L.[j,i] * U.[i,k]
+                let multiplier = U.[j,i] / diagVal
+                L.[j,i] <- multiplier
+
+                // SIMD-optimized row update: U[j, i+1..n-1] -= multiplier * U[i, i+1..n-1]
+                // Use subScaledRowInPlace for contiguous row segments
+                if i + 1 < n then
+                    let count = n - (i + 1)
+                    let rowJOffset = j * n + (i + 1)
+                    let rowIOffset = i * n + (i + 1)
+                    LinearAlgebra.subScaledRowInPlace
+                        multiplier
+                        rowJOffset
+                        rowIOffset
+                        count
+                        Udata
+                        Udata
+
                 U.[j,i] <- 'T.Zero
 
         // Add identity to L (so diagonal = 1.0)
