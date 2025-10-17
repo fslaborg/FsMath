@@ -798,10 +798,13 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
         Array.init m.NumRows (fun i -> Matrix.getRow i m)
 
 
+    /// <summary>
     /// Gets a specific column of the matrix as a vector.
-    static member inline getCol<'T 
+    /// Optimized with loop unrolling to improve cache utilization and reduce loop overhead.
+    /// </summary>
+    static member inline getCol<'T
         when 'T :> Numerics.INumber<'T>
-        and 'T : struct 
+        and 'T : struct
         and 'T : (new : unit -> 'T)
         and 'T :> ValueType>
         (j: int)
@@ -810,30 +813,49 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
         if j < 0 || j >= m.NumCols then
             invalidArg "j" $"Column index out of bounds: {j}"
 
-        let result = Array.zeroCreate<'T> m.NumRows
+        let numRows = m.NumRows
+        let numCols = m.NumCols
+        let result = Array.zeroCreate<'T> numRows
+        let data = m.Data
+
+        // Loop unrolling by 4 for better instruction-level parallelism
+        // This reduces loop overhead and allows the CPU to prefetch more efficiently
+        let unrollFactor = 4
+        let unrolledEnd = (numRows / unrollFactor) * unrollFactor
+        let stride = numCols
+
         let mutable offset = j
-        for i = 0 to m.NumRows - 1 do
-            result.[i] <- m.Data.[offset]
-            offset <- offset + m.NumCols
+        let mutable i = 0
+
+        // Unrolled loop: process 4 elements per iteration
+        while i < unrolledEnd do
+            result.[i] <- data.[offset]
+            result.[i + 1] <- data.[offset + stride]
+            result.[i + 2] <- data.[offset + stride * 2]
+            result.[i + 3] <- data.[offset + stride * 3]
+            offset <- offset + stride * unrollFactor
+            i <- i + unrollFactor
+
+        // Handle remaining elements
+        while i < numRows do
+            result.[i] <- data.[offset]
+            offset <- offset + stride
+            i <- i + 1
 
         result
 
+    /// <summary>
     /// Gets all columns of the matrix as an array of vectors.
-    static member inline getCols<'T 
+    /// Uses the optimized getCol function for each column.
+    /// </summary>
+    static member inline getCols<'T
         when 'T :> Numerics.INumber<'T>
-        and 'T : struct 
+        and 'T : struct
         and 'T : (new : unit -> 'T)
         and 'T :> ValueType>
         (m: Matrix<'T>) : Vector<'T>[] =
 
-        Array.init m.NumCols (fun j ->
-            let col = Array.zeroCreate<'T> m.NumRows
-            let mutable offset = j
-            for i = 0 to m.NumRows - 1 do
-                col.[i] <- m.Data.[offset]
-                offset <- offset + m.NumCols
-            col
-        )
+        Array.init m.NumCols (fun j -> Matrix.getCol j m)
 
 
     /// Sets row <paramref name="i"/> of this matrix to the contents of <paramref name="rowData"/>.
