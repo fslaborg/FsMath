@@ -36,10 +36,10 @@ type SpanMath =
                 let vy = Numerics.Vector<'T>(y.Slice(yi, simdWidth))
                 accVec <- accVec + (vx * vy)
 
-            let mutable acc = LanguagePrimitives.GenericZero<'T>
-            for i = 0 to simdWidth - 1 do
-                acc <- acc + accVec.[i]
+            // Use Vector.Sum for optimized horizontal reduction (uses hardware-specific instructions)
+            let mutable acc = Numerics.Vector.Sum(accVec)
 
+            // Handle remaining elements (tail)
             for i = ceiling to length - 1 do
                 acc <- acc + x.[xOffset + i] * y.[yOffset + i]
 
