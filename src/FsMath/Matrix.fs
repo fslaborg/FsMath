@@ -580,8 +580,13 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
 
     /// <summary>
     /// Computes row-vector v (length = mat.NumRows) times matrix mat (size = [NumRows × NumCols]),
-    /// returning a new vector of length mat.NumCols. Uses chunk-based SIMD with manual gather.
+    /// returning a new vector of length mat.NumCols. Uses SIMD-optimized weighted row summation.
     /// </summary>
+    /// <remarks>
+    /// This implementation reorganizes v × M as a weighted sum of matrix rows:
+    /// result = v[0]*row0 + v[1]*row1 + ... + v[n-1]*row(n-1)
+    /// This exploits row-major storage for contiguous memory access and SIMD acceleration.
+    /// </remarks>
     static member inline multiplyRowVector<'T
             when 'T :> Numerics.INumber<'T>
             and 'T : struct
@@ -589,7 +594,7 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
             and 'T :> ValueType>
             (v: Vector<'T>)
             (mat: Matrix<'T>) : Vector<'T> =
-        
+
         // 1) Dimension checks
         let n = mat.NumRows
         let m = mat.NumCols
@@ -599,14 +604,45 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
         let result = Vector.zeroCreate<'T> m
         let data = mat.Data  // row-major: element (i,j) is data.[i*m + j]
 
-        // O(n*m) nested loops (not SIMD seems to be faster in the row-layout matrix)
-        for j = 0 to m - 1 do
-            let mutable sum = 'T.Zero
-            for i = 0 to n - 1 do
-                sum <- sum + (v.[i] * data.[i*m + j])
-            result.[j] <- sum
+        // SIMD optimization: compute as weighted sum of rows
+        // result = v[0]*row0 + v[1]*row1 + ... + v[n-1]*row(n-1)
+        if Numerics.Vector.IsHardwareAccelerated && m >= Numerics.Vector<'T>.Count then
+            let simdWidth = Numerics.Vector<'T>.Count
+            let simdCount = m / simdWidth
+            let scalarStart = simdCount * simdWidth
 
-        result
+            let resultSpan = result.AsSpan()
+            let resultSimd = MemoryMarshal.Cast<'T, Numerics.Vector<'T>>(resultSpan)
+
+            // Process each row of the matrix
+            for i = 0 to n - 1 do
+                let weight = v.[i]
+                if weight <> 'T.Zero then  // Skip zero weights
+                    let rowOffset = i * m
+                    let rowSpan = data.AsSpan(rowOffset, m)
+                    let rowSimd = MemoryMarshal.Cast<'T, Numerics.Vector<'T>>(rowSpan)
+
+                    // Broadcast the weight to all SIMD lanes
+                    let weightVec = Numerics.Vector<'T>(weight)
+
+                    // SIMD: accumulate weight * row into result
+                    for j = 0 to simdCount - 1 do
+                        resultSimd.[j] <- resultSimd.[j] + weightVec * rowSimd.[j]
+
+                    // Scalar tail: process remaining elements
+                    for j = scalarStart to m - 1 do
+                        result.[j] <- result.[j] + weight * data.[rowOffset + j]
+
+            result
+        else
+            // Fallback for small matrices or no SIMD: use original column-wise approach
+            for j = 0 to m - 1 do
+                let mutable sum = 'T.Zero
+                for i = 0 to n - 1 do
+                    sum <- sum + (v.[i] * data.[i*m + j])
+                result.[j] <- sum
+
+            result
 
 
     /// <summary>
