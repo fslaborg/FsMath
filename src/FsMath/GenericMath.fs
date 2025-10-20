@@ -69,6 +69,9 @@ module GenericMath =
     let inline isNan<'T when 'T :> System.Numerics.IFloatingPoint<'T>> (x: 'T) =
         'T.IsNaN x
 
+    /// Convert 'T to float
+    let inline toFloat< ^T when ^T :> Numerics.INumber< ^T> and ^T : (static member op_Explicit : ^T -> float)> (x: ^T) : float = 
+        float x
 
     // let inline min x y = if x < y then x else y
     // let inline max x y = if x > y then x else y
