@@ -38,6 +38,7 @@
     <Compile Include="LinearAlgebraErrorTestsAdditional.fs" />
     <Compile Include="EVDTests.fs" />
     <Compile Include="SVDTests.fs" />
+    <Compile Include="SVDEdgeCaseTests.fs" />
     <Compile Include="BidiagonalizationCoverageTests.fs" />
     <Compile Include="SpecialFunctionsTests.fs" />
     <Compile Include="GammaCoverageTests.fs" />

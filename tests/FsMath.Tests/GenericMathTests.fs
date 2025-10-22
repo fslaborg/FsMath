@@ -485,3 +485,111 @@ module GenericMathCoverageTests =
         let f1 = eval <@ floor<float> x1 @> :?> float
         let f2 = eval <@ floor<float> x2 @> :?> float
         Assert.True(f1 <= f2)
+
+    // ========================================
+    // Tests for isNan function (line 70)
+    // ========================================
+
+    [<Fact>]
+    let ``Q: isNan detects NaN`` () =
+        let result = eval <@ isNan<float> System.Double.NaN @> :?> bool
+        Assert.True(result)
+
+    [<Fact>]
+    let ``Q: isNan returns false for regular number`` () =
+        let result = eval <@ isNan<float> 5.0 @> :?> bool
+        Assert.False(result)
+
+    [<Fact>]
+    let ``Q: isNan returns false for zero`` () =
+        let result = eval <@ isNan<float> 0.0 @> :?> bool
+        Assert.False(result)
+
+    [<Fact>]
+    let ``Q: isNan returns false for infinity`` () =
+        let result = eval <@ isNan<float> System.Double.PositiveInfinity @> :?> bool
+        Assert.False(result)
+
+    [<Fact>]
+    let ``Q: isNan returns false for negative infinity`` () =
+        let result = eval <@ isNan<float> System.Double.NegativeInfinity @> :?> bool
+        Assert.False(result)
+
+    [<Fact>]
+    let ``Q: isNan works with float32`` () =
+        let result = eval <@ isNan<float32> System.Single.NaN @> :?> bool
+        Assert.True(result)
+
+    [<Fact>]
+    let ``Q: isNan returns false for negative number`` () =
+        let result = eval <@ isNan<float> -42.5 @> :?> bool
+        Assert.False(result)
+
+    [<Fact>]
+    let ``Q: isNan returns false for very small number`` () =
+        let result = eval <@ isNan<float> 1e-300 @> :?> bool
+        Assert.False(result)
+
+    [<Fact>]
+    let ``Q: isNan returns false for very large number`` () =
+        let result = eval <@ isNan<float> 1e300 @> :?> bool
+        Assert.False(result)
+
+    [<Fact>]
+    let ``Q: isNan with float32 returns false for regular number`` () =
+        let result = eval <@ isNan<float32> 3.14f @> :?> bool
+        Assert.False(result)
+
+    // ========================================
+    // Tests for toFloat function (line 74)
+    // ========================================
+
+    [<Fact>]
+    let ``Q: toFloat converts float to float`` () =
+        let result = eval <@ toFloat<float> 3.14 @> :?> float
+        floatEqual 3.14 result 1e-10
+
+    [<Fact>]
+    let ``Q: toFloat converts int to float`` () =
+        let result = eval <@ toFloat<int> 42 @> :?> float
+        Assert.Equal(42.0, result)
+
+    [<Fact>]
+    let ``Q: toFloat converts negative int to float`` () =
+        let result = eval <@ toFloat<int> -17 @> :?> float
+        Assert.Equal(-17.0, result)
+
+    [<Fact>]
+    let ``Q: toFloat converts zero int to float`` () =
+        let result = eval <@ toFloat<int> 0 @> :?> float
+        Assert.Equal(0.0, result)
+
+    [<Fact>]
+    let ``Q: toFloat converts float32 to float`` () =
+        let result = eval <@ toFloat<float32> 2.5f @> :?> float
+        floatEqual 2.5 result 1e-6
+
+    [<Fact>]
+    let ``Q: toFloat converts int64 to float`` () =
+        let result = eval <@ toFloat<int64> 1000000L @> :?> float
+        Assert.Equal(1000000.0, result)
+
+    [<Fact>]
+    let ``Q: toFloat converts large int to float`` () =
+        let result = eval <@ toFloat<int> 999999 @> :?> float
+        Assert.Equal(999999.0, result)
+
+    [<Fact>]
+    let ``Q: toFloat converts negative float to float`` () =
+        let result = eval <@ toFloat<float> -123.456 @> :?> float
+        floatEqual -123.456 result 1e-10
+
+    [<Fact>]
+    let ``Q: toFloat converts very small float to float`` () =
+        let result = eval <@ toFloat<float> 1e-100 @> :?> float
+        floatEqual 1e-100 result 1e-110
+
+    [<Fact>]
+    let ``Q: toFloat converts very large int64 to float`` () =
+        let result = eval <@ toFloat<int64> 9223372036854775807L @> :?> float
+        Assert.True(result > 9e18)

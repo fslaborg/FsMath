@@ -281,8 +281,8 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
             // Format a single cell
             let formatCell (value: 'T) =
                 match box value with
-                | :? float as f    -> f.ToString(floatFormat)
-                | :? float32 as f  -> f.ToString(floatFormat)
+                | :? float as f    -> f.ToString(floatFormat, System.Globalization.CultureInfo.InvariantCulture)
+                | :? float32 as f  -> f.ToString(floatFormat, System.Globalization.CultureInfo.InvariantCulture)
                 | _                -> string value
 
             let formattedCells =
