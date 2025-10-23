@@ -363,3 +363,214 @@ module MatrixVectorAddEdgeCaseTests =
         let result = Matrix.addColVector mat v
         let expected = [|101.0; 102.0; 103.0; 204.0; 205.0; 206.0|]
         Assert.Equal<Vector<float>>(expected, result.Data)
+
+
+//  ----------------------------------------------------------------------
+/// Tests for Matrix.GetSlice(Range, Range) - the F# Range-based slice syntax
+/// This tests the convenient mat.[r1..r2, c1..c2] syntax
+module MatrixRangeGetSliceTests =
+
+    [<Fact>]
+    let ``GetSlice Range - full range with .. operator`` () =
+        let mat = matrix [|
+            [|1.0; 2.0; 3.0|]
+            [|4.0; 5.0; 6.0|]
+            [|7.0; 8.0; 9.0|]
+        |]
+        // Using 0.. to get full matrix
+        let slice = mat.[0.., 0..]
+        Assert.Equal(3, slice.NumRows)
+        Assert.Equal(3, slice.NumCols)
+        Assert.Equal<Vector<float>>([|1.0; 2.0; 3.0; 4.0; 5.0; 6.0; 7.0; 8.0; 9.0|], slice.Data)
+
+    [<Fact>]
+    let ``GetSlice Range - explicit start and end indices`` () =
+        let mat = matrix [|
+            [|1.0; 2.0; 3.0; 4.0|]
+            [|5.0; 6.0; 7.0; 8.0|]
+            [|9.0; 10.0; 11.0; 12.0|]
+            [|13.0; 14.0; 15.0; 16.0|]
+        |]
+        // Extract middle 2x2: mat.[1..2, 1..2]
+        let slice = mat.[1..2, 1..2]
+        Assert.Equal(2, slice.NumRows)
+        Assert.Equal(2, slice.NumCols)
+        Assert.Equal<Vector<float>>([|6.0; 7.0; 10.0; 11.0|], slice.Data)
+
+    [<Fact>]
+    let ``GetSlice Range - from start to specific index`` () =
+        let mat = matrix [|
+            [|1.0; 2.0; 3.0; 4.0|]
+            [|5.0; 6.0; 7.0; 8.0|]
+            [|9.0; 10.0; 11.0; 12.0|]
+        |]
+        // Get first 2 rows, first 3 cols: mat.[..1, ..2]
+        let slice = mat.[..1, ..2]
+        Assert.Equal(2, slice.NumRows)
+        Assert.Equal(3, slice.NumCols)
+        Assert.Equal<Vector<float>>([|1.0; 2.0; 3.0; 5.0; 6.0; 7.0|], slice.Data)
+
+    [<Fact>]
+    let ``GetSlice Range - from specific index to end`` () =
+        let mat = matrix [|
+            [|1.0; 2.0; 3.0|]
+            [|4.0; 5.0; 6.0|]
+            [|7.0; 8.0; 9.0|]
+        |]
+        // Get last 2 rows, last 2 cols: mat.[1.., 1..]
+        let slice = mat.[1.., 1..]
+        Assert.Equal(2, slice.NumRows)
+        Assert.Equal(2, slice.NumCols)
+        Assert.Equal<Vector<float>>([|5.0; 6.0; 8.0; 9.0|], slice.Data)
+
+    [<Fact>]
+    let ``GetSlice Range - single row range`` () =
+        let mat = matrix [|
+            [|1.0; 2.0; 3.0|]
+            [|4.0; 5.0; 6.0|]
+            [|7.0; 8.0; 9.0|]
+        |]
+        // Extract middle row: mat.[1..1, 0..]
+        let slice = mat.[1..1, 0..]
+        Assert.Equal(1, slice.NumRows)
+        Assert.Equal(3, slice.NumCols)
+        Assert.Equal<Vector<float>>([|4.0; 5.0; 6.0|], slice.Data)
+
+    [<Fact>]
+    let ``GetSlice Range - single column range`` () =
+        let mat = matrix [|
+            [|1.0; 2.0; 3.0|]
+            [|4.0; 5.0; 6.0|]
+            [|7.0; 8.0; 9.0|]
+        |]
+        // Extract middle column: mat.[0.., 1..1]
+        let slice = mat.[0.., 1..1]
+        Assert.Equal(3, slice.NumRows)
+        Assert.Equal(1, slice.NumCols)
+        Assert.Equal<Vector<float>>([|2.0; 5.0; 8.0|], slice.Data)
+
+    [<Fact>]
+    let ``GetSlice Range - mixed start and end operators`` () =
+        let mat = matrix [|
+            [|1.0; 2.0; 3.0; 4.0|]
+            [|5.0; 6.0; 7.0; 8.0|]
+            [|9.0; 10.0; 11.0; 12.0|]
+            [|13.0; 14.0; 15.0; 16.0|]
+        |]
+        // Rows from start to 2, cols from 1 to end: mat.[..2, 1..]
+        let slice = mat.[..2, 1..]
+        Assert.Equal(3, slice.NumRows)
+        Assert.Equal(3, slice.NumCols)
+        Assert.Equal<Vector<float>>([|2.0; 3.0; 4.0; 6.0; 7.0; 8.0; 10.0; 11.0; 12.0|], slice.Data)
+
+    [<Fact>]
+    let ``GetSlice Range - first row only`` () =
+        let mat = matrix [|
+            [|1.0; 2.0; 3.0|]
+            [|4.0; 5.0; 6.0|]
+            [|7.0; 8.0; 9.0|]
+        |]
+        // First row: mat.[0..0, 0..]
+        let slice = mat.[0..0, 0..]
+        Assert.Equal(1, slice.NumRows)
+        Assert.Equal(3, slice.NumCols)
+        Assert.Equal<Vector<float>>([|1.0; 2.0; 3.0|], slice.Data)
+
+    [<Fact>]
+    let ``GetSlice Range - last row only`` () =
+        let mat = matrix [|
+            [|1.0; 2.0; 3.0|]
+            [|4.0; 5.0; 6.0|]
+            [|7.0; 8.0; 9.0|]
+        |]
+        // Last row: mat.[2..2, 0..]
+        let slice = mat.[2..2, 0..]
+        Assert.Equal(1, slice.NumRows)
+        Assert.Equal(3, slice.NumCols)
+        Assert.Equal<Vector<float>>([|7.0; 8.0; 9.0|], slice.Data)
+
+    [<Fact>]
+    let ``GetSlice Range - first column only`` () =
+        let mat = matrix [|
+            [|1.0; 2.0; 3.0|]
+            [|4.0; 5.0; 6.0|]
+            [|7.0; 8.0; 9.0|]
+        |]
+        // First column: mat.[0.., 0..0]
+        let slice = mat.[0.., 0..0]
+        Assert.Equal(3, slice.NumRows)
+        Assert.Equal(1, slice.NumCols)
+        Assert.Equal<Vector<float>>([|1.0; 4.0; 7.0|], slice.Data)
+
+    [<Fact>]
+    let ``GetSlice Range - last column only`` () =
+        let mat = matrix [|
+            [|1.0; 2.0; 3.0|]
+            [|4.0; 5.0; 6.0|]
+            [|7.0; 8.0; 9.0|]
+        |]
+        // Last column: mat.[0.., 2..2]
+        let slice = mat.[0.., 2..2]
+        Assert.Equal(3, slice.NumRows)
+        Assert.Equal(1, slice.NumCols)
+        Assert.Equal<Vector<float>>([|3.0; 6.0; 9.0|], slice.Data)
+
+    [<Fact>]
+    let ``GetSlice Range - tall matrix slice`` () =
+        let mat = Matrix.init<float> 8 4 (fun i j -> float (i * 4 + j))
+        // Get rows 2 to 5, cols 1 to 3: mat.[2..5, 1..3]
+        let slice = mat.[2..5, 1..3]
+        Assert.Equal(4, slice.NumRows)
+        Assert.Equal(3, slice.NumCols)
+        // Verify first row of slice (row 2 of original, cols 1-3)
+        Assert.Equal(9.0, slice.[0, 0])   // mat.[2, 1]
+        Assert.Equal(10.0, slice.[0, 1])  // mat.[2, 2]
+        Assert.Equal(11.0, slice.[0, 2])  // mat.[2, 3]
+
+    [<Fact>]
+    let ``GetSlice Range - wide matrix slice`` () =
+        let mat = Matrix.init<float> 3 10 (fun i j -> float (i * 10 + j))
+        // Get all rows, cols 3 to 7: mat.[0.., 3..7]
+        let slice = mat.[0.., 3..7]
+        Assert.Equal(3, slice.NumRows)
+        Assert.Equal(5, slice.NumCols)
+        // Verify first row
+        let firstRow = slice.[0..0, 0..]
+        Assert.Equal<Vector<float>>([|3.0; 4.0; 5.0; 6.0; 7.0|], firstRow.Data)
+
+    [<Fact>]
+    let ``GetSlice Range - single element as 1x1 matrix`` () =
+        let mat = matrix [|
+            [|1.0; 2.0; 3.0|]
+            [|4.0; 5.0; 6.0|]
+            [|7.0; 8.0; 9.0|]
+        |]
+        // Extract center element as 1x1 matrix: mat.[1..1, 1..1]
+        let slice = mat.[1..1, 1..1]
+        Assert.Equal(1, slice.NumRows)
+        Assert.Equal(1, slice.NumCols)
+        Assert.Equal<Vector<float>>([|5.0|], slice.Data)
+
+    [<Fact>]
+    let ``GetSlice Range - corner submatrices`` () =
+        let mat = matrix [|
+            [|1.0; 2.0; 3.0; 4.0|]
+            [|5.0; 6.0; 7.0; 8.0|]
+            [|9.0; 10.0; 11.0; 12.0|]
+            [|13.0; 14.0; 15.0; 16.0|]
+        |]
+        // Top-left 2x2: mat.[..1, ..1]
+        let topLeft = mat.[..1, ..1]
+        Assert.Equal<Vector<float>>([|1.0; 2.0; 5.0; 6.0|], topLeft.Data)
+
+        // Top-right 2x2: mat.[..1, 2..]
+        let topRight = mat.[..1, 2..]
+        Assert.Equal<Vector<float>>([|3.0; 4.0; 7.0; 8.0|], topRight.Data)
+
+        // Bottom-left 2x2: mat.[2.., ..1]
+        let bottomLeft = mat.[2.., ..1]
+        Assert.Equal<Vector<float>>([|9.0; 10.0; 13.0; 14.0|], bottomLeft.Data)
+
+        // Bottom-right 2x2: mat.[2.., 2..]
+        let bottomRight = mat.[2.., 2..]
+        Assert.Equal<Vector<float>>([|11.0; 12.0; 15.0; 16.0|], bottomRight.Data)
