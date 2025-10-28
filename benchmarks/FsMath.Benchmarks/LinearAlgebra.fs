@@ -5,7 +5,7 @@ open FsMath
 open FsMath.Algebra
 
 /// <summary>
-/// Benchmarks for linear algebra operations (QR, LU, Cholesky, EVD).
+/// Benchmarks for linear algebra operations (QR, LU, Cholesky, EVD, SVD).
 /// These operations are fundamental to scientific computing and their performance
 /// is critical for applications in statistics, machine learning, and numerical analysis.
 /// </summary>
@@ -169,3 +169,19 @@ type LinearAlgebraBenchmarks() =
     [<Benchmark>]
     member _.LeastSquares_50x50() =
         LinearAlgebra.leastSquares largeMatrix largeVector
+
+    // ============================================
+    // SVD (Singular Value Decomposition) Benchmarks
+    // ============================================
+
+    [<Benchmark>]
+    member _.SVD_10x10() =
+        SVD.compute (smallMatrix.toArray2D())
+
+    [<Benchmark>]
+    member _.SVD_30x30() =
+        SVD.compute (mediumMatrix.toArray2D())
+
+    [<Benchmark>]
+    member _.SVD_50x50() =
+        SVD.compute (largeMatrix.toArray2D())
