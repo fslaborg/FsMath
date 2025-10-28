@@ -30,6 +30,7 @@
     <Compile Include="MatrixAdditionalTests.fs" />
     <Compile Include="MatrixEdgeCaseTests.fs" />
     <Compile Include="MatrixCoverageGapsTests.fs" />
+    <Compile Include="MatrixSIMDCoverageTests.fs" />
     <Compile Include="PermutationTests.fs" />
     <Compile Include="LinearAlgebraTests.fs" />
     <Compile Include="LinearAlgebraCoverageTests.fs" />
