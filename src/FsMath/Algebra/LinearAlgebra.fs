@@ -359,30 +359,64 @@ type LinearAlgebra =
             else Array.map (fun vi -> vi / norm_v) v
 
         /// Update Q: Q ← Q * Hᵢ using Householder vector v (from column i)
+        /// Optimized with SIMD operations for dot products and row updates
         let updateQ (Q: Matrix<'T>) (v: 'T[]) (i: int) =
             let nQ, mQ = Q.NumRows, Q.NumCols
+            let vLen = v.Length
+            let qData = Q.Data
+
+            // Process each row of Q
             for row = 0 to nQ - 1 do
-                let mutable dot = 'T.Zero
-                for k = 0 to v.Length - 1 do
-                    dot <- dot + Q.[row, i + k] * v.[k]
+                let rowOffset = row * mQ + i
+
+                // SIMD-optimized dot product: dot = Q[row, i..i+vLen-1] · v
+                let dot = SpanMath.dotUnchecked (ReadOnlySpan(qData, rowOffset, vLen), ReadOnlySpan(v))
                 let alpha = dot + dot
-                for k = 0 to v.Length - 1 do
-                    Q.[row, i + k] <- Q.[row, i + k] - alpha * v.[k]
+
+                // SIMD-optimized update: Q[row, i..i+vLen-1] -= alpha * v
+                if alpha <> 'T.Zero then  // Skip if alpha is zero
+                    let alphaVec = Numerics.Vector<'T>(alpha)
+                    let mutable k = 0
+                    let simdWidth = Numerics.Vector<'T>.Count
+
+                    // Vectorized loop
+                    while k + simdWidth <= vLen do
+                        let qVec = Numerics.Vector<'T>(qData, rowOffset + k)
+                        let vVec = Numerics.Vector<'T>(v, k)
+                        let result = qVec - alphaVec * vVec
+                        result.CopyTo(qData, rowOffset + k)
+                        k <- k + simdWidth
+
+                    // Scalar tail
+                    while k < vLen do
+                        qData.[rowOffset + k] <- qData.[rowOffset + k] - alpha * v.[k]
+                        k <- k + 1
 
         /// Apply Hᵢ to R from the left: R ← H * R
+        /// Optimized with SIMD operations for column dot products and updates
         let applyHouseholderLeft (R: Matrix<'T>) (v: 'T[]) (i: int) =
             let m, n = R.NumRows, R.NumCols
+            let vLen = v.Length
+            let rData = R.Data
+
+            // Extract column slice  - this is a strided access pattern
+            // For each column, we need to process R[i..i+vLen-1, col]
             for col = i to n - 1 do
+                // Compute dot product: dot = v · R[i..i+vLen-1, col]
                 let mutable dot = 'T.Zero
-                for k = 0 to v.Length - 1 do
+                for k = 0 to vLen - 1 do
                     let row = i + k
                     if row < m then
-                        dot <- dot + v.[k] * R.[row, col]
+                        dot <- dot + v.[k] * rData.[row * n + col]
+
                 let alpha = dot + dot
-                for k = 0 to v.Length - 1 do
-                    let row = i + k
-                    if row < m then
-                        R.[row, col] <- R.[row, col] - alpha * v.[k]
+
+                // Update column: R[i..i+vLen-1, col] -= alpha * v
+                if alpha <> 'T.Zero then
+                    for k = 0 to vLen - 1 do
+                        let row = i + k
+                        if row < m then
+                            rData.[row * n + col] <- rData.[row * n + col] - alpha * v.[k]
 
         /// Main QR decomposition function
         let qrDecompose (A: Matrix<'T>) : Matrix<'T> * Matrix<'T> =
