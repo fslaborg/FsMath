@@ -46,3 +46,23 @@ type VectorBenchmarks() =
         let result = Vector.norm vector1
         GC.KeepAlive(result) // Prevents the result from being optimized away
 
+    [<Benchmark>]
+    member _.Sum() =
+        let result = Vector.sum vector1
+        GC.KeepAlive(result) // Prevents the result from being optimized away
+
+    [<Benchmark>]
+    member _.Product() =
+        let result = Vector.product vector1
+        GC.KeepAlive(result) // Prevents the result from being optimized away
+
+    [<Benchmark>]
+    member _.Min() =
+        let result = Vector.min vector1
+        GC.KeepAlive(result) // Prevents the result from being optimized away
+
+    [<Benchmark>]
+    member _.Max() =
+        let result = Vector.max vector1
+        GC.KeepAlive(result) // Prevents the result from being optimized away
+
