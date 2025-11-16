@@ -62,7 +62,7 @@ module SolveTriangularSystemZeroDiagonalTests =
         let ex = Assert.Throws<ArgumentException>(fun () ->
             LinearAlgebra.solveTriangularLinearSystem L v true |> ignore)
         Assert.Contains("Diagonal element is zero", ex.Message)
-        Assert.Contains("K[0,0]", ex.Message)
+        Assert.Contains("Matrix[0,0]", ex.Message)
 
     [<Fact>]
     let ``solveTriangularLinearSystem throws on zero diagonal - forward sub in middle`` () =
@@ -76,7 +76,7 @@ module SolveTriangularSystemZeroDiagonalTests =
         let ex = Assert.Throws<ArgumentException>(fun () ->
             LinearAlgebra.solveTriangularLinearSystem L v true |> ignore)
         Assert.Contains("Diagonal element is zero", ex.Message)
-        Assert.Contains("K[2,2]", ex.Message)
+        Assert.Contains("Matrix[2,2]", ex.Message)
 
     [<Fact>]
     let ``solveTriangularLinearSystem throws on zero diagonal - backward sub at position 0`` () =
@@ -89,7 +89,7 @@ module SolveTriangularSystemZeroDiagonalTests =
         let ex = Assert.Throws<ArgumentException>(fun () ->
             LinearAlgebra.solveTriangularLinearSystem U v false |> ignore)
         Assert.Contains("Diagonal element is zero", ex.Message)
-        Assert.Contains("K[0,0]", ex.Message)
+        Assert.Contains("Matrix[0,0]", ex.Message)
 
     [<Fact>]
     let ``solveTriangularLinearSystem throws on zero diagonal - backward sub in middle`` () =
@@ -103,7 +103,7 @@ module SolveTriangularSystemZeroDiagonalTests =
         let ex = Assert.Throws<ArgumentException>(fun () ->
             LinearAlgebra.solveTriangularLinearSystem U v false |> ignore)
         Assert.Contains("Diagonal element is zero", ex.Message)
-        Assert.Contains("K[1,1]", ex.Message)
+        Assert.Contains("Matrix[1,1]", ex.Message)
 
     [<Fact>]
     let ``solveTriangularLinearSystem throws on zero diagonal - backward sub at last`` () =
@@ -115,7 +115,7 @@ module SolveTriangularSystemZeroDiagonalTests =
         let ex = Assert.Throws<ArgumentException>(fun () ->
             LinearAlgebra.solveTriangularLinearSystem U v false |> ignore)
         Assert.Contains("Diagonal element is zero", ex.Message)
-        Assert.Contains("K[1,1]", ex.Message)
+        Assert.Contains("Matrix[1,1]", ex.Message)
 
 
 module CholeskyNonSquareTests =

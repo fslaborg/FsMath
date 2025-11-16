@@ -84,34 +84,112 @@ type LinearAlgebra =
 
         Matrix(m, n, qData), r
 
-    /// <summary>Back substitute to solve R * x = y</summary>
-    /// <remarks>R is upper triangular</remarks>
+    /// <summary>Forward substitute to solve L * x = y</summary>
+    /// <remarks>L is lower triangular</remarks>
+    static member inline forwardSubstitute<'T when 'T :> Numerics.INumber<'T>
+                 and 'T : (new: unit -> 'T)
+                 and 'T : struct
+                 and 'T : comparison
+                 and 'T :> ValueType>
+        (L : Matrix<'T>)
+        (y : Vector<'T>) : Vector<'T> =
+
+        let n = L.NumRows
+
+        if L.NumCols <> n || y.Length <> n then
+            invalidArg "dimensions" "L must be square and match the length of y"
+
+        let x     = Array.zeroCreate<'T> n
+        let cols  = L.NumCols
+        let lData = L.Data
+
+        // Again, scalar version; easy to SIMD the inner sum later
+        for i = 0 to n - 1 do
+            let mutable s = y.[i]
+            let rowOffset = i * cols
+            for j = 0 to i - 1 do
+                s <- s - lData.[rowOffset + j] * x.[j]
+            let diag = lData.[rowOffset + i]
+            if diag = 'T.Zero then
+                invalidArg $"Matrix[{i},{i}]" "Diagonal element is zero. Cannot divide."
+            x.[i] <- s / diag
+
+        x
+
+
+
+    ///// <summary>Back substitute to solve R * x = y</summary>
+    ///// <remarks>R is upper triangular</remarks>
+    //static member inline backSubstitute<'T when 'T :> Numerics.INumber<'T>
+    //            and 'T : (new: unit -> 'T)
+    //            and 'T : struct
+    //            and 'T : comparison
+    //            and 'T :> ValueType>
+    //    (r: Matrix<'T>) 
+    //    (y: Vector<'T>) : Vector<'T> =
+
+    //    let n = r.NumRows
+
+    //    if r.NumCols <> n || y.Length <> n then
+    //        invalidArg "dimensions" "R must be square and match the length of y"
+
+    //    let x = Array.zeroCreate<'T> n
+
+    //    for i = n - 1 downto 0 do
+    //        let mutable sum = y.[i]
+    //        for j = i + 1 to n - 1 do
+    //            sum <- sum - r.[i, j] * x.[j]
+    //        let diag = r.[i, i]
+    //        if diag = 'T.Zero then
+    //            invalidArg $"Matrix{i},{i}]" "Diagonal element is zero. Cannot divide."            
+    //        x.[i] <- sum / diag
+
+    //    x
+
+
     static member inline backSubstitute<'T when 'T :> Numerics.INumber<'T>
                 and 'T : (new: unit -> 'T)
                 and 'T : struct
                 and 'T : comparison
                 and 'T :> ValueType>
-        (r: Matrix<'T>) 
+        (R: Matrix<'T>) 
         (y: Vector<'T>) : Vector<'T> =
 
-        let n = r.NumRows
+        let n = R.NumRows
 
-        if r.NumCols <> n || y.Length <> n then
+        if R.NumCols <> n || y.Length <> n then
             invalidArg "dimensions" "R must be square and match the length of y"
 
         let x = Array.zeroCreate<'T> n
+        let cols = R.NumCols
+        let rData = R.Data  // row-major underlying array
 
+        // Backward substitution
         for i = n - 1 downto 0 do
             let mutable sum = y.[i]
-            for j = i + 1 to n - 1 do
-                sum <- sum - r.[i, j] * x.[j]
-            let diag = r.[i, i]
+
+            let startJ = i + 1
+            let len    = n - startJ
+
+            if len > 0 then
+                // row slice: r[i, i+1 .. n-1]
+                let rowOffset   = i * cols + startJ
+                let rowTailSpan = ReadOnlySpan<'T>(rData, rowOffset, len)
+
+                // x slice: x[i+1 .. n-1]
+                let xTailSpan   = ReadOnlySpan<'T>(x, startJ, len)
+
+                // subtract SIMD dot product
+                let dot = SpanMath.dot(rowTailSpan, xTailSpan)
+                sum <- sum - dot
+
+            let diag = R.[i, i]
             if diag = 'T.Zero then
-                invalidArg $"r[{i},{i}]" "Diagonal element is zero. Cannot divide."            
+                invalidArg $"Matrix[{i},{i}]" "Diagonal element is zero. Cannot divide."
+
             x.[i] <- sum / diag
 
         x
-
 
 
 
@@ -249,10 +327,56 @@ type LinearAlgebra =
 
 
 
-    /// Solve K * x = v (triangular system) in-place, returning a copy of x.
+    ///// Solve K * x = v (triangular system) in-place, returning a copy of x.
+    ///// K must be n×n, v must be length n. 
+    ///// isLower = true => forward substitution
+    ///// isLower = false => backward substitution
+    //static member inline solveTriangularLinearSystem
+    //    (K       : Matrix<'T>)
+    //    (v       : Vector<'T>)
+    //    (isLower : bool)
+    //    : Vector<'T> =
+
+    //    let nK, mK = K.NumRows, K.NumCols
+    //    let nV = v.Length
+    //    if nK <> mK || nV <> nK then
+    //        invalidArg (nameof K) "K must be square, and v must match its dimension."
+
+    //    let x = Array.copy v
+    //    let Kdata = K.Data  // row-major flattened
+
+    //    // Forward or backward substitution
+    //    if isLower then
+    //        // For i in [0..n-1]:
+    //        //   x[i] <- ( x[i] - sum_{j=0..i-1}(K[i,j] * x[j]) ) / K[i,i]
+    //        for i = 0 to nK - 1 do
+    //            let mutable s = x.[i]
+    //            let rowOffset = i * nK
+    //            for j = 0 to i - 1 do
+    //                s <- s - (Kdata.[rowOffset + j] * x.[j])
+    //            let diag = Kdata.[rowOffset + i]
+    //            if diag = 'T.Zero then
+    //                invalidArg $"K[{i},{i}]" "Diagonal element is zero. Cannot divide."
+    //            x.[i] <- s / diag
+    //    else
+    //        // For i in [n-1..downto..0]:
+    //        //   x[i] <- ( x[i] - sum_{j=i+1..n-1}(K[i,j] * x[j]) ) / K[i,i]
+    //        for i = nK - 1 downto 0 do
+    //            let mutable s = x.[i]
+    //            let rowOffset = i * nK
+    //            for j = i + 1 to nK - 1 do
+    //                s <- s - (Kdata.[rowOffset + j] * x.[j])
+    //            let diag = Kdata.[rowOffset + i]
+    //            if diag = 'T.Zero then
+    //                invalidArg $"K[{i},{i}]" "Diagonal element is zero. Cannot divide."
+    //            x.[i] <- s / diag
+
+    //    x
+
+    /// Solve K * x = v (triangular system), returning a new x.
     /// K must be n×n, v must be length n. 
-    /// isLower = true => forward substitution
-    /// isLower = false => backward substitution
+    /// isLower = true  => forward substitution (K lower triangular)
+    /// isLower = false => backward substitution (K upper triangular)
     static member inline solveTriangularLinearSystem
         (K       : Matrix<'T>)
         (v       : Vector<'T>)
@@ -264,36 +388,12 @@ type LinearAlgebra =
         if nK <> mK || nV <> nK then
             invalidArg (nameof K) "K must be square, and v must match its dimension."
 
-        let x = Array.copy v
-        let Kdata = K.Data  // row-major flattened
-
-        // Forward or backward substitution
         if isLower then
-            // For i in [0..n-1]:
-            //   x[i] <- ( x[i] - sum_{j=0..i-1}(K[i,j] * x[j]) ) / K[i,i]
-            for i = 0 to nK - 1 do
-                let mutable s = x.[i]
-                let rowOffset = i * nK
-                for j = 0 to i - 1 do
-                    s <- s - (Kdata.[rowOffset + j] * x.[j])
-                let diag = Kdata.[rowOffset + i]
-                if diag = 'T.Zero then
-                    invalidArg $"K[{i},{i}]" "Diagonal element is zero. Cannot divide."
-                x.[i] <- s / diag
+            // L * x = v
+            LinearAlgebra.forwardSubstitute K v
         else
-            // For i in [n-1..downto..0]:
-            //   x[i] <- ( x[i] - sum_{j=i+1..n-1}(K[i,j] * x[j]) ) / K[i,i]
-            for i = nK - 1 downto 0 do
-                let mutable s = x.[i]
-                let rowOffset = i * nK
-                for j = i + 1 to nK - 1 do
-                    s <- s - (Kdata.[rowOffset + j] * x.[j])
-                let diag = Kdata.[rowOffset + i]
-                if diag = 'T.Zero then
-                    invalidArg $"K[{i},{i}]" "Diagonal element is zero. Cannot divide."
-                x.[i] <- s / diag
-
-        x
+            // R * x = v
+            LinearAlgebra.backSubstitute K v
 
 
 
