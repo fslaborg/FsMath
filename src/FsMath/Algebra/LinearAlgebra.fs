@@ -84,13 +84,46 @@ type LinearAlgebra =
 
         Matrix(m, n, qData), r
 
+    ///// <summary>Forward substitute to solve L * x = y</summary>
+    ///// <remarks>L is lower triangular</remarks>
+    //static member inline forwardSubstitute<'T when 'T :> Numerics.INumber<'T>
+    //             and 'T : (new: unit -> 'T)
+    //             and 'T : struct
+    //             and 'T : comparison
+    //             and 'T :> ValueType>
+    //    (L : Matrix<'T>)
+    //    (y : Vector<'T>) : Vector<'T> =
+
+    //    let n = L.NumRows
+
+    //    if L.NumCols <> n || y.Length <> n then
+    //        invalidArg "dimensions" "L must be square and match the length of y"
+
+    //    let x     = Array.zeroCreate<'T> n
+    //    let cols  = L.NumCols
+    //    let lData = L.Data
+
+    //    // Again, scalar version; easy to SIMD the inner sum later
+    //    for i = 0 to n - 1 do
+    //        let mutable s = y.[i]
+    //        let rowOffset = i * cols
+    //        for j = 0 to i - 1 do
+    //            s <- s - lData.[rowOffset + j] * x.[j]
+    //        let diag = lData.[rowOffset + i]
+    //        if diag = 'T.Zero then
+    //            invalidArg $"Matrix[{i},{i}]" "Diagonal element is zero. Cannot divide."
+    //        x.[i] <- s / diag
+
+    //    x
+
+
     /// <summary>Forward substitute to solve L * x = y</summary>
     /// <remarks>L is lower triangular</remarks>
     static member inline forwardSubstitute<'T when 'T :> Numerics.INumber<'T>
-                 and 'T : (new: unit -> 'T)
-                 and 'T : struct
-                 and 'T : comparison
-                 and 'T :> ValueType>
+                                           and 'T : (new: unit -> 'T)
+                                           and 'T : struct
+                                           and 'T : comparison
+                                           and 'T :> ValueType>
         (L : Matrix<'T>)
         (y : Vector<'T>) : Vector<'T> =
 
@@ -103,15 +136,26 @@ type LinearAlgebra =
         let cols  = L.NumCols
         let lData = L.Data
 
-        // Again, scalar version; easy to SIMD the inner sum later
+        // Forward substitution:
+        //   x[i] <- ( y[i] - sum_{j=0..i-1}(L[i,j] * x[j]) ) / L[i,i]
         for i = 0 to n - 1 do
             let mutable s = y.[i]
             let rowOffset = i * cols
-            for j = 0 to i - 1 do
-                s <- s - lData.[rowOffset + j] * x.[j]
+            let len       = i   // number of entries below diagonal in this row (0..i-1)
+
+            if len > 0 then
+                // row slice: L[i, 0 .. i-1]
+                let rowSpan = ReadOnlySpan<'T>(lData, rowOffset, len)
+                // x slice: x[0 .. i-1]
+                let xSpan   = ReadOnlySpan<'T>(x, 0, len)
+
+                let dot = SpanMath.dot(rowSpan, xSpan)
+                s <- s - dot
+
             let diag = lData.[rowOffset + i]
             if diag = 'T.Zero then
                 invalidArg $"Matrix[{i},{i}]" "Diagonal element is zero. Cannot divide."
+
             x.[i] <- s / diag
 
         x
