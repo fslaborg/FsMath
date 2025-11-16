@@ -234,7 +234,7 @@ module MatrixCreationTests =
 
     [<Fact>]
     let ``zeroCreate => NxM matrix of all 0's`` () =
-        let mat = Matrix.zeroCreate<float> 2 3
+        let mat = Matrix.zeroCreate 2 3
         Assert.Equal<Vector<float>>([|0.0; 0.0; 0.0; 0.0; 0.0; 0.0|], mat.Data)
 
 
@@ -271,7 +271,7 @@ module MatrixEqualityTests =
     let ``Equals returns true for same shape+elements`` () =
         let m1 = matrix [| [|1.0; 2.0|]
                            [|3.0; 4.0|] |]
-        let m2 = Matrix.create<float> 2 2 [|1.0; 2.0; 3.0; 4.0|]
+        let m2 = Matrix.create 2 2 [|1.0; 2.0; 3.0; 4.0|]
         Assert.True(m1.Equals m2)
 
     [<Fact>]
@@ -578,14 +578,14 @@ module MatrixHashCodeTests =
     let ``GetHashCode is consistent for equal matrices`` () =
         let m1 = matrix [| [|1.0; 2.0|]
                            [|3.0; 4.0|] |]
-        let m2 = Matrix.create<float> 2 2 [|1.0; 2.0; 3.0; 4.0|]
+        let m2 = Matrix.create 2 2 [|1.0; 2.0; 3.0; 4.0|]
         Assert.Equal(m1.GetHashCode(), m2.GetHashCode())
 
     [<Fact>]
     let ``Object.Equals works with matching type`` () =
         let m1 = matrix [| [|1.0; 2.0|]
                            [|3.0; 4.0|] |]
-        let m2 = box (Matrix.create<float> 2 2 [|1.0; 2.0; 3.0; 4.0|])
+        let m2 = box (Matrix.create 2 2 [|1.0; 2.0; 3.0; 4.0|])
         Assert.True(m1.Equals(m2))
 
     [<Fact>]

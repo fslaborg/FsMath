@@ -19,7 +19,7 @@ module MatrixFormattingTests =
 
     [<Fact>]
     let ``toFormattedString with float32 matrix`` () =
-        let mat = Matrix.create<float32> 2 2 [|1.5f; 2.75f; 3.25f; 4.125f|]
+        let mat = Matrix.create 2 2 [|1.5f; 2.75f; 3.25f; 4.125f|]
         let str = mat.toFormattedString()
         Assert.Contains("Matrix", str)
         Assert.Contains("1.5", str)
@@ -27,7 +27,7 @@ module MatrixFormattingTests =
 
     [<Fact>]
     let ``toFormattedString with int matrix`` () =
-        let mat = Matrix.create<int> 2 2 [|1; 2; 3; 4|]
+        let mat = Matrix.create 2 2 [|1; 2; 3; 4|]
         let str = mat.toFormattedString()
         Assert.Contains("Matrix", str)
         Assert.Contains("1", str)
@@ -72,7 +72,7 @@ module MatrixFormattingTests =
 
     [<Fact>]
     let ``toFormattedString handles negative float32`` () =
-        let mat = Matrix.create<float32> 2 2 [|-1.5f; -2.75f; -3.25f; -4.125f|]
+        let mat = Matrix.create 2 2 [|-1.5f; -2.75f; -3.25f; -4.125f|]
         let str = mat.toFormattedString()
         Assert.Contains("-1.5", str)
         Assert.Contains("-2.75", str)
@@ -96,53 +96,53 @@ module MatrixFormattingTests =
 
     [<Fact>]
     let ``toFormattedString handles zero in float32 matrix`` () =
-        let mat = Matrix.create<float32> 2 2 [|0.0f; 1.0f; 2.0f; 0.0f|]
+        let mat = Matrix.create 2 2 [|0.0f; 1.0f; 2.0f; 0.0f|]
         let str = mat.toFormattedString()
         Assert.Contains("0", str)
 
     [<Fact>]
     let ``toFormattedString handles large integers`` () =
-        let mat = Matrix.create<int> 2 2 [|1000; 2000; 3000; 4000|]
+        let mat = Matrix.create 2 2 [|1000; 2000; 3000; 4000|]
         let str = mat.toFormattedString()
         Assert.Contains("1000", str)
         Assert.Contains("4000", str)
 
     [<Fact>]
     let ``toFormattedString handles very small float32 values`` () =
-        let mat = Matrix.create<float32> 2 2 [|0.001f; 0.002f; 0.003f; 0.004f|]
+        let mat = Matrix.create 2 2 [|0.001f; 0.002f; 0.003f; 0.004f|]
         let str = mat.toFormattedString()
         Assert.Contains("Matrix", str)
 
     [<Fact>]
     let ``toFormattedString handles very large float32 values`` () =
-        let mat = Matrix.create<float32> 2 2 [|1000.0f; 2000.0f; 3000.0f; 4000.0f|]
+        let mat = Matrix.create 2 2 [|1000.0f; 2000.0f; 3000.0f; 4000.0f|]
         let str = mat.toFormattedString()
         Assert.Contains("1000", str)
         Assert.Contains("4000", str)
 
     [<Fact>]
     let ``toFormattedString with float32 and scientific notation`` () =
-        let mat = Matrix.create<float32> 2 2 [|0.00123f; 0.00456f; 0.00789f; 0.00012f|]
+        let mat = Matrix.create 2 2 [|0.00123f; 0.00456f; 0.00789f; 0.00012f|]
         let str = mat.toFormattedString(useScientific = true)
         Assert.Contains("E", str)
 
     [<Fact>]
     let ``toFormattedString with single row float32 matrix`` () =
-        let mat = Matrix.create<float32> 1 3 [|1.5f; 2.5f; 3.5f|]
+        let mat = Matrix.create 1 3 [|1.5f; 2.5f; 3.5f|]
         let str = mat.toFormattedString()
         Assert.Contains("Matrix 1x3", str)
         Assert.Contains("1.5", str)
 
     [<Fact>]
     let ``toFormattedString with single column float32 matrix`` () =
-        let mat = Matrix.create<float32> 3 1 [|1.5f; 2.5f; 3.5f|]
+        let mat = Matrix.create 3 1 [|1.5f; 2.5f; 3.5f|]
         let str = mat.toFormattedString()
         Assert.Contains("Matrix 3x1", str)
         Assert.Contains("1.5", str)
 
     [<Fact>]
     let ``toFormattedString with int64 matrix`` () =
-        let mat = Matrix.create<int64> 2 2 [|100L; 200L; 300L; 400L|]
+        let mat = Matrix.create 2 2 [|100L; 200L; 300L; 400L|]
         let str = mat.toFormattedString()
         Assert.Contains("100", str)
         Assert.Contains("400", str)
@@ -151,7 +151,7 @@ module MatrixFormattingTests =
     let ``toFormattedString handles alternating floats and float32s in pattern`` () =
         // Test both float and float32 formatting paths
         let matFloat = matrix [| [|1.234; 5.678|] |]
-        let matFloat32 = Matrix.create<float32> 1 2 [|1.234f; 5.678f|]
+        let matFloat32 = Matrix.create 1 2 [|1.234f; 5.678f|]
 
         let strFloat = matFloat.toFormattedString()
         let strFloat32 = matFloat32.toFormattedString()

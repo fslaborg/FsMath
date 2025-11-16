@@ -98,7 +98,7 @@ module MatrixTransposeBlockTests =
     [<Fact>]
     let ``Transpose with block optimization - large square matrix 16x16`` () =
         // Create 16x16 matrix to test block traversal
-        let mat = Matrix.init<float> 16 16 (fun i j -> float (i * 16 + j))
+        let mat = Matrix.init 16 16 (fun i j -> float (i * 16 + j))
         let t = mat.Transpose()
         Assert.Equal(16, t.NumRows)
         Assert.Equal(16, t.NumCols)
@@ -110,7 +110,7 @@ module MatrixTransposeBlockTests =
 
     [<Fact>]
     let ``Transpose with block optimization - tall matrix 8x3`` () =
-        let mat = Matrix.init<float> 8 3 (fun i j -> float (i * 3 + j))
+        let mat = Matrix.init 8 3 (fun i j -> float (i * 3 + j))
         let t = mat.Transpose()
         Assert.Equal(3, t.NumRows)
         Assert.Equal(8, t.NumCols)
@@ -121,7 +121,7 @@ module MatrixTransposeBlockTests =
 
     [<Fact>]
     let ``Transpose with block optimization - wide matrix 3x8`` () =
-        let mat = Matrix.init<float> 3 8 (fun i j -> float (i * 8 + j))
+        let mat = Matrix.init 3 8 (fun i j -> float (i * 8 + j))
         let t = mat.Transpose()
         Assert.Equal(8, t.NumRows)
         Assert.Equal(3, t.NumCols)
@@ -133,7 +133,7 @@ module MatrixTransposeBlockTests =
     [<Fact>]
     let ``Transpose with block optimization - very large matrix 32x32`` () =
         // Test with matrix larger than typical block size (16)
-        let mat = Matrix.init<float> 32 32 (fun i j -> float (i + j))
+        let mat = Matrix.init 32 32 (fun i j -> float (i + j))
         let t = mat.Transpose()
         Assert.Equal(32, t.NumRows)
         Assert.Equal(32, t.NumCols)
@@ -229,7 +229,7 @@ module MatrixMultiplyRowVectorTests =
     let ``multiplyRowVector - tall matrix many rows`` () =
         // Test with many rows (10 rows, 3 cols)
         let v = [|1.0; 2.0; 3.0; 4.0; 5.0; 6.0; 7.0; 8.0; 9.0; 10.0|]
-        let mat = Matrix.init<float> 10 3 (fun i j -> float (i + j))
+        let mat = Matrix.init 10 3 (fun i j -> float (i + j))
         let result = v * mat
         // Manually compute expected: weighted sum of rows
         let mutable expected = Array.zeroCreate<float> 3
@@ -242,7 +242,7 @@ module MatrixMultiplyRowVectorTests =
     let ``multiplyRowVector - wide matrix many cols`` () =
         // Test with many cols (3 rows, 10 cols)
         let v = [|1.0; 2.0; 3.0|]
-        let mat = Matrix.init<float> 3 10 (fun i j -> float (i * 10 + j))
+        let mat = Matrix.init 3 10 (fun i j -> float (i * 10 + j))
         let result = v * mat
         // Manually compute expected
         let mutable expected = Array.zeroCreate<float> 10
@@ -326,7 +326,7 @@ module MatrixMultiplyVectorEdgeCaseTests =
     [<Fact>]
     let ``muliplyVector - larger matrix with tail elements`` () =
         // Use 5 columns to ensure there are tail elements after SIMD processing
-        let mat = Matrix.init<float> 3 5 (fun i j -> float (i * 5 + j + 1))
+        let mat = Matrix.init 3 5 (fun i j -> float (i * 5 + j + 1))
         let v = [|1.0; 1.0; 1.0; 1.0; 1.0|]
         let result = mat * v
         // Each row sum should be the sum of its elements
@@ -517,7 +517,7 @@ module MatrixRangeGetSliceTests =
 
     [<Fact>]
     let ``GetSlice Range - tall matrix slice`` () =
-        let mat = Matrix.init<float> 8 4 (fun i j -> float (i * 4 + j))
+        let mat = Matrix.init 8 4 (fun i j -> float (i * 4 + j))
         // Get rows 2 to 5, cols 1 to 3: mat.[2..5, 1..3]
         let slice = mat.[2..5, 1..3]
         Assert.Equal(4, slice.NumRows)
@@ -529,7 +529,7 @@ module MatrixRangeGetSliceTests =
 
     [<Fact>]
     let ``GetSlice Range - wide matrix slice`` () =
-        let mat = Matrix.init<float> 3 10 (fun i j -> float (i * 10 + j))
+        let mat = Matrix.init 3 10 (fun i j -> float (i * 10 + j))
         // Get all rows, cols 3 to 7: mat.[0.., 3..7]
         let slice = mat.[0.., 3..7]
         Assert.Equal(3, slice.NumRows)

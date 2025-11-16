@@ -18,8 +18,8 @@ type MatrixBenchmarks() =
     [<GlobalSetup>]
     member this.Setup() =
         // Initialize square matrices with some values
-        matrixA <- Matrix.init<float> this.Size this.Size (fun i j -> float (i + j))
-        matrixB <- Matrix.init<float> this.Size this.Size (fun i j -> float (i * 2 + j))
+        matrixA <- Matrix.init this.Size this.Size (fun i j -> float (i + j))
+        matrixB <- Matrix.init this.Size this.Size (fun i j -> float (i * 2 + j))
         vector <- Array.init this.Size (fun i -> float i)
 
     // Element-wise operations

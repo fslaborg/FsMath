@@ -47,7 +47,7 @@ module MatrixSIMDMultiplyRowVectorTests =
     let ``multiplyRowVector SIMD path - 4x16 matrix large SIMD`` () =
         // Large matrix with 16 columns for extensive SIMD processing
         let v = [|1.0; 2.0; 3.0; 4.0|]
-        let mat = Matrix.init<float> 4 16 (fun i j -> float (i * 16 + j + 1))
+        let mat = Matrix.init 4 16 (fun i j -> float (i * 16 + j + 1))
         let result = v * mat
 
         // Manually compute expected
@@ -88,7 +88,7 @@ module MatrixSIMDMultiplyRowVectorTests =
     let ``multiplyRowVector SIMD path - 10 rows many weights`` () =
         // Many rows to test accumulation loop (lines 618-634)
         let v = [|1.0; 1.0; 1.0; 1.0; 1.0; 1.0; 1.0; 1.0; 1.0; 1.0|]
-        let mat = Matrix.init<float> 10 8 (fun i j -> float (i + j))
+        let mat = Matrix.init 10 8 (fun i j -> float (i + j))
         let result = v * mat
 
         // Each column j should sum to: sum(i + j for i in 0..9) = 10j + 45
@@ -142,7 +142,7 @@ module MatrixSIMDMultiplyRowVectorTests =
     let ``multiplyRowVector SIMD path - very large matrix 20x32`` () =
         // Large matrix to stress test SIMD loops
         let v = Array.init 20 (fun i -> float (i + 1))
-        let mat = Matrix.init<float> 20 32 (fun i j -> float ((i * 32 + j) % 100))
+        let mat = Matrix.init 20 32 (fun i j -> float ((i * 32 + j) % 100))
         let result = v * mat
 
         // Verify dimensions and non-zero result
@@ -176,7 +176,7 @@ module MatrixSIMDMultiplyRowVectorTests =
     let ``multiplyRowVector SIMD path - identity-like weights`` () =
         // One-hot vector (only one non-zero weight)
         let v = [|0.0; 0.0; 1.0; 0.0; 0.0|]
-        let mat = Matrix.init<float> 5 4 (fun i j -> float (i * 4 + j + 1))
+        let mat = Matrix.init 5 4 (fun i j -> float (i * 4 + j + 1))
         let result = v * mat
         // Should return row 2 (0-indexed)
         let expected = [|9.0; 10.0; 11.0; 12.0|]
@@ -214,7 +214,7 @@ module MatrixSIMDMultiplyRowVectorTests =
     let ``multiplyRowVector SIMD path - 9 columns multiple chunks`` () =
         // 9 columns: 2 SIMD chunks (8 elements) + 1 scalar tail
         let v = [|0.5; 1.5|]
-        let mat = Matrix.init<float> 2 9 (fun i j -> float (i * 9 + j + 1))
+        let mat = Matrix.init 2 9 (fun i j -> float (i * 9 + j + 1))
         let result = v * mat
         // v × M = 0.5*[1..9] + 1.5*[10..18]
         let expected = Array.init 9 (fun j -> 0.5 * float (j + 1) + 1.5 * float (j + 10))
@@ -252,7 +252,7 @@ module MatrixSIMDMultiplyRowVectorTests =
     let ``multiplyRowVector SIMD path - sparse weights mostly zeros`` () =
         // Sparse vector with mostly zeros (tests zero-weight skip optimization)
         let v = [|0.0; 0.0; 0.0; 1.0; 0.0; 0.0; 2.0; 0.0|]
-        let mat = Matrix.init<float> 8 4 (fun i j -> float (i * 4 + j + 1))
+        let mat = Matrix.init 8 4 (fun i j -> float (i * 4 + j + 1))
         let result = v * mat
         // Only rows 3 and 6 contribute: 1*row3 + 2*row6
         // row3 = [13, 14, 15, 16], row6 = [25, 26, 27, 28]
@@ -264,7 +264,7 @@ module MatrixSIMDMultiplyRowVectorTests =
     let ``multiplyRowVector SIMD path - 12 columns three SIMD chunks`` () =
         // 12 columns = 3 × 4 (Vector<float>.Count), perfect SIMD alignment
         let v = [|1.0; 1.0|]
-        let mat = Matrix.init<float> 2 12 (fun i j -> float (i * 12 + j + 1))
+        let mat = Matrix.init 2 12 (fun i j -> float (i * 12 + j + 1))
         let result = v * mat
         // Sum of two rows
         let expected = Array.init 12 (fun j -> float (j + 1) + float (j + 13))
