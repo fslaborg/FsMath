@@ -180,33 +180,17 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
         let blocksize = 16
         Matrix(this.NumCols, this.NumRows, Matrix.transposeByBlock this.NumRows this.NumCols this.Data blocksize)
      
-    static member init<'T when 'T :> Numerics.INumber<'T>
-                and 'T : (new: unit -> 'T)
-                and 'T : struct
-                and 'T :> ValueType>
-                (rows: int)
-                (cols: int)
-                (f: int -> int -> 'T) =
+    static member init (rows: int) (cols: int) (f: int -> int -> 'T) =
         let data = Array.init (rows * cols) (fun idx -> f (idx / cols) (idx % cols))
         Matrix(rows, cols, data)
 
-    static member create<'T when 'T :> Numerics.INumber<'T>
-                and 'T : (new: unit -> 'T)
-                and 'T : struct
-                and 'T :> ValueType>
-                (rows: int)
-                (cols: int)
-                (data: 'T[]) : Matrix<'T> =
+    static member create (rows: int) (cols: int) (data: 'T[]) : Matrix<'T> =
         
         Matrix(rows, cols, data)
 
 
     /// Constructs a matrix from a 2D array.
-    static member ofArray2D<'T when 'T :> Numerics.INumber<'T>
-                and 'T : (new: unit -> 'T)
-                and 'T : struct
-                and 'T :> ValueType>
-                (arr2D: 'T[,]) =
+    static member ofArray2D (arr2D: 'T[,]) =
         let rows = arr2D.GetLength(0)
         let cols = arr2D.GetLength(1)
         let length = rows * cols
@@ -230,11 +214,7 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
 
     
     /// Constructs a matrix from a jagged array (`'T[][]`), assuming a rectangular structure.
-    static member ofJaggedArray<'T when 'T :> Numerics.INumber<'T>
-                and 'T : (new: unit -> 'T)
-                and 'T : struct
-                and 'T :> ValueType>
-                (jagged: 'T[][]) =
+    static member ofJaggedArray (jagged: 'T[][]) =
         let rows = jagged.Length
         let cols = if rows > 0 then jagged.[0].Length else 0
 
@@ -336,21 +316,12 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
 // Static methods for matrix operations
 
     /// Checks if two matrices have the same shape (dimensions).
-    static member inline checkSameShape<'T when 'T :> Numerics.INumber<'T>
-                and 'T : (new: unit -> 'T)
-                and 'T : struct
-                and 'T :> ValueType>
-        (a: Matrix<'T>) (b: Matrix<'T>) =
+    static member inline checkSameShape (a: Matrix<'T>) (b: Matrix<'T>) =
         if a.NumRows <> b.NumRows || a.NumCols <> b.NumCols then
             invalidArg "b" $"Matrix dimensions must match. A is {a.NumRows}x{a.NumCols}, B is {b.NumRows}x{b.NumCols}"
 
     /// Element-wise addition
-    static member inline add<'T when 'T :> Numerics.INumber<'T>
-                and 'T : (new: unit -> 'T)
-                and 'T : struct
-                and 'T :> ValueType>
-        (a: Matrix<'T>) 
-        (b: Matrix<'T>) : Matrix<'T> =
+    static member inline add (a: Matrix<'T>) (b: Matrix<'T>) : Matrix<'T> =
 
         Matrix.checkSameShape a b
         let result = Array.zeroCreate<'T>(a.Data.Length)
@@ -361,12 +332,7 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
 
     
     /// Element-wise subtraction
-    static member inline subtract<'T when 'T :> Numerics.INumber<'T>
-                and 'T : (new: unit -> 'T)
-                and 'T : struct
-                and 'T :> ValueType>
-        (a: Matrix<'T>) 
-        (b: Matrix<'T>) : Matrix<'T> =
+    static member inline subtract (a: Matrix<'T>) (b: Matrix<'T>) : Matrix<'T> =
 
         Matrix.checkSameShape a b
         let result = Array.zeroCreate<'T>(a.Data.Length)
@@ -377,13 +343,7 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
 
 
     /// Element-wise multiplication Hadamard product) 
-    static member inline multiply<'T 
-        when 'T :> Numerics.INumber<'T>
-        and 'T : (new: unit -> 'T)
-        and 'T : struct
-        and 'T :> ValueType> 
-        (a: Matrix<'T>) 
-        (b: Matrix<'T>) : Matrix<'T> =
+    static member inline multiply (a: Matrix<'T>) (b: Matrix<'T>) : Matrix<'T> =
 
         Matrix.checkSameShape a b
         let result = Array.zeroCreate<'T>(a.Data.Length)
@@ -394,13 +354,7 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
 
 
     /// Element-wise division
-    static member inline divide<'T 
-        when 'T :> Numerics.INumber<'T>
-        and 'T : (new: unit -> 'T)
-        and 'T : struct
-        and 'T :> ValueType> 
-        (a: Matrix<'T>) 
-        (b: Matrix<'T>) : Matrix<'T> =
+    static member inline divide (a: Matrix<'T>) (b: Matrix<'T>) : Matrix<'T> =
 
         Matrix.checkSameShape a b
         let result = Array.zeroCreate<'T>(a.Data.Length)
@@ -411,11 +365,7 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
 
 
     /// Adds a scalar to each element of the matrix.
-    static member inline addScalar<'T when 'T :> Numerics.INumber<'T>
-                and 'T : (new: unit -> 'T)
-                and 'T : struct
-                and 'T :> ValueType> 
-                (m: Matrix<'T>) (scalar: 'T) : Matrix<'T> =
+    static member inline addScalar (m: Matrix<'T>) (scalar: 'T) : Matrix<'T> =
   
         let result = Array.zeroCreate<'T>(m.Data.Length)
         let dst = Span<'T>(result)
@@ -425,13 +375,7 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
 
 
     /// Subtracts a scalar from each element of the matrix.
-    static member inline subtractScalar<'T 
-        when 'T :> Numerics.INumber<'T> 
-        and 'T : (new: unit -> 'T) 
-        and 'T : struct 
-        and 'T :> ValueType>
-        (m: Matrix<'T>) 
-        (scalar: 'T) : Matrix<'T> =
+    static member inline subtractScalar (m: Matrix<'T>) (scalar: 'T) : Matrix<'T> =
 
         let result = Array.zeroCreate<'T>(m.Data.Length)
         let dst = Span<'T>(result)
@@ -441,13 +385,7 @@ type Matrix<'T when 'T :> Numerics.INumber<'T>
 
 
     /// Multiplies each element of the matrix by a scalar.
-    static member inline multiplyScalar<'T 
-        when 'T :> Numerics.INumber<'T> 
-        and 'T : (new: unit -> 'T) 
-        and 'T : struct 
-        and 'T :> ValueType>
-        (m: Matrix<'T>) 
-        (scalar: 'T) : Matrix<'T> =
+    static member inline multiplyScalar (m: Matrix<'T>)  (scalar: 'T) : Matrix<'T> =
         let result = Array.zeroCreate<'T>(m.Data.Length)
         let dst = Span<'T>(result)
         SpanINumberPrimitives.mapScalarIntoUnchecked<'T>
