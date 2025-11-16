@@ -253,10 +253,36 @@ type SpanMath =
     static member inline sum<'T when 'T :> Numerics.INumber<'T>
                 and 'T : (new: unit -> 'T)
                 and 'T : struct
-                and 'T :> ValueType> 
+                and 'T :> ValueType>
                 (v:ReadOnlySpan<'T>) : 'T =
-        let zero =  LanguagePrimitives.GenericZero<'T>
-        SpanINumberPrimitives.fold ( (+) , (+) , v , zero )
+        if v.Length = 0 then
+            LanguagePrimitives.GenericZero<'T>
+        elif Numerics.Vector.IsHardwareAccelerated && v.Length >= Numerics.Vector<'T>.Count then
+            let simdWidth = Numerics.Vector<'T>.Count
+            let simdCount = v.Length / simdWidth
+            let ceiling = simdWidth * simdCount
+
+            // SIMD accumulation
+            let mutable accVec = Numerics.Vector<'T>.Zero
+
+            for i = 0 to simdCount - 1 do
+                let srcIndex = i * simdWidth
+                let vec = Numerics.Vector<'T>(v.Slice(srcIndex, simdWidth))
+                accVec <- accVec + vec
+
+            // Horizontal reduction using Vector.Sum for optimized performance
+            let mutable acc = Numerics.Vector.Sum(accVec)
+
+            // Tail
+            for i = ceiling to v.Length - 1 do
+                acc <- acc + v.[i]
+
+            acc
+        else
+            let mutable acc = LanguagePrimitives.GenericZero<'T>
+            for i = 0 to v.Length - 1 do
+                acc <- acc + v.[i]
+            acc
 
 
     /// Computes the product of all elements in the vector.
