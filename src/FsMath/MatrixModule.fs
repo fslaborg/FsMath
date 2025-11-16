@@ -26,7 +26,7 @@ module Matrix =
         Matrix<'T>(m.NumRows, m.NumCols, newData)
 
 
-    /// <summary>Splits a matrix along row direction according to given indices. Returns (matrix including rows according to indices, rest)</summary>
+    /// <summary></summary>
     /// <remarks></remarks>
     /// <param name="indices"></param>
     /// <param name="m"></param>
@@ -88,12 +88,12 @@ module Matrix =
         loop (nCols-1-indices.Length) (indices.Length-1) (nCols-1)
 
     /// <summary>
-    /// Creates a new matrix by permuting the rows of matrix <paramref name="M"/> according
+    /// Creates a new matrix by permuting the rows of matrix <paramref name="m"/> according
     /// to the permutation <paramref name="P"/>. That is, row <c>i</c> of the result is row 
-    /// <c>P(i)</c> of <paramref name="M"/>. 
+    /// <c>P(i)</c> of <paramref name="m"/>. 
     /// </summary>
     /// <param name="P">A permutation function that maps row indices. Should be valid
-    /// <param name="M">An <c>r x c</c> matrix whose rows will be reordered.</param>
+    /// <param name="m">An <c>r x c</c> matrix whose rows will be reordered.</param>
     /// for all <c>i</c> in <c>[0..r-1]</c>.</param>
     /// <returns>
     /// A new matrix of the same dimensions <c>r x c</c>, with rows permuted by <paramref name="P"/>.
@@ -164,6 +164,7 @@ module Matrix =
     /// A function taking (rowIndex, colIndex, oldValue) 
     /// and returning the new value for that position.
     /// </param>
+    /// <param name="A"></param>
     /// <returns>A new Matrix with updated elements.</returns>
     let mapi (f: int -> int -> 'T -> 'U) (A: Matrix<'T>) : Matrix<'U> =
         let newData = Array.zeroCreate<'U> A.Data.Length

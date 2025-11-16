@@ -710,7 +710,7 @@ type LinearAlgebra =
     /// <summary>
     /// Computes the Moore-Penrose pseudoinverse of a matrix using a QR-based approach. 
     /// If the matrix is overdetermined (m > n), returns (R⁻¹ Qᵀ) for A = Q R with A[m×n]. 
-    /// If underdetermined (m < n), uses the transpose trick, then returns the transpose of the partial solution.
+    /// If underdetermined (m &lt; n), uses the transpose trick, then returns the transpose of the partial solution.
     /// </summary>
     /// <param name="matrix">An m×n matrix.</param>
     /// <returns>The (n×m) pseudoinverse of <paramref name="matrix"/>.</returns>

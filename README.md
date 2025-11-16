@@ -1,5 +1,7 @@
 ## FsMath - Fast & Friendly Numerical Foundation for F\#
 
+[![Build and test](https://github.com/fslaborg/FsMath/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/fslaborg/FsMath/actions/workflows/build-and-test.yml)
+
 **FsMath** is a lightweight maths library designed for modern F# workflows.
 It focuses on **zero-friction interop** with existing array-centric libraries ( *FSharp.Stats*, *Math.NET Numerics*, *libtorch* via TorchSharp, etc.) while giving you the performance head-room of **SIMD-accelerated** kernels and a clean, idiomatic F# API.
 
@@ -12,7 +14,7 @@ It focuses on **zero-friction interop** with existing array-centric libraries ( 
 | **Interop first**             | Core types are just aliases or thin wrappers around native F# `'T []` arrays -> you can pass data to any array-based .NET or C library without conversion or pinning.|
 | **Predictable memory layout** | Matrices are stored **row-major** (C-style) to line up with libtorch / TorchSharp, modern BLAS back-ends, and GPU kernels.                                           |
 | **SIMD out-of-the-box**       | Tight loops (dot, outer product, reductions ...) auto-detect hardware with SIMD support and pure-managed fallback otherwise.            |
-| **F#-idiomatic API**          | Pipelining, module functions, inline operators (`.+`, `.*`, `transpose`) and SRTP “type-class” dispatch keep your notebooks & scripts concise.                       |
+| **F#-idiomatic API**          | Pipelining, module functions, inline operators (`.+`, `.*`, `transpose`) and SRTP ï¿½type-classï¿½ dispatch keep your notebooks & scripts concise.                       |
 
 ---
 
@@ -51,7 +53,6 @@ let result = v1 .* v2
 | Topic                                  | Where                               |
 | -------------------------------------- | ----------------------------------- |
 | API reference                          | `docs/` folder & generated markdown |
-| SIMD design notes                      | `docs/simd.md`                      |
 | Benchmarks                             | `benchmarks/`                       |
 | Contributing guide                     | `CONTRIBUTING.md`                   |
 
@@ -73,15 +74,39 @@ Check the [build project](./build) to take a look at the build targets.
 build.sh
 ```
 
-## running and writing tests
+## run tests
 
 ```shell
 # Windows
 ./build.cmd runtests
 
 # Linux/mac
-build.sh runtests
+./build.sh runtests
 ```
+
+## run tests with coverage
+
+To generate code coverage reports locally:
+
+```shell
+# Windows
+./build.cmd runtestswithcoverage
+
+# Linux/mac
+./build.sh runtestswithcoverage
+```
+
+For a complete coverage report with HTML output, use the provided scripts:
+
+```shell
+# Windows
+./scripts/generate-coverage.ps1
+
+# Linux/mac
+./scripts/generate-coverage.sh
+```
+
+This will generate coverage reports in the `TestResults` directory and create an HTML report you can open in your browser. Coverage is automatically collected and reported in CI/CD pipelines, with coverage summaries displayed in pull requests and detailed HTML reports available as downloadable artifacts.
 
 ## docs
 

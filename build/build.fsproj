@@ -31,8 +31,4 @@
     <PackageReference Include="Fake.Extensions.Release" Version="1.0.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="9.0.201" />
-  </ItemGroup>
-
 </Project>

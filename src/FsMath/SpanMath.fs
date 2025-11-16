@@ -36,10 +36,10 @@ type SpanMath =
                 let vy = Numerics.Vector<'T>(y.Slice(yi, simdWidth))
                 accVec <- accVec + (vx * vy)
 
-            let mutable acc = LanguagePrimitives.GenericZero<'T>
-            for i = 0 to simdWidth - 1 do
-                acc <- acc + accVec.[i]
+            // Use Vector.Sum for optimized horizontal reduction (uses hardware-specific instructions)
+            let mutable acc = Numerics.Vector.Sum(accVec)
 
+            // Handle remaining elements (tail)
             for i = ceiling to length - 1 do
                 acc <- acc + x.[xOffset + i] * y.[yOffset + i]
 
@@ -318,8 +318,9 @@ type SpanMath =
 
 
 // outer product #######
-    
+
     /// Computes the outer product of two spans.
+    /// Result[i,j] = u[i] * v[j]
     static member inline outerProduct<'T
         when 'T :> Numerics.INumber<'T>
          and 'T : struct
@@ -335,19 +336,36 @@ type SpanMath =
         let cols = v.Length
         let data = Array.zeroCreate<'T> (rows * cols)
 
-        for i = 0 to rows - 1 do
-            let ui = u[i]
-            for j = 0 to cols - 1 do
-                let vSpan = v
-                let simdCols = Numerics.Vector<'T>.Count
-                let simdCount = cols / simdCols
-                let ceiling = simdCount * simdCols
+        if Numerics.Vector.IsHardwareAccelerated && cols >= Numerics.Vector<'T>.Count then
+            // SIMD-accelerated path
+            let simdWidth = Numerics.Vector<'T>.Count
+            let simdCount = cols / simdWidth
+            let scalarStart = simdCount * simdWidth
 
-                let vVec = MemoryMarshal.Cast<'T, Numerics.Vector<'T>>(v)
+            // Cast v to SIMD vectors once
+            let vVec = MemoryMarshal.Cast<'T, Numerics.Vector<'T>>(v)
 
+            for i = 0 to rows - 1 do
+                let rowOffset = i * cols
+                let rowSpan = data.AsSpan(rowOffset, cols)
+                let rowVec = MemoryMarshal.Cast<'T, Numerics.Vector<'T>>(rowSpan)
+
+                // Broadcast u[i] to a SIMD vector
+                let uBroadcast = Numerics.Vector<'T>(u[i])
+
+                // Process SIMD chunks
                 for k = 0 to simdCount - 1 do
-                    let vi = Numerics.Vector<'T>(ui)
-                    let res = vi * vVec[k]
-                    res.CopyTo(MemoryMarshal.CreateSpan(&data.[i * cols + k * simdCols], simdCols))
+                    rowVec[k] <- uBroadcast * vVec[k]
+
+                // Process scalar tail
+                for j = scalarStart to cols - 1 do
+                    data[rowOffset + j] <- u[i] * v[j]
+        else
+            // Scalar fallback
+            for i = 0 to rows - 1 do
+                let ui = u[i]
+                let rowOffset = i * cols
+                for j = 0 to cols - 1 do
+                    data[rowOffset + j] <- ui * v[j]
 
         (rows, cols, data)

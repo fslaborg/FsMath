@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
   build-and-test-linux:
@@ -14,15 +17,96 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 9.x.x
+        dotnet-version: 8.x.x
     - name: make script executable
       run: chmod u+x build.sh
-    - name: Build and test
+    - name: Build and test with coverage
       working-directory: ./
-      run: ./build.sh runtests
+      run: ./build.sh runtestswithcoverage
+    
+    - name: Install ReportGenerator
+      run: dotnet tool install -g dotnet-reportgenerator-globaltool
+    
+    - name: Generate coverage report
+      run: |
+        reportgenerator \
+          -reports:"TestResults/**/coverage.cobertura.xml" \
+          -targetdir:"TestResults/CoverageReport" \
+          -reporttypes:"Html;Cobertura;JsonSummary" \
+          -verbosity:"Info"
+    
+    - name: Code Coverage Report
+      uses: irongut/CodeCoverageSummary@v1.3.0
+      with:
+        filename: TestResults/**/coverage.cobertura.xml
+        badge: true
+        fail_below_min: false
+        format: markdown
+        hide_branch_rate: false
+        hide_complexity: false
+        indicators: true
+        output: both
+        thresholds: '60 80'
+    
+    - name: Create Enhanced Coverage Report
+      run: |
+        echo "# 📊 Code Coverage Report" > enhanced-coverage-results.md
+        echo "" >> enhanced-coverage-results.md
+        echo "## Summary" >> enhanced-coverage-results.md
+        cat code-coverage-results.md >> enhanced-coverage-results.md
+        echo "" >> enhanced-coverage-results.md
+        echo "## 📈 Coverage Analysis" >> enhanced-coverage-results.md
+        echo "" >> enhanced-coverage-results.md
+        
+        # Extract coverage percentage for analysis
+        COVERAGE=$(grep -o '[0-9]\+%' code-coverage-results.md | head -1 | tr -d '%')
+        
+        if [ "$COVERAGE" -ge 80 ]; then
+          echo "🟢 **Excellent Coverage!** Your code coverage is above 80%, which is considered very good practice." >> enhanced-coverage-results.md
+        elif [ "$COVERAGE" -ge 60 ]; then
+          echo "🟡 **Good Coverage** Your code coverage is above 60%. Consider adding more tests to reach 80%." >> enhanced-coverage-results.md
+        else
+          echo "🔴 **Low Coverage** Your code coverage is below 60%. Please add more tests to improve coverage." >> enhanced-coverage-results.md
+        fi
+        
+        echo "" >> enhanced-coverage-results.md
+        echo "## 🎯 Coverage Goals" >> enhanced-coverage-results.md
+        echo "- **Target**: 80% line coverage" >> enhanced-coverage-results.md
+        echo "- **Minimum**: 60% line coverage" >> enhanced-coverage-results.md
+        echo "- **Current**: ${COVERAGE}% line coverage" >> enhanced-coverage-results.md
+        echo "" >> enhanced-coverage-results.md
+        echo "## 📋 What These Numbers Mean" >> enhanced-coverage-results.md
+        echo "" >> enhanced-coverage-results.md
+        echo "- **Line Rate**: Percentage of code lines that were executed during tests" >> enhanced-coverage-results.md
+        echo "- **Branch Rate**: Percentage of code branches (if/else, switch cases) that were tested" >> enhanced-coverage-results.md
+        echo "- **Health**: Overall assessment combining line and branch coverage" >> enhanced-coverage-results.md
+        echo "" >> enhanced-coverage-results.md
+        echo "## 🔗 Detailed Reports" >> enhanced-coverage-results.md
+        echo "" >> enhanced-coverage-results.md
+        echo "📋 [Download Full Coverage Report](../actions/runs/${{ github.run_id }}) - Check the 'coverage-report' artifact for detailed HTML coverage report" >> enhanced-coverage-results.md
+        echo "" >> enhanced-coverage-results.md
+        echo "---" >> enhanced-coverage-results.md
+        echo "*Coverage report generated on $(date '+%Y-%m-%d at %H:%M:%S UTC')*" >> enhanced-coverage-results.md
+        echo "" >> enhanced-coverage-results.md
+        echo "<!-- Sticky Pull Request Comment -->" >> enhanced-coverage-results.md
+    
+    - name: Add Enhanced Coverage PR Comment
+      uses: marocchino/sticky-pull-request-comment@v2
+      if: github.event_name == 'pull_request'
+      with:
+        recreate: true
+        path: enhanced-coverage-results.md
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: TestResults/CoverageReport/
 
   build-and-test-windows:
     
@@ -33,7 +117,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 9.x.x
-    - name: Build and test
+        dotnet-version: 8.x.x
+    - name: Build and test with coverage
       working-directory: ./
-      run: ./build.cmd runtests
+      run: ./build.cmd runtestswithcoverage

@@ -1,2 +1,3 @@
-#### 0.0.1 - Friday, August 8, 2025
-* Initial release
+### 0.0.2 - 2025-10-20
+
+### 0.0.1 - 2025-08-08 initial release
