@@ -43,5 +43,5 @@ module VectorOpsSymbols =
     let inline (.*) a b = Multiply.Invoke(a, b)
     let inline (./) a b = Divide.Invoke(a, b)
     let inline (.^) a b = Power.Invoke(a, b)
-    let inline ( @ ) a b = Power.Invoke(a, b)
+    let inline ( @ ) a b = Dot.Invoke(a, b)
     // Dot product ( @ )
